@@ -2,41 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* TCHOKOS Design System - Premium E-commerce Platform
+Inspired by 1xbet's bold aesthetic with modern e-commerce functionality
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* TCHOKOS Brand Colors */
+    --background: 0 0% 0%;                    /* Pure black background */
+    --foreground: 0 0% 100%;                  /* Pure white text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 5%;                          /* Subtle dark card */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 0%;                       /* TCHOKOS Black */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 15%;                    /* Dark secondary */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 0 79% 63%;                      /* TCHOKOS Red #E50914 */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 79% 63%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 20%;
+    --input: 0 0% 12%;
+    --ring: 0 79% 63%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    
+    /* TCHOKOS Custom Colors */
+    --tchokos-primary: 0 0% 0%;               /* Pure black */
+    --tchokos-accent: 0 79% 63%;              /* Electric red */
+    --tchokos-gold: 45 100% 50%;              /* Premium gold accent */
+    --wallet-balance: 142 76% 36%;            /* Success green for wallet */
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 15%));
+    --gradient-accent: linear-gradient(135deg, hsl(0 79% 63%), hsl(0 79% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 8%), hsl(0 0% 0%));
+    
+    /* Shadows */
+    --shadow-elegant: 0 20px 40px -10px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 30px hsl(0 79% 63% / 0.3);
+    --shadow-product: 0 10px 30px -5px hsl(0 0% 0% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +122,127 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    background: var(--gradient-hero);
   }
+}
+
+@layer components {
+  /* TCHOKOS Logo Animation */
+  .tchokos-logo {
+    @apply text-white font-bold text-4xl tracking-wider;
+    font-family: 'Inter', system-ui, sans-serif;
+    text-shadow: 0 0 20px hsl(0 79% 63% / 0.5);
+    animation: logoGlow 2s ease-in-out infinite alternate;
+  }
+
+  .splash-container {
+    @apply fixed inset-0 bg-black flex items-center justify-center z-50;
+    background: var(--gradient-hero);
+    animation: fadeOut 1s ease-in-out 2s forwards;
+  }
+
+  /* Product Cards */
+  .product-card {
+    @apply bg-card rounded-xl p-4 transition-all duration-300 hover:scale-105;
+    box-shadow: var(--shadow-product);
+    border: 1px solid hsl(0 0% 20%);
+  }
+
+  .product-card:hover {
+    box-shadow: var(--shadow-glow);
+    border-color: hsl(0 79% 63%);
+  }
+
+  /* Wallet Balance */
+  .wallet-balance {
+    @apply bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-2 rounded-lg font-semibold;
+    box-shadow: 0 4px 12px hsl(142 76% 36% / 0.3);
+  }
+
+  /* Coupon Button */
+  .coupon-button {
+    @apply bg-gradient-to-r from-accent to-red-600 text-white px-6 py-3 rounded-lg font-semibold;
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition-smooth);
+  }
+
+  .coupon-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(0 79% 63% / 0.4);
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply text-muted-foreground hover:text-foreground transition-colors;
+    position: relative;
+  }
+
+  .nav-link:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: var(--gradient-accent);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover:after,
+  .nav-link.active:after {
+    width: 100%;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@keyframes logoGlow {
+  0% { text-shadow: 0 0 20px hsl(0 79% 63% / 0.5); }
+  100% { text-shadow: 0 0 30px hsl(0 79% 63% / 0.8), 0 0 40px hsl(0 79% 63% / 0.3); }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
