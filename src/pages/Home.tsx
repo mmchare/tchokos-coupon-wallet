@@ -164,49 +164,51 @@ const Home = () => {
         onMenuClick={() => {}}
       />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Hero Section */}
-        <section className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+        <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
             <span className="text-gradient">TCHOKOS</span>
           </h1>
-          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-xl text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Découvrez notre collection premium de chaussures, vêtements et accessoires. 
             Ajoutez vos articles favoris à votre coupon personnalisé.
           </p>
           
           {/* Search Bar */}
-          <div className="max-w-md mx-auto relative mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+          <div className="max-w-md mx-auto relative mb-6 sm:mb-8 px-4">
+            <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
             <input 
               type="text"
               placeholder="Rechercher un produit..."
-              className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-accent"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-accent text-sm sm:text-base"
             />
           </div>
         </section>
 
         {/* Category Filter */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-white">Nos Produits</h2>
-            <div className="flex space-x-3">
+        <section className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-white px-2 sm:px-0">Nos Produits</h2>
+            <div className="flex space-x-2 sm:space-x-3 px-2 sm:px-0">
               <Button 
                 onClick={() => setIsLoadCouponOpen(true)}
                 variant="outline"
-                className="border-gray-600 text-gray-400 hover:bg-gray-800"
+                size="sm"
+                className="border-gray-600 text-gray-400 hover:bg-gray-800 text-xs sm:text-sm flex-1 sm:flex-none"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Charger Code
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Charger </span>Code
               </Button>
               <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
                 <SheetTrigger asChild>
                   <Button 
                     variant="outline"
-                    className="border-accent text-accent hover:bg-accent hover:text-white"
+                    size="sm"
+                    className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm flex-1 sm:flex-none"
                   >
-                    Mon Coupon ({couponItems.length})
+                    <span className="hidden sm:inline">Mon </span>Coupon ({couponItems.length})
                   </Button>
                 </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md bg-gray-950 border-gray-800">
@@ -235,7 +237,7 @@ const Home = () => {
         </section>
 
         {/* Products Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 px-2 sm:px-0">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

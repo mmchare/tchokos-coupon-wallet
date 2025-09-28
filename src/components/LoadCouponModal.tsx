@@ -72,12 +72,12 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-gray-950 border-gray-800">
+      <DialogContent className="w-[95vw] max-w-md mx-auto bg-gray-950 border-gray-800">
         <DialogHeader>
-          <DialogTitle className="text-white">Charger un Code Coupon</DialogTitle>
+          <DialogTitle className="text-white text-lg sm:text-xl">Charger un Code Coupon</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-4 py-2">
           <div>
             <label className="text-sm text-gray-400 mb-2 block">
               Code Coupon
@@ -86,23 +86,23 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               placeholder="TCH..."
-              className="bg-gray-900 border-gray-700 text-white"
+              className="bg-gray-900 border-gray-700 text-white text-sm sm:text-base"
               maxLength={12}
             />
           </div>
           
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <Button
               onClick={handleLoadCoupon}
               disabled={isLoading}
-              className="flex-1 bg-accent hover:bg-accent/90"
+              className="flex-1 bg-accent hover:bg-accent/90 text-sm sm:text-base"
             >
               {isLoading ? 'Chargement...' : 'Charger le Coupon'}
             </Button>
             <Button
               onClick={onClose}
               variant="outline"
-              className="border-gray-600 text-gray-400 hover:bg-gray-800"
+              className="border-gray-600 text-gray-400 hover:bg-gray-800 text-sm sm:text-base"
             >
               Annuler
             </Button>
