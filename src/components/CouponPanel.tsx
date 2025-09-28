@@ -37,6 +37,15 @@ const CouponPanel = ({
   const handleGenerateCode = () => {
     const code = `TCH${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     setCouponCode(code);
+    
+    // Sauvegarder le coupon dans le localStorage pour partage
+    const couponData = {
+      code,
+      items,
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem(`coupon_${code}`, JSON.stringify(couponData));
+    
     onGenerateCode();
     toast({
       title: "Code généré !",

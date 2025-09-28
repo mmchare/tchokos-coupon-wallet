@@ -3,9 +3,10 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import CouponPanel from '@/components/CouponPanel';
 import CategoryFilter from '@/components/CategoryFilter';
+import LoadCouponModal from '@/components/LoadCouponModal';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Import product images
@@ -38,6 +39,7 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [couponItems, setCouponItems] = useState<CouponItem[]>([]);
   const [isCouponOpen, setIsCouponOpen] = useState(false);
+  const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
 
   // Sample products data
   const products: Product[] = [
@@ -140,6 +142,20 @@ const Home = () => {
     // This is handled in CouponPanel component
   };
 
+  const handleLoadCoupon = (items: CouponItem[]) => {
+    // Fusionner avec les articles existants
+    const existingIds = couponItems.map(item => item.id);
+    const newItems = items.filter(item => !existingIds.includes(item.id));
+    const updatedExisting = couponItems.map(existingItem => {
+      const matchingItem = items.find(item => item.id === existingItem.id);
+      return matchingItem 
+        ? { ...existingItem, quantity: existingItem.quantity + matchingItem.quantity }
+        : existingItem;
+    });
+    
+    setCouponItems([...updatedExisting, ...newItems]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header 
@@ -175,15 +191,24 @@ const Home = () => {
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-white">Nos Produits</h2>
-            <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline"
-                  className="border-accent text-accent hover:bg-accent hover:text-white"
-                >
-                  Mon Coupon ({couponItems.length})
-                </Button>
-              </SheetTrigger>
+            <div className="flex space-x-3">
+              <Button 
+                onClick={() => setIsLoadCouponOpen(true)}
+                variant="outline"
+                className="border-gray-600 text-gray-400 hover:bg-gray-800"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Charger Code
+              </Button>
+              <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="border-accent text-accent hover:bg-accent hover:text-white"
+                  >
+                    Mon Coupon ({couponItems.length})
+                  </Button>
+                </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md bg-gray-950 border-gray-800">
                 <SheetHeader>
                   <SheetTitle className="text-white">Mon Coupon TCHOKOS</SheetTitle>
@@ -199,6 +224,7 @@ const Home = () => {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
           
           <CategoryFilter 
@@ -228,6 +254,13 @@ const Home = () => {
           </div>
         )}
       </main>
+
+      {/* Load Coupon Modal */}
+      <LoadCouponModal
+        isOpen={isLoadCouponOpen}
+        onClose={() => setIsLoadCouponOpen(false)}
+        onLoadCoupon={handleLoadCoupon}
+      />
     </div>
   );
 };
