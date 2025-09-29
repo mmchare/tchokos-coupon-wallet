@@ -1,5 +1,6 @@
-import { ShoppingBag, User, Menu } from 'lucide-react';
+import { ShoppingBag, User, Menu, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 
 interface HeaderProps {
   walletBalance: number;
@@ -8,8 +9,10 @@ interface HeaderProps {
 }
 
 const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
+  const { theme, setTheme } = useTheme();
+
   return (
-    <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-sm border-b border-gray-800">
+    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -22,7 +25,7 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <h1 className="text-lg sm:text-2xl font-bold text-white tracking-wider">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-wider">
               TCHOKOS
             </h1>
           </div>
@@ -52,11 +55,22 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
               )}
             </Button>
 
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
+            >
+              <Sun className="h-4 w-4 sm:h-5 sm:w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 sm:h-5 sm:w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+
             {/* Profile */}
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-white hover:bg-gray-800 h-8 w-8 sm:h-10 sm:w-10"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
             >
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
