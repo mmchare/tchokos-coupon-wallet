@@ -167,11 +167,11 @@ const Home = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Hero Section */}
         <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
-          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
             <span className="text-gradient">TCHOKOS</span>
           </h1>
-          <p className="text-sm sm:text-xl text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
+          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Découvrez notre collection premium de chaussures, vêtements et accessoires. 
             Ajoutez vos articles favoris à votre coupon personnalisé.
           </p>
