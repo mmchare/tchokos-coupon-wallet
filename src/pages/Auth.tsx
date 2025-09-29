@@ -71,14 +71,14 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="tchokos-logo text-5xl mb-4">TCHOKOS</h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-muted-foreground text-lg">
             Connectez-vous pour accéder à votre compte
           </p>
         </div>
 
-        <Card className="bg-gray-900 border-gray-800 animate-slide-up">
+        <Card className="bg-card border-border animate-slide-up">
           <CardHeader>
-            <CardTitle className="text-white text-center">
+            <CardTitle className="text-foreground text-center">
               {isOtpSent ? 'Vérification OTP' : 'Connexion'}
             </CardTitle>
           </CardHeader>
@@ -87,20 +87,20 @@ const Auth = () => {
               <>
                 {/* Phone Number Input */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-foreground">
                     Numéro de téléphone
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                     <Input
                       type="tel"
                       placeholder="+237 6XX XXX XXX"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                      className="pl-10 bg-input border-border text-foreground placeholder-muted-foreground"
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Nous vous enverrons un code OTP via WhatsApp
                   </p>
                 </div>
@@ -124,8 +124,8 @@ const Auth = () => {
                 </Button>
 
                 <div className="relative">
-                  <Separator className="bg-gray-700" />
-                  <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 px-3 text-gray-400 text-sm">
+                  <Separator className="bg-border" />
+                  <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-muted-foreground text-sm">
                     ou
                   </span>
                 </div>
@@ -134,7 +134,7 @@ const Auth = () => {
                 <Button 
                   onClick={handleGoogleLogin}
                   variant="outline"
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                  className="w-full"
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Continuer avec Google
@@ -144,7 +144,7 @@ const Auth = () => {
               <>
                 {/* OTP Input */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-foreground">
                     Code de vérification
                   </label>
                   <Input
@@ -152,10 +152,10 @@ const Auth = () => {
                     placeholder="000000"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="text-center text-2xl tracking-widest bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    className="text-center text-2xl tracking-widest bg-input border-border text-foreground placeholder-muted-foreground"
                     maxLength={6}
                   />
-                  <p className="text-xs text-gray-500 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     Code envoyé au {phoneNumber}
                   </p>
                 </div>
@@ -178,7 +178,7 @@ const Auth = () => {
                 <Button 
                   onClick={() => setIsOtpSent(false)}
                   variant="ghost"
-                  className="w-full text-gray-400 hover:text-white"
+                  className="w-full text-muted-foreground hover:text-foreground"
                 >
                   Modifier le numéro
                 </Button>
@@ -188,7 +188,7 @@ const Auth = () => {
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-500 text-sm">
+        <div className="text-center mt-8 text-muted-foreground text-sm">
           <p>En vous connectant, vous acceptez nos</p>
           <p>
             <span className="text-accent hover:underline cursor-pointer">Conditions d'utilisation</span>

@@ -178,11 +178,11 @@ const Home = () => {
           
           {/* Search Bar */}
           <div className="max-w-md mx-auto relative mb-6 sm:mb-8 px-4">
-            <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+            <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
             <input 
               type="text"
               placeholder="Rechercher un produit..."
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-accent text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-accent text-sm sm:text-base"
             />
           </div>
         </section>
@@ -190,13 +190,13 @@ const Home = () => {
         {/* Category Filter */}
         <section className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-white px-2 sm:px-0">Nos Produits</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground px-2 sm:px-0">Nos Produits</h2>
             <div className="flex space-x-2 sm:space-x-3 px-2 sm:px-0">
               <Button 
                 onClick={() => setIsLoadCouponOpen(true)}
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-400 hover:bg-gray-800 text-xs sm:text-sm flex-1 sm:flex-none"
+                className="text-xs sm:text-sm flex-1 sm:flex-none"
               >
                 <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Charger </span>Code
@@ -250,7 +250,7 @@ const Home = () => {
         {/* Empty State */}
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">
+            <p className="text-muted-foreground text-lg">
               Aucun produit trouvé dans cette catégorie
             </p>
           </div>
