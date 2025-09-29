@@ -72,21 +72,21 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto bg-gray-950 border-gray-800">
+      <DialogContent className="w-[95vw] max-w-md mx-auto bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-white text-lg sm:text-xl">Charger un Code Coupon</DialogTitle>
+          <DialogTitle className="text-foreground text-lg sm:text-xl">Charger un Code Coupon</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-2">
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">
+            <label className="text-sm text-muted-foreground mb-2 block">
               Code Coupon
             </label>
             <Input
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               placeholder="TCH..."
-              className="bg-gray-900 border-gray-700 text-white text-sm sm:text-base"
+              className="bg-input border-border text-foreground text-sm sm:text-base"
               maxLength={12}
             />
           </div>
@@ -95,14 +95,14 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
             <Button
               onClick={handleLoadCoupon}
               disabled={isLoading}
-              className="flex-1 bg-accent hover:bg-accent/90 text-sm sm:text-base"
+              className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground text-sm sm:text-base"
             >
               {isLoading ? 'Chargement...' : 'Charger le Coupon'}
             </Button>
             <Button
               onClick={onClose}
               variant="outline"
-              className="border-gray-600 text-gray-400 hover:bg-gray-800 text-sm sm:text-base"
+              className="text-sm sm:text-base"
             >
               Annuler
             </Button>

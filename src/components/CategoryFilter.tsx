@@ -17,8 +17,8 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
           onClick={() => onCategoryChange(category)}
           className={`whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4 ${
             activeCategory === category
-              ? "bg-accent text-white hover:bg-accent/90"
-              : "border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              ? "bg-accent text-accent-foreground hover:bg-accent/90"
+              : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           {category}

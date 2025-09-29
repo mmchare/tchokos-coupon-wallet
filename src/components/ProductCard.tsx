@@ -28,14 +28,14 @@ const ProductCard = ({
   return (
     <div className="product-card group animate-fade-in">
       {/* Image */}
-      <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-100">
+      <div className="relative overflow-hidden rounded-lg mb-3 bg-muted">
         <img 
           src={image} 
           alt={name}
           className="w-full h-32 sm:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
         />
         {discount > 0 && (
-          <Badge className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-accent text-white text-xs">
+          <Badge className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-accent text-accent-foreground text-xs">
             -{discount}%
           </Badge>
         )}
@@ -47,20 +47,20 @@ const ProductCard = ({
       {/* Product Info */}
       <div className="space-y-2 sm:space-y-3 px-1">
         <div>
-          <h3 className="font-semibold text-white text-sm sm:text-base truncate leading-tight">{name}</h3>
+          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight">{name}</h3>
           <div className="flex items-center space-x-1 mt-1">
             <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs sm:text-sm text-gray-400">{rating}</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">{rating}</span>
           </div>
         </div>
 
         {/* Price */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
-          <span className="text-sm sm:text-xl font-bold text-white">
+          <span className="text-sm sm:text-xl font-bold text-foreground">
             {price.toLocaleString()} F
           </span>
           {originalPrice && (
-            <span className="text-xs sm:text-sm text-gray-500 line-through">
+            <span className="text-xs sm:text-sm text-muted-foreground line-through">
               {originalPrice.toLocaleString()} F
             </span>
           )}

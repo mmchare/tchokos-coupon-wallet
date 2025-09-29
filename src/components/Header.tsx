@@ -21,7 +21,7 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
               variant="ghost"
               size="icon"
               onClick={onMenuClick}
-              className="md:hidden text-white hover:bg-gray-800 h-8 w-8"
+              className="md:hidden text-foreground hover:bg-muted h-8 w-8"
             >
               <Menu className="h-4 w-4" />
             </Button>
@@ -44,12 +44,12 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
             <Button 
               variant="outline"
               size="sm"
-              className="relative bg-transparent border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm px-2 sm:px-3"
+              className="relative bg-transparent border-accent text-accent hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm px-2 sm:px-3"
             >
               <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
               <span className="hidden sm:inline">Mon Coupon</span>
               {couponItems > 0 && (
-                <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-accent text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-accent text-accent-foreground text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                   {couponItems}
                 </span>
               )}

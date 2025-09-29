@@ -66,7 +66,7 @@ const CouponPanel = ({
   if (items.length === 0) {
     return (
       <Card className="p-6 text-center">
-        <div className="text-gray-400 mb-4">
+        <div className="text-muted-foreground mb-4">
           <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
           <p>Votre coupon est vide</p>
         </div>
@@ -77,8 +77,8 @@ const CouponPanel = ({
   return (
     <Card className="p-3 sm:p-6 animate-slide-up">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold text-white">Mon Coupon</h2>
-        <Badge variant="secondary" className="bg-accent text-white text-xs sm:text-sm">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground">Mon Coupon</h2>
+        <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs sm:text-sm">
           {items.length} article{items.length > 1 ? 's' : ''}
         </Badge>
       </div>
@@ -86,15 +86,15 @@ const CouponPanel = ({
       {/* Items List */}
       <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center space-x-3 p-2 sm:p-3 bg-gray-900 rounded-lg">
+          <div key={item.id} className="flex items-center space-x-3 p-2 sm:p-3 bg-muted rounded-lg">
             <img 
               src={item.image} 
               alt={item.name}
               className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
             />
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-white text-xs sm:text-sm truncate">{item.name}</h4>
-              <p className="text-gray-400 text-xs">
+              <h4 className="font-medium text-foreground text-xs sm:text-sm truncate">{item.name}</h4>
+              <p className="text-muted-foreground text-xs">
                 {item.price.toLocaleString()} F × {item.quantity}
               </p>
             </div>
@@ -102,16 +102,16 @@ const CouponPanel = ({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-6 w-6 border-gray-600 text-gray-400 hover:bg-gray-800"
+                className="h-6 w-6"
                 onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
               >
                 <Minus className="h-3 w-3" />
               </Button>
-              <span className="text-white text-xs sm:text-sm w-6 text-center">{item.quantity}</span>
+              <span className="text-foreground text-xs sm:text-sm w-6 text-center">{item.quantity}</span>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-6 w-6 border-gray-600 text-gray-400 hover:bg-gray-800"
+                className="h-6 w-6"
                 onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
               >
                 <Plus className="h-3 w-3" />
@@ -119,7 +119,7 @@ const CouponPanel = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-red-400 hover:bg-red-900/20"
+                className="h-6 w-6 text-destructive hover:bg-destructive/20"
                 onClick={() => onRemoveItem(item.id)}
               >
                 ×
@@ -129,11 +129,11 @@ const CouponPanel = ({
         ))}
       </div>
 
-      <Separator className="my-3 sm:my-4 bg-gray-800" />
+      <Separator className="my-3 sm:my-4" />
 
       {/* Total */}
       <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <span className="text-base sm:text-lg font-semibold text-white">Total:</span>
+        <span className="text-base sm:text-lg font-semibold text-foreground">Total:</span>
         <span className="text-lg sm:text-2xl font-bold text-accent">
           {total.toLocaleString()} F
         </span>
@@ -141,17 +141,17 @@ const CouponPanel = ({
 
       {/* Code Section */}
       {couponCode && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-900 rounded-lg border border-accent/20">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-accent/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-gray-400 mb-1">Code Coupon:</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Code Coupon:</p>
               <p className="font-mono text-accent font-bold text-sm sm:text-base">{couponCode}</p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleShareCode}
-              className="border-accent text-accent hover:bg-accent hover:text-white"
+              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
             >
               <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
@@ -172,7 +172,7 @@ const CouponPanel = ({
         <Button 
           onClick={handleGenerateCode}
           variant="outline"
-          className="w-full border-accent text-accent hover:bg-accent hover:text-white text-sm sm:text-base"
+          className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base"
         >
           <Code className="h-4 w-4 mr-2" />
           Générer Code de Partage
