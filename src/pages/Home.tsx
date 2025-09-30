@@ -40,8 +40,9 @@ const Home = () => {
   const [couponItems, setCouponItems] = useState<CouponItem[]>([]);
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Sample products data
+  // Sample products data - Expanded with more tennis fashion
   const products: Product[] = [
     {
       id: '1',
@@ -77,13 +78,84 @@ const Home = () => {
       rating: 4.7,
       image: heelsImg
     },
+    {
+      id: '5',
+      name: 'Tennis Nike Air Max Fashion',
+      price: 35000,
+      originalPrice: 45000,
+      category: 'Chaussures',
+      rating: 4.9,
+      image: sneakersImg
+    },
+    {
+      id: '6',
+      name: 'Tennis Adidas Originals Blanc',
+      price: 32000,
+      category: 'Chaussures',
+      rating: 4.7,
+      image: sneakersImg
+    },
+    {
+      id: '7',
+      name: 'Tennis Puma Street Style',
+      price: 28000,
+      originalPrice: 38000,
+      category: 'Chaussures',
+      rating: 4.6,
+      image: sneakersImg
+    },
+    {
+      id: '8',
+      name: 'Tennis Reebok Classic Retro',
+      price: 25000,
+      category: 'Chaussures',
+      rating: 4.5,
+      image: sneakersImg
+    },
+    {
+      id: '9',
+      name: 'Tennis Converse All Star Mode',
+      price: 22000,
+      category: 'Chaussures',
+      rating: 4.8,
+      image: sneakersImg
+    },
+    {
+      id: '10',
+      name: 'Tennis New Balance Casual',
+      price: 30000,
+      originalPrice: 40000,
+      category: 'Chaussures',
+      rating: 4.7,
+      image: sneakersImg
+    },
+    {
+      id: '11',
+      name: 'Jean Slim Fit Noir',
+      price: 18000,
+      category: 'Vêtements',
+      rating: 4.5,
+      image: tshirtImg
+    },
+    {
+      id: '12',
+      name: 'Casquette Fashion Street',
+      price: 8000,
+      originalPrice: 12000,
+      category: 'Accessoires',
+      rating: 4.6,
+      image: bagImg
+    },
   ];
 
   const categories = ['Tous', 'Chaussures', 'Vêtements', 'Accessoires'];
 
-  const filteredProducts = activeCategory === 'Tous' 
-    ? products 
-    : products.filter(product => product.category === activeCategory);
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = activeCategory === 'Tous' || product.category === activeCategory;
+    const matchesSearch = searchQuery === '' || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const handleAddToCoupon = (productId: string) => {
     const product = products.find(p => p.id === productId);
@@ -182,6 +254,8 @@ const Home = () => {
             <input 
               type="text"
               placeholder="Rechercher un produit..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-accent text-sm sm:text-base"
             />
           </div>

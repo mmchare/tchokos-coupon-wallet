@@ -12,6 +12,7 @@ const Auth = () => {
   const [otpCode, setOtpCode] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   const handleSendOtp = async () => {
     if (!phoneNumber || phoneNumber.length < 8) {
@@ -79,11 +80,54 @@ const Auth = () => {
         <Card className="bg-card border-border animate-slide-up">
           <CardHeader>
             <CardTitle className="text-foreground text-center">
-              {isOtpSent ? 'Vérification OTP' : 'Connexion'}
+              {isForgotPassword ? 'Mot de passe oublié' : isOtpSent ? 'Vérification OTP' : 'Connexion'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {!isOtpSent ? (
+            {isForgotPassword ? (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Numéro de téléphone
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                    <Input
+                      type="tel"
+                      placeholder="+237 6XX XXX XXX"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="pl-10 bg-input border-border text-foreground placeholder-muted-foreground"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Nous vous enverrons un lien de réinitialisation via WhatsApp
+                  </p>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    toast({
+                      title: "Lien envoyé !",
+                      description: "Vérifiez votre WhatsApp pour réinitialiser votre mot de passe",
+                    });
+                    setIsForgotPassword(false);
+                  }}
+                  disabled={isLoading}
+                  className="coupon-button w-full"
+                >
+                  Envoyer le lien
+                </Button>
+
+                <Button 
+                  onClick={() => setIsForgotPassword(false)}
+                  variant="ghost"
+                  className="w-full text-muted-foreground hover:text-foreground"
+                >
+                  Retour à la connexion
+                </Button>
+              </>
+            ) : !isOtpSent ? (
               <>
                 {/* Phone Number Input */}
                 <div className="space-y-2">
@@ -138,6 +182,15 @@ const Auth = () => {
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Continuer avec Google
+                </Button>
+
+                {/* Forgot Password Link */}
+                <Button
+                  onClick={() => setIsForgotPassword(true)}
+                  variant="link"
+                  className="w-full text-accent hover:text-accent/80"
+                >
+                  Mot de passe oublié ?
                 </Button>
               </>
             ) : (

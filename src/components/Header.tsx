@@ -1,6 +1,7 @@
 import { ShoppingBag, User, Menu, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   walletBalance: number;
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -31,12 +33,15 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
           </div>
 
           {/* Wallet Balance - Mobile Optimized */}
-          <div className="wallet-balance animate-fade-in text-xs sm:text-sm">
+          <button 
+            onClick={() => navigate('/recharge')}
+            className="wallet-balance animate-fade-in text-xs sm:text-sm hover:scale-105 transition-transform"
+          >
             <span className="hidden sm:inline opacity-90">Solde:</span>
             <span className="sm:ml-2 font-bold">
               {walletBalance.toLocaleString()} F
             </span>
-          </div>
+          </button>
 
           {/* Actions */}
           <div className="flex items-center space-x-1 sm:space-x-4">
@@ -70,6 +75,7 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
             <Button 
               variant="ghost" 
               size="icon"
+              onClick={() => navigate('/profile')}
               className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
             >
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
