@@ -67,7 +67,7 @@ const Recharge = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(-1)}
               className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <ArrowLeft className="h-5 w-5" />

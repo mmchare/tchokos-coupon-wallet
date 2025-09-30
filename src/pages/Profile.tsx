@@ -51,14 +51,14 @@ const Profile = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
               <h1 className="text-2xl font-bold text-foreground">Mon Profil</h1>
             </div>
             <Button
