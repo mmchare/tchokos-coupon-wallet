@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Plus } from 'lucide-react';
@@ -23,12 +24,16 @@ const ProductCard = ({
   rating,
   onAddToCoupon 
 }: ProductCardProps) => {
+  const navigate = useNavigate();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
   return (
     <div className="product-card group animate-fade-in">
       {/* Image */}
-      <div className="relative overflow-hidden rounded-lg mb-3 bg-muted">
+      <div 
+        className="relative overflow-hidden rounded-lg mb-3 bg-muted cursor-pointer"
+        onClick={() => navigate(`/product/${id}`)}
+      >
         <img 
           src={image} 
           alt={name}
@@ -46,8 +51,11 @@ const ProductCard = ({
 
       {/* Product Info */}
       <div className="space-y-2 sm:space-y-3 px-1">
-        <div>
-          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight">{name}</h3>
+        <div 
+          className="cursor-pointer"
+          onClick={() => navigate(`/product/${id}`)}
+        >
+          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight hover:text-accent transition-colors">{name}</h3>
           <div className="flex items-center space-x-1 mt-1">
             <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
             <span className="text-xs sm:text-sm text-muted-foreground">{rating}</span>
