@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Search, Filter, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCoupon } from '@/contexts/CouponContext';
 
 // Import product images
 import sneakersImg from '@/assets/product-sneakers-1.jpg';
@@ -35,9 +36,9 @@ interface CouponItem {
 
 const Home = () => {
   const { toast } = useToast();
+  const { couponItems, addToCoupon, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const [walletBalance] = useState(125000);
   const [activeCategory, setActiveCategory] = useState('Tous');
-  const [couponItems, setCouponItems] = useState<CouponItem[]>([]);
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -161,25 +162,12 @@ const Home = () => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    const existingItem = couponItems.find(item => item.id === productId);
-    
-    if (existingItem) {
-      setCouponItems(prev => 
-        prev.map(item => 
-          item.id === productId 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      setCouponItems(prev => [...prev, {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1
-      }]);
-    }
+    addToCoupon({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
 
     toast({
       title: "Ajouté au coupon !",
@@ -188,17 +176,11 @@ const Home = () => {
   };
 
   const handleRemoveFromCoupon = (productId: string) => {
-    setCouponItems(prev => prev.filter(item => item.id !== productId));
+    removeFromCoupon(productId);
   };
 
   const handleUpdateCouponQuantity = (productId: string, quantity: number) => {
-    setCouponItems(prev => 
-      prev.map(item => 
-        item.id === productId 
-          ? { ...item, quantity }
-          : item
-      )
-    );
+    updateQuantity(productId, quantity);
   };
 
   const handlePurchase = () => {
@@ -206,7 +188,7 @@ const Home = () => {
       title: "Commande confirmée !",
       description: "Votre commande a été traitée avec succès",
     });
-    setCouponItems([]);
+    clearCoupon();
     setIsCouponOpen(false);
   };
 
@@ -215,17 +197,7 @@ const Home = () => {
   };
 
   const handleLoadCoupon = (items: CouponItem[]) => {
-    // Fusionner avec les articles existants
-    const existingIds = couponItems.map(item => item.id);
-    const newItems = items.filter(item => !existingIds.includes(item.id));
-    const updatedExisting = couponItems.map(existingItem => {
-      const matchingItem = items.find(item => item.id === existingItem.id);
-      return matchingItem 
-        ? { ...existingItem, quantity: existingItem.quantity + matchingItem.quantity }
-        : existingItem;
-    });
-    
-    setCouponItems([...updatedExisting, ...newItems]);
+    loadCoupon(items);
   };
 
   return (

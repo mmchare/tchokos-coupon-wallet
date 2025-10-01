@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Star, Plus, Send, Smile } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
 
 // Import product images
@@ -39,6 +40,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
+  const { addToCoupon } = useCoupon();
   const [comment, setComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
@@ -105,6 +107,12 @@ const ProductDetail = () => {
     : 0;
 
   const handleAddToCoupon = () => {
+    addToCoupon({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
     toast({
       title: "Produit ajouté !",
       description: `${product.name} a été ajouté à votre coupon`,
