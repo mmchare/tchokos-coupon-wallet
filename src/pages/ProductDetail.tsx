@@ -1,3 +1,11 @@
+/**
+ * MODIFICATION: Utilisation du contexte coupon dans ProductDetail
+ *
+ * Ligne 10: Import de useCoupon pour accéder au contexte du coupon
+ * Ligne 43: Récupération de la fonction addToCoupon depuis le contexte
+ * Lignes 110-115: Appel de addToCoupon pour ajouter le produit au coupon global
+ */
+
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

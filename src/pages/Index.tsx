@@ -1,3 +1,15 @@
+/**
+ * MODIFICATION: Gestion du splash screen avec sessionStorage
+ *
+ * Lignes 7-10: Initialisation de showSplash en vérifiant sessionStorage
+ *   - Si 'hasSeenSplash' existe, le splash ne s'affiche pas
+ *   - Sinon, il s'affiche une seule fois
+ *
+ * Lignes 13-16: Sauvegarder dans sessionStorage quand le splash est terminé
+ *   - Empêche le splash de se réafficher lors de la navigation avec le bouton retour
+ *   - Le splash ne se réaffichera qu'après fermeture complète de l'onglet
+ */
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SplashScreen from '@/components/SplashScreen';

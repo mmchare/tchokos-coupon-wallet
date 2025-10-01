@@ -1,3 +1,13 @@
+/**
+ * MODIFICATION: Ajout du CouponProvider pour partager l'état du coupon
+ *
+ * Le CouponProvider enveloppe toute l'application pour que toutes les pages
+ * puissent accéder au même coupon.
+ *
+ * Ligne 7: Import du CouponProvider depuis le contexte
+ * Ligne 21: Enveloppe l'application avec <CouponProvider>
+ */
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";

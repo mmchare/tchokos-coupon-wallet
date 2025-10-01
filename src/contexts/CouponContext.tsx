@@ -1,3 +1,20 @@
+/**
+ * MODIFICATION: Context global pour gérer le coupon
+ *
+ * Ce fichier crée un système de gestion d'état partagé pour le coupon.
+ * Il permet à toutes les pages (Home, ProductDetail, etc.) d'accéder
+ * et de modifier le même coupon.
+ *
+ * Fonctionnalités:
+ * - addToCoupon: Ajouter un produit au coupon
+ * - removeFromCoupon: Supprimer un produit du coupon
+ * - updateQuantity: Modifier la quantité d'un produit
+ * - clearCoupon: Vider le coupon
+ * - loadCoupon: Charger un coupon depuis un code
+ *
+ * Utilise localStorage pour sauvegarder le coupon même après fermeture du navigateur
+ */
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface CouponItem {
@@ -19,6 +36,7 @@ interface CouponContextType {
 
 const CouponContext = createContext<CouponContextType | undefined>(undefined);
 
+// Hook personnalisé pour utiliser le contexte du coupon
 export const useCoupon = () => {
   const context = useContext(CouponContext);
   if (!context) {
@@ -28,15 +46,18 @@ export const useCoupon = () => {
 };
 
 export const CouponProvider = ({ children }: { children: ReactNode }) => {
+  // Initialiser le coupon depuis localStorage au démarrage
   const [couponItems, setCouponItems] = useState<CouponItem[]>(() => {
     const saved = localStorage.getItem('tchokos_coupon');
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Sauvegarder dans localStorage à chaque modification du coupon
   useEffect(() => {
     localStorage.setItem('tchokos_coupon', JSON.stringify(couponItems));
   }, [couponItems]);
 
+  // Ajouter un produit au coupon (augmente la quantité si déjà présent)
   const addToCoupon = (item: Omit<CouponItem, 'quantity'>) => {
     setCouponItems(prev => {
       const existingItem = prev.find(i => i.id === item.id);
@@ -49,10 +70,12 @@ export const CouponProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Supprimer un produit du coupon
   const removeFromCoupon = (productId: string) => {
     setCouponItems(prev => prev.filter(item => item.id !== productId));
   };
 
+  // Mettre à jour la quantité d'un produit
   const updateQuantity = (productId: string, quantity: number) => {
     setCouponItems(prev =>
       prev.map(item =>
@@ -61,10 +84,12 @@ export const CouponProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  // Vider complètement le coupon
   const clearCoupon = () => {
     setCouponItems([]);
   };
 
+  // Charger un coupon depuis un code (fusionne avec les articles existants)
   const loadCoupon = (items: CouponItem[]) => {
     const existingIds = couponItems.map(item => item.id);
     const newItems = items.filter(item => !existingIds.includes(item.id));

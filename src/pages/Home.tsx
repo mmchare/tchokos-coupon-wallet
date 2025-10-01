@@ -1,3 +1,19 @@
+/**
+ * MODIFICATION: Utilisation du contexte coupon dans Home
+ *
+ * Ligne 11: Import de useCoupon pour accéder au contexte du coupon
+ * Ligne 39: Récupération de toutes les fonctions du coupon depuis le contexte
+ *   - couponItems: Liste des produits dans le coupon
+ *   - addToCoupon: Ajouter un produit
+ *   - removeFromCoupon: Supprimer un produit
+ *   - updateQuantity: Modifier la quantité
+ *   - clearCoupon: Vider le coupon
+ *   - loadCoupon: Charger un coupon depuis un code
+ *
+ * Le state local couponItems a été supprimé car il est maintenant géré
+ * par le contexte global, ce qui permet de le partager avec ProductDetail
+ */
+
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
