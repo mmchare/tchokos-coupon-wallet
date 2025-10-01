@@ -4,10 +4,14 @@ import SplashScreen from '@/components/SplashScreen';
 import Home from './Home';
 
 const Index = () => {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    return !hasSeenSplash;
+  });
   const navigate = useNavigate();
 
   const handleSplashComplete = () => {
+    sessionStorage.setItem('hasSeenSplash', 'true');
     setShowSplash(false);
   };
 
