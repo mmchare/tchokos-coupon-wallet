@@ -2,6 +2,11 @@ import { ShoppingBag, User, Menu, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useCoupon } from '@/contexts/CouponContext';
+import CouponPanel from '@/components/CouponPanel';
+import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
   walletBalance: number;
@@ -12,6 +17,9 @@ interface HeaderProps {
 const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [isCouponOpen, setIsCouponOpen] = useState(false);
+  const { couponItems: items, removeFromCoupon, updateQuantity, clearCoupon } = useCoupon();
+  const { toast } = useToast();
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -49,13 +57,14 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
             <Button 
               variant="outline"
               size="sm"
+              onClick={() => setIsCouponOpen(true)}
               className="relative bg-transparent border-accent text-accent hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm px-2 sm:px-3"
             >
               <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
               <span className="hidden sm:inline">Mon Coupon</span>
-              {couponItems > 0 && (
+              {items.length > 0 && (
                 <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-accent text-accent-foreground text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                  {couponItems}
+                  {items.length}
                 </span>
               )}
             </Button>
@@ -83,6 +92,30 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
           </div>
         </div>
       </div>
+
+      {/* Coupon Sheet */}
+      <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg p-4 sm:p-6">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Mon Coupon</SheetTitle>
+          </SheetHeader>
+          <CouponPanel
+            items={items}
+            onRemoveItem={removeFromCoupon}
+            onUpdateQuantity={updateQuantity}
+            onPurchase={() => {
+              toast({
+                title: "Achat en cours...",
+                description: "Fonctionnalité d'achat à venir",
+              });
+              setIsCouponOpen(false);
+            }}
+            onGenerateCode={() => {
+              // Code generation is handled inside CouponPanel
+            }}
+          />
+        </SheetContent>
+      </Sheet>
     </header>
   );
 };
