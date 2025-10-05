@@ -273,9 +273,9 @@ const Home = () => {
                     <span className="hidden sm:inline">Mon </span>Coupon ({couponItems.length})
                   </Button>
                 </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md bg-gray-950 border-gray-800">
+              <SheetContent className="w-full sm:max-w-md bg-background border-border">
                 <SheetHeader>
-                  <SheetTitle className="text-white">Mon Coupon TCHOKOS</SheetTitle>
+                  <SheetTitle className="text-foreground">Mon Coupon TCHOKOS</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <CouponPanel
