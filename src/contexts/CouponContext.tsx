@@ -48,13 +48,13 @@ export const useCoupon = () => {
 export const CouponProvider = ({ children }: { children: ReactNode }) => {
   // Initialiser le coupon depuis localStorage au démarrage
   const [couponItems, setCouponItems] = useState<CouponItem[]>(() => {
-    const saved = localStorage.getItem('tchokos_coupon');
+    const saved = localStorage.getItem('dina_coupon');
     return saved ? JSON.parse(saved) : [];
   });
 
   // Sauvegarder dans localStorage à chaque modification du coupon
   useEffect(() => {
-    localStorage.setItem('tchokos_coupon', JSON.stringify(couponItems));
+    localStorage.setItem('dina_coupon', JSON.stringify(couponItems));
   }, [couponItems]);
 
   // Ajouter un produit au coupon (augmente la quantité si déjà présent)

@@ -39,7 +39,7 @@ const Profile = () => {
   const handleLogout = () => {
     toast({
       title: "Déconnexion",
-      description: "À bientôt sur TCHOKOS !",
+      description: "À bientôt sur DINA !",
     });
     setTimeout(() => navigate('/auth'), 1000);
   };

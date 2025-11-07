@@ -52,7 +52,7 @@ const Auth = () => {
       setIsLoading(false);
       toast({
         title: "Connexion réussie !",
-        description: "Bienvenue sur TCHOKOS",
+        description: "Bienvenue sur DINA",
       });
       // Redirect to home page
       window.location.href = '/';
@@ -71,7 +71,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="tchokos-logo text-5xl mb-4">TCHOKOS</h1>
+          <h1 className="dina-logo text-5xl mb-4">DINA</h1>
           <p className="text-muted-foreground text-lg">
             Connectez-vous pour accéder à votre compte
           </p>

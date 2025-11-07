@@ -27,10 +27,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 
 // Import product images
-import sneakersImg from '@/assets/product-sneakers-1.jpg';
-import tshirtImg from '@/assets/product-tshirt-1.jpg';
-import bagImg from '@/assets/product-bag-1.jpg';
-import heelsImg from '@/assets/product-heels-1.jpg';
+import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
+import samsungImg from '@/assets/product-samsung-s24.jpg';
+import macbookImg from '@/assets/product-macbook-pro.jpg';
+import ipadImg from '@/assets/product-ipad-air.jpg';
+import powerbankImg from '@/assets/product-powerbank.jpg';
+import ringLightImg from '@/assets/product-ring-light.jpg';
 
 interface Product {
   id: string;
@@ -68,7 +70,7 @@ const Home = () => {
       originalPrice: 950000,
       category: 'Smartphones',
       rating: 4.9,
-      image: sneakersImg
+      image: iphoneImg
     },
     {
       id: '2',
@@ -76,7 +78,7 @@ const Home = () => {
       price: 780000,
       category: 'Smartphones',
       rating: 4.8,
-      image: tshirtImg
+      image: samsungImg
     },
     {
       id: '3',
@@ -85,7 +87,7 @@ const Home = () => {
       originalPrice: 1400000,
       category: 'Ordinateurs',
       rating: 4.9,
-      image: bagImg
+      image: macbookImg
     },
     {
       id: '4',
@@ -93,7 +95,7 @@ const Home = () => {
       price: 420000,
       category: 'Tablettes',
       rating: 4.7,
-      image: heelsImg
+      image: ipadImg
     },
     {
       id: '5',
@@ -102,7 +104,7 @@ const Home = () => {
       originalPrice: 720000,
       category: 'Smartphones',
       rating: 4.8,
-      image: sneakersImg
+      image: iphoneImg
     },
     {
       id: '6',
@@ -110,7 +112,7 @@ const Home = () => {
       price: 980000,
       category: 'Ordinateurs',
       rating: 4.7,
-      image: sneakersImg
+      image: macbookImg
     },
     {
       id: '7',
@@ -119,7 +121,7 @@ const Home = () => {
       originalPrice: 650000,
       category: 'Tablettes',
       rating: 4.8,
-      image: sneakersImg
+      image: ipadImg
     },
     {
       id: '8',
@@ -127,7 +129,7 @@ const Home = () => {
       price: 35000,
       category: 'Accessoires',
       rating: 4.6,
-      image: sneakersImg
+      image: powerbankImg
     },
     {
       id: '9',
@@ -135,7 +137,7 @@ const Home = () => {
       price: 8000,
       category: 'Accessoires',
       rating: 4.7,
-      image: sneakersImg
+      image: iphoneImg
     },
     {
       id: '10',
@@ -144,7 +146,7 @@ const Home = () => {
       originalPrice: 55000,
       category: 'Accessoires',
       rating: 4.8,
-      image: sneakersImg
+      image: ringLightImg
     },
     {
       id: '11',
@@ -152,7 +154,7 @@ const Home = () => {
       price: 580000,
       category: 'Smartphones',
       rating: 4.7,
-      image: tshirtImg
+      image: samsungImg
     },
     {
       id: '12',
@@ -161,7 +163,7 @@ const Home = () => {
       originalPrice: 35000,
       category: 'Accessoires',
       rating: 4.6,
-      image: bagImg
+      image: powerbankImg
     },
   ];
 

@@ -36,7 +36,7 @@ const Header = ({ walletBalance, couponItems, onMenuClick }: HeaderProps) => {
               <Menu className="h-4 w-4" />
             </Button>
             <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-wider">
-              TCHOKOS
+              DINA
             </h1>
           </div>
 
