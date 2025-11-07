@@ -39,10 +39,10 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        tchokos: {
-          primary: "hsl(var(--tchokos-primary))",
-          accent: "hsl(var(--tchokos-accent))",
-          gold: "hsl(var(--tchokos-gold))",
+        dina: {
+          primary: "hsl(var(--dina-primary))",
+          accent: "hsl(var(--dina-accent))",
+          secondary: "hsl(var(--dina-secondary))",
         },
         wallet: {
           balance: "hsl(var(--wallet-balance))",

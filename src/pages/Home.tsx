@@ -59,113 +59,113 @@ const Home = () => {
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sample products data - Expanded with more tennis fashion
+  // Tech products data - Premium gadgets
   const products: Product[] = [
     {
       id: '1',
-      name: 'Sneakers Premium Noir',
-      price: 45000,
-      originalPrice: 60000,
-      category: 'Chaussures',
-      rating: 4.8,
+      name: 'iPhone 15 Pro Max 256GB',
+      price: 850000,
+      originalPrice: 950000,
+      category: 'Smartphones',
+      rating: 4.9,
       image: sneakersImg
     },
     {
       id: '2',
-      name: 'T-Shirt Designer Blanc',
-      price: 15000,
-      category: 'Vêtements',
-      rating: 4.6,
+      name: 'Samsung Galaxy S24 Ultra',
+      price: 780000,
+      category: 'Smartphones',
+      rating: 4.8,
       image: tshirtImg
     },
     {
       id: '3',
-      name: 'Sac à Main Cuir Premium',
-      price: 75000,
-      originalPrice: 95000,
-      category: 'Accessoires',
+      name: 'MacBook Pro M3 14" 512GB',
+      price: 1250000,
+      originalPrice: 1400000,
+      category: 'Ordinateurs',
       rating: 4.9,
       image: bagImg
     },
     {
       id: '4',
-      name: 'Escarpins Rouge Élégants',
-      price: 55000,
-      category: 'Chaussures',
+      name: 'iPad Air M2 11" 256GB',
+      price: 420000,
+      category: 'Tablettes',
       rating: 4.7,
       image: heelsImg
     },
     {
       id: '5',
-      name: 'Tennis Nike Air Max Fashion',
-      price: 35000,
-      originalPrice: 45000,
-      category: 'Chaussures',
-      rating: 4.9,
+      name: 'Google Pixel 8 Pro 512GB',
+      price: 650000,
+      originalPrice: 720000,
+      category: 'Smartphones',
+      rating: 4.8,
       image: sneakersImg
     },
     {
       id: '6',
-      name: 'Tennis Adidas Originals Blanc',
-      price: 32000,
-      category: 'Chaussures',
+      name: 'Dell XPS 15 Intel i9 1TB',
+      price: 980000,
+      category: 'Ordinateurs',
       rating: 4.7,
       image: sneakersImg
     },
     {
       id: '7',
-      name: 'Tennis Puma Street Style',
-      price: 28000,
-      originalPrice: 38000,
-      category: 'Chaussures',
-      rating: 4.6,
-      image: sneakersImg
-    },
-    {
-      id: '8',
-      name: 'Tennis Reebok Classic Retro',
-      price: 25000,
-      category: 'Chaussures',
-      rating: 4.5,
-      image: sneakersImg
-    },
-    {
-      id: '9',
-      name: 'Tennis Converse All Star Mode',
-      price: 22000,
-      category: 'Chaussures',
+      name: 'Samsung Galaxy Tab S9 Ultra',
+      price: 550000,
+      originalPrice: 650000,
+      category: 'Tablettes',
       rating: 4.8,
       image: sneakersImg
     },
     {
-      id: '10',
-      name: 'Tennis New Balance Casual',
-      price: 30000,
-      originalPrice: 40000,
-      category: 'Chaussures',
+      id: '8',
+      name: 'Power Bank Anker 30000mAh',
+      price: 35000,
+      category: 'Accessoires',
+      rating: 4.6,
+      image: sneakersImg
+    },
+    {
+      id: '9',
+      name: 'Coque iPhone Spigen Ultra Hybrid',
+      price: 8000,
+      category: 'Accessoires',
       rating: 4.7,
       image: sneakersImg
     },
     {
+      id: '10',
+      name: 'Ring Light LED 18 pouces',
+      price: 45000,
+      originalPrice: 55000,
+      category: 'Accessoires',
+      rating: 4.8,
+      image: sneakersImg
+    },
+    {
       id: '11',
-      name: 'Jean Slim Fit Noir',
-      price: 18000,
-      category: 'Vêtements',
-      rating: 4.5,
+      name: 'OnePlus 12 Pro 16GB RAM',
+      price: 580000,
+      category: 'Smartphones',
+      rating: 4.7,
       image: tshirtImg
     },
     {
       id: '12',
-      name: 'Casquette Fashion Street',
-      price: 8000,
-      originalPrice: 12000,
+      name: 'Batterie externe Xiaomi 20000mAh',
+      price: 28000,
+      originalPrice: 35000,
       category: 'Accessoires',
       rating: 4.6,
       image: bagImg
     },
   ];
 
-  const categories = ['Tous', 'Chaussures', 'Vêtements', 'Accessoires'];
+  const categories = ['Tous', 'Smartphones', 'Ordinateurs', 'Tablettes', 'Accessoires'];
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = activeCategory === 'Tous' || product.category === activeCategory;
@@ -229,11 +229,11 @@ const Home = () => {
         <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
-            <span className="text-gradient">TCHOKOS</span>
+            <span className="text-gradient">DINA</span>
           </h1>
           <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Découvrez notre collection premium de chaussures, vêtements et accessoires. 
-            Ajoutez vos articles favoris à votre coupon personnalisé.
+            Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables, batteries et accessoires. 
+            Ajoutez vos produits favoris à votre coupon personnalisé.
           </p>
           
           {/* Search Bar */}
@@ -275,7 +275,7 @@ const Home = () => {
                 </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md bg-background border-border">
                 <SheetHeader>
-                  <SheetTitle className="text-foreground">Mon Coupon TCHOKOS</SheetTitle>
+                  <SheetTitle className="text-foreground">Mon Coupon DINA</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <CouponPanel

@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TCHOKOS Design System - Premium E-commerce Platform
-Inspired by 1xbet's bold aesthetic with modern e-commerce functionality
+/* DINA Design System - Premium Tech E-commerce Platform
+Modern tech aesthetic with sleek, futuristic design
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* TCHOKOS Light Mode */
+    /* DINA Light Mode */
     --background: 0 0% 100%;                  /* White background */
     --foreground: 0 0% 3.9%;                  /* Dark text */
 
@@ -28,7 +28,7 @@ All colors MUST be HSL.
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
 
-    --accent: 0 79% 63%;                      /* TCHOKOS Red #E50914 */
+    --accent: 197 71% 52%;                    /* DINA Cyan #2DBDD8 */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -40,21 +40,21 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
-  /* TCHOKOS Custom Colors */
-  --tchokos-primary: 0 0% 0%;               /* Pure black */
-  --tchokos-accent: 0 79% 63%;              /* Electric red */
-  --tchokos-gold: 45 100% 50%;              /* Premium gold accent */
+  /* DINA Custom Colors */
+  --dina-primary: 220 26% 14%;              /* Dark blue-grey */
+  --dina-accent: 197 71% 52%;               /* Tech cyan */
+  --dina-secondary: 271 81% 56%;            /* Electric purple */
   --wallet-balance: 142 76% 36%;            /* Success green for wallet */
   
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 15%));
-  --gradient-accent: linear-gradient(135deg, hsl(0 79% 63%), hsl(0 79% 45%));
-  --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 8%), hsl(0 0% 0%));
+  --gradient-primary: linear-gradient(135deg, hsl(220 26% 14%), hsl(220 26% 20%));
+  --gradient-accent: linear-gradient(135deg, hsl(197 71% 52%), hsl(271 81% 56%));
+  --gradient-hero: linear-gradient(135deg, hsl(220 26% 10%), hsl(220 26% 14%), hsl(220 26% 10%));
   
   /* Shadows */
-  --shadow-elegant: 0 20px 40px -10px hsl(0 0% 0% / 0.5);
-  --shadow-glow: 0 0 30px hsl(0 79% 63% / 0.3);
-  --shadow-product: 0 10px 30px -5px hsl(0 0% 0% / 0.3);
+  --shadow-elegant: 0 20px 40px -10px hsl(220 26% 14% / 0.5);
+  --shadow-glow: 0 0 30px hsl(197 71% 52% / 0.4);
+  --shadow-product: 0 10px 30px -5px hsl(220 26% 14% / 0.3);
   
   /* Animations */
   --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -83,34 +83,34 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* TCHOKOS Dark Mode */
-    --background: 0 0% 0%;                    /* Pure black background */
+    /* DINA Dark Mode */
+    --background: 220 26% 10%;                /* Dark blue-grey background */
     --foreground: 0 0% 100%;                  /* Pure white text */
 
-    --card: 0 0% 5%;                          /* Subtle dark card */
+    --card: 220 26% 14%;                      /* Dark card */
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 8%;
+    --popover: 220 26% 12%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 0 0% 0%;                       /* TCHOKOS Black */
+    --primary: 220 26% 14%;                   /* DINA Dark */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;                    /* Dark secondary */
+    --secondary: 220 26% 18%;                 /* Dark secondary */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 10%;
+    --muted: 220 26% 16%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 0 79% 63%;                      /* TCHOKOS Red #E50914 */
+    --accent: 197 71% 52%;                    /* DINA Cyan */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 79% 63%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 12%;
-    --ring: 0 79% 63%;
+    --border: 220 26% 22%;
+    --input: 220 26% 16%;
+    --ring: 197 71% 52%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -134,11 +134,11 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* TCHOKOS Logo Animation */
-  .tchokos-logo {
+  /* DINA Logo Animation */
+  .dina-logo {
     @apply text-white font-bold text-4xl tracking-wider;
     font-family: 'Inter', system-ui, sans-serif;
-    text-shadow: 0 0 20px hsl(0 79% 63% / 0.5);
+    text-shadow: 0 0 20px hsl(197 71% 52% / 0.6);
     animation: logoGlow 2s ease-in-out infinite alternate;
   }
 
@@ -157,7 +157,7 @@ All colors MUST be HSL.
 
   .product-card:hover {
     box-shadow: var(--shadow-glow);
-    border-color: hsl(0 79% 63%);
+    border-color: hsl(197 71% 52%);
   }
 
   /* Wallet Balance */
@@ -168,7 +168,7 @@ All colors MUST be HSL.
 
   /* Coupon Button */
   .coupon-button {
-    @apply bg-gradient-to-r from-accent to-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold;
+    @apply bg-gradient-to-r from-accent to-cyan-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold;
     box-shadow: var(--shadow-glow);
     transition: var(--transition-smooth);
     min-height: var(--mobile-touch-target);
@@ -176,7 +176,7 @@ All colors MUST be HSL.
 
   .coupon-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px hsl(0 79% 63% / 0.4);
+    box-shadow: 0 8px 25px hsl(197 71% 52% / 0.4);
   }
 
   /* Navigation */
@@ -253,8 +253,8 @@ All colors MUST be HSL.
 }
 
 @keyframes logoGlow {
-  0% { text-shadow: 0 0 20px hsl(0 79% 63% / 0.5); }
-  100% { text-shadow: 0 0 30px hsl(0 79% 63% / 0.8), 0 0 40px hsl(0 79% 63% / 0.3); }
+  0% { text-shadow: 0 0 20px hsl(197 71% 52% / 0.6); }
+  100% { text-shadow: 0 0 30px hsl(197 71% 52% / 0.9), 0 0 40px hsl(271 81% 56% / 0.4); }
 }
 
 @keyframes fadeOut {

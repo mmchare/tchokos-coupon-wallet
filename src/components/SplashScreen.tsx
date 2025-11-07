@@ -21,8 +21,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   return (
     <div className="splash-container">
       <div className="animate-bounce-in">
-        <h1 className="tchokos-logo">TCHOKOS</h1>
-        <div className="mt-4 h-1 w-24 mx-auto bg-gradient-to-r from-accent to-red-600 rounded-full animate-pulse"></div>
+        <h1 className="dina-logo">DINA</h1>
+        <div className="mt-4 h-1 w-24 mx-auto bg-gradient-to-r from-accent to-cyan-500 rounded-full animate-pulse"></div>
       </div>
     </div>
   );
