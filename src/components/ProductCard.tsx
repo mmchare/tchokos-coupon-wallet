@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Plus } from 'lucide-react';
+import { Star, Plus, MessageCircle } from 'lucide-react';
 
 interface ProductCardProps {
   id: string;
@@ -26,6 +26,15 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
+  const handleWhatsAppClick = () => {
+    const message = encodeURIComponent(
+      `Bonjour DINA 👋\n\nJe suis intéressé(e) par ce produit :\n📱 ${name}\n💰 Prix : ${price.toLocaleString()} F\n\nPouvez-vous me donner plus d'informations ?`
+    );
+    // Remplacez le numéro par le vrai numéro WhatsApp de DINA (format international sans +)
+    const whatsappNumber = '237690000000'; // Exemple: 237690000000 pour le Cameroun
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+  };
 
   return (
     <div className="product-card group animate-fade-in">
@@ -74,14 +83,27 @@ const ProductCard = ({
           )}
         </div>
 
-        {/* Add to Coupon Button */}
-        <Button 
-          onClick={() => onAddToCoupon(id)}
-          className="coupon-button w-full text-xs sm:text-sm py-2 sm:py-3"
-        >
-          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Ajouter au </span>Coupon
-        </Button>
+        {/* Buttons */}
+        <div className="flex flex-col space-y-2">
+          {/* Add to Coupon Button */}
+          <Button 
+            onClick={() => onAddToCoupon(id)}
+            className="coupon-button w-full text-xs sm:text-sm py-2 sm:py-3"
+          >
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Ajouter au </span>Coupon
+          </Button>
+
+          {/* WhatsApp Button */}
+          <Button 
+            onClick={handleWhatsAppClick}
+            variant="outline"
+            className="w-full text-xs sm:text-sm py-2 sm:py-3 bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600"
+          >
+            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Contacter sur </span>WhatsApp
+          </Button>
+        </div>
       </div>
     </div>
   );

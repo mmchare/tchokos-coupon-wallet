@@ -61,12 +61,12 @@ const Home = () => {
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Tech products data - Premium gadgets
+  // Tech products data - Prix super attractifs !
   const products: Product[] = [
     {
       id: '1',
       name: 'iPhone 15 Pro Max 256GB',
-      price: 850000,
+      price: 350000,
       originalPrice: 950000,
       category: 'Smartphones',
       rating: 4.9,
@@ -75,7 +75,8 @@ const Home = () => {
     {
       id: '2',
       name: 'Samsung Galaxy S24 Ultra',
-      price: 780000,
+      price: 280000,
+      originalPrice: 780000,
       category: 'Smartphones',
       rating: 4.8,
       image: samsungImg
@@ -83,7 +84,7 @@ const Home = () => {
     {
       id: '3',
       name: 'MacBook Pro M3 14" 512GB',
-      price: 1250000,
+      price: 450000,
       originalPrice: 1400000,
       category: 'Ordinateurs',
       rating: 4.9,
@@ -92,7 +93,8 @@ const Home = () => {
     {
       id: '4',
       name: 'iPad Air M2 11" 256GB',
-      price: 420000,
+      price: 180000,
+      originalPrice: 520000,
       category: 'Tablettes',
       rating: 4.7,
       image: ipadImg
@@ -100,7 +102,7 @@ const Home = () => {
     {
       id: '5',
       name: 'Google Pixel 8 Pro 512GB',
-      price: 650000,
+      price: 250000,
       originalPrice: 720000,
       category: 'Smartphones',
       rating: 4.8,
@@ -109,7 +111,8 @@ const Home = () => {
     {
       id: '6',
       name: 'Dell XPS 15 Intel i9 1TB',
-      price: 980000,
+      price: 380000,
+      originalPrice: 980000,
       category: 'Ordinateurs',
       rating: 4.7,
       image: macbookImg
@@ -117,7 +120,7 @@ const Home = () => {
     {
       id: '7',
       name: 'Samsung Galaxy Tab S9 Ultra',
-      price: 550000,
+      price: 220000,
       originalPrice: 650000,
       category: 'Tablettes',
       rating: 4.8,
@@ -126,7 +129,8 @@ const Home = () => {
     {
       id: '8',
       name: 'Power Bank Anker 30000mAh',
-      price: 35000,
+      price: 12000,
+      originalPrice: 35000,
       category: 'Accessoires',
       rating: 4.6,
       image: powerbankImg
@@ -134,7 +138,8 @@ const Home = () => {
     {
       id: '9',
       name: 'Coque iPhone Spigen Ultra Hybrid',
-      price: 8000,
+      price: 2500,
+      originalPrice: 8000,
       category: 'Accessoires',
       rating: 4.7,
       image: iphoneImg
@@ -142,7 +147,7 @@ const Home = () => {
     {
       id: '10',
       name: 'Ring Light LED 18 pouces',
-      price: 45000,
+      price: 15000,
       originalPrice: 55000,
       category: 'Accessoires',
       rating: 4.8,
@@ -151,7 +156,8 @@ const Home = () => {
     {
       id: '11',
       name: 'OnePlus 12 Pro 16GB RAM',
-      price: 580000,
+      price: 220000,
+      originalPrice: 580000,
       category: 'Smartphones',
       rating: 4.7,
       image: samsungImg
@@ -159,7 +165,7 @@ const Home = () => {
     {
       id: '12',
       name: 'Batterie externe Xiaomi 20000mAh',
-      price: 28000,
+      price: 9000,
       originalPrice: 35000,
       category: 'Accessoires',
       rating: 4.6,
