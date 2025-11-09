@@ -19,10 +19,12 @@ import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
 
 // Import product images
-import sneakersImg from '@/assets/product-sneakers-1.jpg';
-import tshirtImg from '@/assets/product-tshirt-1.jpg';
-import bagImg from '@/assets/product-bag-1.jpg';
-import heelsImg from '@/assets/product-heels-1.jpg';
+import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
+import samsungImg from '@/assets/product-samsung-s24.jpg';
+import macbookImg from '@/assets/product-macbook-pro.jpg';
+import ipadImg from '@/assets/product-ipad-air.jpg';
+import powerbankImg from '@/assets/product-powerbank.jpg';
+import ringLightImg from '@/assets/product-ring-light.jpg';
 
 interface Review {
   id: string;
@@ -57,54 +59,82 @@ const ProductDetail = () => {
   const products: Product[] = [
     {
       id: '1',
-      name: 'Sneakers Premium Noir',
-      price: 45000,
-      originalPrice: 60000,
-      category: 'Chaussures',
-      rating: 4.8,
-      image: sneakersImg,
-      description: 'Des sneakers premium en cuir véritable avec semelle confortable. Design moderne et élégant, parfait pour toutes occasions. Disponible en plusieurs tailles.',
+      name: 'iPhone 15 Pro Max',
+      price: 350000,
+      originalPrice: 850000,
+      category: 'Smartphones',
+      rating: 4.9,
+      image: iphoneImg,
+      description: 'Le dernier iPhone avec puce A17 Pro, écran Super Retina XDR 6.7", appareil photo 48MP et châssis en titane. Disponible en plusieurs couleurs.',
       reviews: [
-        { id: '1', userName: 'Marie K.', rating: 5, comment: 'Excellente qualité ! Très confortables 😍', date: '2024-03-15' },
-        { id: '2', userName: 'Jean P.', rating: 4, comment: 'Bon rapport qualité-prix, design top 👌', date: '2024-03-10' },
+        { id: '1', userName: 'Yves M.', rating: 5, comment: 'Incroyable performance ! Meilleur iPhone 📱✨', date: '2024-03-20' },
+        { id: '2', userName: 'Claire D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 🔥', date: '2024-03-18' },
       ]
     },
     {
       id: '2',
-      name: 'T-Shirt Designer Blanc',
-      price: 15000,
-      category: 'Vêtements',
-      rating: 4.6,
-      image: tshirtImg,
-      description: 'T-shirt en coton premium, coupe moderne et confortable. Idéal pour un look décontracté et stylé.',
+      name: 'Samsung Galaxy S24 Ultra',
+      price: 380000,
+      originalPrice: 900000,
+      category: 'Smartphones',
+      rating: 4.8,
+      image: samsungImg,
+      description: 'Smartphone premium avec Snapdragon 8 Gen 3, écran AMOLED 6.8", S Pen intégré et batterie 5000mAh. Performance exceptionnelle.',
       reviews: [
-        { id: '1', userName: 'Sophie L.', rating: 5, comment: 'Super confortable ! 🔥', date: '2024-03-18' },
+        { id: '1', userName: 'Patrick L.', rating: 5, comment: 'Le meilleur Android du marché ! 🚀', date: '2024-03-19' },
       ]
     },
     {
       id: '3',
-      name: 'Sac à Main Cuir Premium',
-      price: 75000,
-      originalPrice: 95000,
-      category: 'Accessoires',
+      name: 'MacBook Pro M3',
+      price: 450000,
+      originalPrice: 1250000,
+      category: 'Ordinateurs',
       rating: 4.9,
-      image: bagImg,
-      description: 'Sac à main en cuir véritable, spacieux et élégant. Plusieurs compartiments pour une organisation optimale.',
+      image: macbookImg,
+      description: 'MacBook Pro 14" avec puce M3, 16GB RAM, 512GB SSD. Performances incroyables pour les professionnels créatifs.',
       reviews: [
-        { id: '1', userName: 'Alice B.', rating: 5, comment: 'Magnifique sac, très pratique ! 💼✨', date: '2024-03-20' },
-        { id: '2', userName: 'Emma D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 👜', date: '2024-03-12' },
+        { id: '1', userName: 'Sophie K.', rating: 5, comment: 'Puissance incroyable ! Parfait pour le montage 💻✨', date: '2024-03-17' },
+        { id: '2', userName: 'Marc B.', rating: 5, comment: 'Excellent rapport qualité-prix ! 👌', date: '2024-03-15' },
       ]
     },
     {
       id: '4',
-      name: 'Escarpins Rouge Élégants',
-      price: 55000,
-      category: 'Chaussures',
+      name: 'iPad Air M2',
+      price: 220000,
+      originalPrice: 650000,
+      category: 'Tablettes',
       rating: 4.7,
-      image: heelsImg,
-      description: 'Escarpins élégants en cuir rouge, talon confortable de 8cm. Parfait pour les occasions spéciales.',
+      image: ipadImg,
+      description: 'iPad Air 11" avec puce M2, écran Liquid Retina, compatible Apple Pencil. Parfait pour le travail et le divertissement.',
       reviews: [
-        { id: '1', userName: 'Laura M.', rating: 5, comment: 'Magnifiques ! 👠❤️', date: '2024-03-14' },
+        { id: '1', userName: 'Marie T.', rating: 5, comment: 'Parfait pour dessiner et travailler ! 🎨', date: '2024-03-16' },
+      ]
+    },
+    {
+      id: '5',
+      name: 'Batterie Externe Anker 30000mAh',
+      price: 15000,
+      originalPrice: 35000,
+      category: 'Accessoires',
+      rating: 4.6,
+      image: powerbankImg,
+      description: 'Powerbank haute capacité avec charge rapide 65W, 3 ports USB. Idéal pour recharger tous vos appareils.',
+      reviews: [
+        { id: '1', userName: 'Jean P.', rating: 5, comment: 'Excellent produit, charge super rapide ! ⚡', date: '2024-03-14' },
+      ]
+    },
+    {
+      id: '6',
+      name: 'Ring Light LED 18 pouces',
+      price: 25000,
+      originalPrice: 55000,
+      category: 'Accessoires',
+      rating: 4.5,
+      image: ringLightImg,
+      description: 'Éclairage LED professionnel avec trépied, contrôle de luminosité et température de couleur. Parfait pour photo et vidéo.',
+      reviews: [
+        { id: '1', userName: 'Laura S.', rating: 5, comment: 'Lumière parfaite pour mes vidéos ! 💡📸', date: '2024-03-13' },
       ]
     },
   ];
@@ -158,6 +188,12 @@ const ProductDetail = () => {
   const handleEmojiSelect = (emoji: string) => {
     setComment(prev => prev + emoji);
     setShowEmojiPicker(false);
+  };
+
+  const handleWhatsAppClick = () => {
+    const message = `Bonjour DINA, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
+    const whatsappUrl = `https://wa.me/237690000000?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -245,14 +281,26 @@ const ProductDetail = () => {
                     </p>
                   </div>
 
-                  {/* Add to Coupon Button */}
-                  <Button 
-                    onClick={handleAddToCoupon}
-                    className="coupon-button w-full"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Ajouter au Coupon
-                  </Button>
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={handleAddToCoupon}
+                      className="coupon-button w-full"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Ajouter au Coupon
+                    </Button>
+                    
+                    <Button
+                      onClick={handleWhatsAppClick}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                      </svg>
+                      Contacter sur WhatsApp
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
