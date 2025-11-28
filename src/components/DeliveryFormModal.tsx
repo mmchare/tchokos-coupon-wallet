@@ -70,7 +70,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
             Informations de livraison
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Livraison gratuite dans toute la sous-région CEMAC
+            Livraison gratuite à Douala, Yaoundé, Koutaba, Foumban et Foumbot. Pour les autres villes/pays, vous serez contacté via WhatsApp pour convenir des frais de livraison.
           </DialogDescription>
         </DialogHeader>
 
@@ -87,14 +87,17 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Adresse de livraison</FormLabel>
+                    <FormLabel className="text-foreground">Description détaillée du lieu de livraison</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Exemple: Quartier Bastos, Rue 1234, Bâtiment A, Appartement 5"
-                        className="min-h-[100px] bg-background border-input text-foreground resize-none"
+                        placeholder="Exemple: Salut je m'appelle Stéphane et voici le numéro à contacter pour la livraison une fois au niveau du quartier Nkomondo à Douala dans l'arrondissement de Douala 2ème plus précisément à l'école publique. Merci"
+                        className="min-h-[120px] bg-background border-input text-foreground resize-none"
                         {...field}
                       />
                     </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Décrivez votre emplacement de manière détaillée : quartier, points de repère, nom de la personne à contacter, etc.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -105,7 +108,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Numéro de téléphone</FormLabel>
+                    <FormLabel className="text-foreground">Numéro WhatsApp pour la livraison</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -116,6 +119,9 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
                         />
                       </div>
                     </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Numéro à contacter lors de la livraison
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
