@@ -20,6 +20,7 @@ import ProductCard from '@/components/ProductCard';
 import CouponPanel from '@/components/CouponPanel';
 import CategoryFilter from '@/components/CategoryFilter';
 import LoadCouponModal from '@/components/LoadCouponModal';
+import DeliveryFormModal from '@/components/DeliveryFormModal';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Search, Filter, Download } from 'lucide-react';
@@ -59,6 +60,7 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
+  const [isDeliveryFormOpen, setIsDeliveryFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Tech products data - Prix super attractifs !
@@ -208,10 +210,15 @@ const Home = () => {
   };
 
   const handlePurchase = () => {
+    setIsDeliveryFormOpen(true);
+  };
+
+  const handleDeliverySubmit = (data: { address: string; phone: string }) => {
     toast({
       title: "Commande confirmée !",
-      description: "Votre commande a été traitée avec succès",
+      description: "Votre commande a été traitée avec succès. Livraison gratuite incluse !",
     });
+    setIsDeliveryFormOpen(false);
     clearCoupon();
     setIsCouponOpen(false);
   };
@@ -332,6 +339,14 @@ const Home = () => {
         isOpen={isLoadCouponOpen}
         onClose={() => setIsLoadCouponOpen(false)}
         onLoadCoupon={handleLoadCoupon}
+      />
+
+      {/* Delivery Form Modal */}
+      <DeliveryFormModal
+        isOpen={isDeliveryFormOpen}
+        onClose={() => setIsDeliveryFormOpen(false)}
+        onSubmit={handleDeliverySubmit}
+        total={couponItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
       />
     </div>
   );
