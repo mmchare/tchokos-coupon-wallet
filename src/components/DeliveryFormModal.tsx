@@ -21,11 +21,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone } from 'lucide-react';
 
+const FREE_DELIVERY_CITIES = ['Douala', 'Yaoundé', 'Koutaba', 'Foumban', 'Foumbot'];
+
 const deliveryFormSchema = z.object({
+  city: z.string()
+    .trim()
+    .min(1, { message: "Veuillez sélectionner ou saisir votre ville" }),
   address: z.string()
     .trim()
-    .min(10, { message: "L'adresse doit contenir au moins 10 caractères" })
-    .max(200, { message: "L'adresse ne peut pas dépasser 200 caractères" }),
+    .min(10, { message: "La description doit contenir au moins 10 caractères" })
+    .max(500, { message: "La description ne peut pas dépasser 500 caractères" }),
   phone: z.string()
     .trim()
     .min(9, { message: "Le numéro de téléphone doit contenir au moins 9 chiffres" })
@@ -46,10 +51,14 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
   const form = useForm<DeliveryFormValues>({
     resolver: zodResolver(deliveryFormSchema),
     defaultValues: {
+      city: '',
       address: '',
       phone: '',
     },
   });
+
+  const selectedCity = form.watch('city');
+  const isFreeDelivery = FREE_DELIVERY_CITIES.includes(selectedCity);
 
   const handleSubmit = (data: DeliveryFormValues) => {
     onSubmit(data);
@@ -70,7 +79,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
             Informations de livraison
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Livraison gratuite à Douala, Yaoundé, Koutaba, Foumban et Foumbot. Pour les autres villes/pays, vous serez contacté via WhatsApp pour convenir des frais de livraison.
+            Remplissez les informations de livraison pour finaliser votre commande
           </DialogDescription>
         </DialogHeader>
 
@@ -80,8 +89,48 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
             <p className="text-2xl font-bold text-accent">{total.toLocaleString()} F</p>
           </div>
 
+          {selectedCity && (
+            <div className={`rounded-lg p-3 mb-4 border ${
+              isFreeDelivery 
+                ? 'bg-green-500/10 border-green-500/20' 
+                : 'bg-orange-500/10 border-orange-500/20'
+            }`}>
+              <p className="text-sm font-medium">
+                {isFreeDelivery ? (
+                  <span className="text-green-600 dark:text-green-400">
+                    ✓ Livraison gratuite pour {selectedCity}
+                  </span>
+                ) : (
+                  <span className="text-orange-600 dark:text-orange-400">
+                    ℹ️ Vous serez contacté via WhatsApp pour convenir des frais de livraison
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Ville de livraison</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ex: Douala, Yaoundé, Koutaba..."
+                        className="bg-background border-input text-foreground"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Livraison gratuite: Douala, Yaoundé, Koutaba, Foumban, Foumbot
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="address"
