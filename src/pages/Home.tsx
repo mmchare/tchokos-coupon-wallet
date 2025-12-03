@@ -56,7 +56,6 @@ interface CouponItem {
 const Home = () => {
   const { toast } = useToast();
   const { couponItems, addToCoupon, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
-  const [walletBalance] = useState(125000);
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
@@ -233,11 +232,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        walletBalance={walletBalance}
-        couponItems={couponItems.length}
-        onMenuClick={() => {}}
-      />
+      <Header onMenuClick={() => {}} />
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Hero Section */}
