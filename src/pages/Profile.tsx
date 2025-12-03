@@ -1,48 +1,134 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Mail, Phone, MapPin, Edit2, CreditCard, ShoppingBag, LogOut } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, ShoppingBag, LogOut, Gift, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile, signOut, loading, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [referralCount, setReferralCount] = useState(0);
   
-  // Données mockées de l'utilisateur
-  const [userData, setUserData] = useState({
-    name: 'Jean Tchoko',
-    email: 'jean.tchoko@example.cm',
-    phone: '+237 6XX XXX XXX',
-    address: 'Douala, Cameroun',
-    walletBalance: 125000,
-    totalOrders: 12,
-    memberSince: 'Janvier 2024'
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone: '',
+    address: ''
   });
 
-  const orderHistory = [
-    { id: '1', date: '15 Mars 2024', items: 3, total: 85000, status: 'Livré' },
-    { id: '2', date: '10 Mars 2024', items: 2, total: 60000, status: 'Livré' },
-    { id: '3', date: '5 Mars 2024', items: 1, total: 45000, status: 'En cours' },
-  ];
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
-  const handleSave = () => {
+  // Load user data
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+        address: ''
+      });
+    }
+  }, [profile]);
+
+  // Fetch referral code
+  useEffect(() => {
+    const fetchReferralCode = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('referral_codes')
+        .select('code')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) {
+        setReferralCode(data.code);
+      }
+
+      // Fetch referral count
+      const { count } = await supabase
+        .from('referrals')
+        .select('*', { count: 'exact', head: true })
+        .eq('referrer_id', user.id);
+      
+      setReferralCount(count || 0);
+    };
+
+    fetchReferralCode();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: formData.full_name,
+        phone: formData.phone
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le profil",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsEditing(false);
+    await refreshProfile();
     toast({
       title: "Profil mis à jour !",
       description: "Vos informations ont été enregistrées",
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     toast({
       title: "Déconnexion",
       description: "À bientôt sur DINA !",
     });
-    setTimeout(() => navigate('/auth'), 1000);
+    navigate('/auth');
   };
+
+  const copyReferralCode = () => {
+    if (referralCode) {
+      navigator.clipboard.writeText(referralCode);
+      setCopied(true);
+      toast({
+        title: "Code copié !",
+        description: "Partagez-le avec vos amis",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  const memberSince = new Date(profile.created_at).toLocaleDateString('fr-FR', {
+    month: 'long',
+    year: 'numeric'
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,14 +137,14 @@ const Profile = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <h1 className="text-2xl font-bold text-foreground">Mon Profil</h1>
             </div>
             <Button
@@ -75,6 +161,39 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
+          {/* Code d'affiliation */}
+          <Card className="bg-gradient-to-r from-accent/20 to-cyan-500/20 border-accent/50">
+            <CardHeader>
+              <CardTitle className="text-foreground flex items-center">
+                <Gift className="h-5 w-5 mr-2 text-accent" />
+                Mon Code d'Affiliation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold text-accent tracking-widest">
+                    {referralCode || 'Chargement...'}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {referralCount} personne(s) ont utilisé votre code
+                  </p>
+                </div>
+                <Button
+                  onClick={copyReferralCode}
+                  variant="outline"
+                  className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                  {copied ? 'Copié !' : 'Copier'}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Partagez ce code avec vos amis. Ils peuvent l'entrer lors de leur inscription pour rejoindre votre réseau.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Informations personnelles */}
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -96,21 +215,8 @@ const Profile = () => {
                   Nom complet
                 </label>
                 <Input
-                  value={userData.name}
-                  onChange={(e) => setUserData({...userData, name: e.target.value})}
-                  disabled={!isEditing}
-                  className="bg-input border-border text-foreground"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Email
-                </label>
-                <Input
-                  value={userData.email}
-                  onChange={(e) => setUserData({...userData, email: e.target.value})}
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                   disabled={!isEditing}
                   className="bg-input border-border text-foreground"
                 />
@@ -122,8 +228,8 @@ const Profile = () => {
                   Téléphone
                 </label>
                 <Input
-                  value={userData.phone}
-                  onChange={(e) => setUserData({...userData, phone: e.target.value})}
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   disabled={!isEditing}
                   className="bg-input border-border text-foreground"
                 />
@@ -132,12 +238,13 @@ const Profile = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center">
                   <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Adresse
+                  Adresse de livraison
                 </label>
                 <Input
-                  value={userData.address}
-                  onChange={(e) => setUserData({...userData, address: e.target.value})}
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
                   disabled={!isEditing}
+                  placeholder="Entrez votre adresse"
                   className="bg-input border-border text-foreground"
                 />
               </div>
@@ -151,7 +258,7 @@ const Profile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/80 text-sm">Solde du portefeuille</p>
-                    <p className="text-2xl font-bold">{userData.walletBalance.toLocaleString()} F</p>
+                    <p className="text-2xl font-bold">{profile.wallet_balance.toLocaleString()} F</p>
                   </div>
                   <CreditCard className="h-8 w-8 opacity-80" />
                 </div>
@@ -169,10 +276,10 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm">Commandes</p>
-                    <p className="text-2xl font-bold text-foreground">{userData.totalOrders}</p>
+                    <p className="text-muted-foreground text-sm">Filleuls</p>
+                    <p className="text-2xl font-bold text-foreground">{referralCount}</p>
                   </div>
-                  <ShoppingBag className="h-8 w-8 text-accent" />
+                  <Gift className="h-8 w-8 text-accent" />
                 </div>
               </CardContent>
             </Card>
@@ -182,46 +289,13 @@ const Profile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm">Membre depuis</p>
-                    <p className="text-xl font-bold text-foreground">{userData.memberSince}</p>
+                    <p className="text-xl font-bold text-foreground capitalize">{memberSince}</p>
                   </div>
                   <User className="h-8 w-8 text-accent" />
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Historique des commandes */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Historique des commandes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {orderHistory.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border hover:border-accent transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-semibold text-foreground">Commande #{order.id}</p>
-                      <p className="text-sm text-muted-foreground">{order.date}</p>
-                      <p className="text-sm text-muted-foreground">{order.items} article(s)</p>
-                    </div>
-                    <div className="text-right space-y-1">
-                      <p className="font-bold text-foreground">{order.total.toLocaleString()} F</p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        order.status === 'Livré' 
-                          ? 'bg-green-500/10 text-green-500' 
-                          : 'bg-yellow-500/10 text-yellow-500'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
