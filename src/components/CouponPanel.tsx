@@ -35,10 +35,9 @@ const CouponPanel = ({
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleGenerateCode = () => {
-    const code = `TCH${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const code = `PINB${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
     setCouponCode(code);
     
-    // Sauvegarder le coupon dans le localStorage pour partage
     const couponData = {
       code,
       items,
@@ -78,7 +77,7 @@ const CouponPanel = ({
     <Card className="p-3 sm:p-6 animate-slide-up">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-bold text-foreground">Mon Coupon</h2>
-        <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs sm:text-sm">
+        <Badge variant="secondary" className="bg-pinbaoo-yellow text-pinbaoo-dark text-xs sm:text-sm">
           {items.length} article{items.length > 1 ? 's' : ''}
         </Badge>
       </div>
@@ -134,24 +133,24 @@ const CouponPanel = ({
       {/* Total */}
       <div className="flex justify-between items-center mb-4 sm:mb-6">
         <span className="text-base sm:text-lg font-semibold text-foreground">Total:</span>
-        <span className="text-lg sm:text-2xl font-bold text-accent">
+        <span className="text-lg sm:text-2xl font-bold text-pinbaoo-yellow">
           {total.toLocaleString()} F
         </span>
       </div>
 
       {/* Code Section */}
       {couponCode && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-accent/20">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-pinbaoo-yellow/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Code Coupon:</p>
-              <p className="font-mono text-accent font-bold text-sm sm:text-base">{couponCode}</p>
+              <p className="font-mono text-pinbaoo-yellow font-bold text-sm sm:text-base">{couponCode}</p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleShareCode}
-              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              className="border-pinbaoo-green text-pinbaoo-green hover:bg-pinbaoo-green hover:text-white"
             >
               <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
@@ -163,7 +162,7 @@ const CouponPanel = ({
       <div className="space-y-2 sm:space-y-3">
         <Button 
           onClick={onPurchase}
-          className="coupon-button w-full text-sm sm:text-base"
+          className="buy-button w-full text-sm sm:text-base"
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           Acheter Maintenant
@@ -172,7 +171,7 @@ const CouponPanel = ({
         <Button 
           onClick={handleGenerateCode}
           variant="outline"
-          className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground text-sm sm:text-base"
+          className="w-full border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-sm sm:text-base"
         >
           <Code className="h-4 w-4 mr-2" />
           Générer Code de Partage

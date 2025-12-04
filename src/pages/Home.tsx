@@ -1,20 +1,9 @@
 /**
- * MODIFICATION: Utilisation du contexte coupon dans Home
- *
- * Ligne 11: Import de useCoupon pour accéder au contexte du coupon
- * Ligne 39: Récupération de toutes les fonctions du coupon depuis le contexte
- *   - couponItems: Liste des produits dans le coupon
- *   - addToCoupon: Ajouter un produit
- *   - removeFromCoupon: Supprimer un produit
- *   - updateQuantity: Modifier la quantité
- *   - clearCoupon: Vider le coupon
- *   - loadCoupon: Charger un coupon depuis un code
- *
- * Le state local couponItems a été supprimé car il est maintenant géré
- * par le contexte global, ce qui permet de le partager avec ProductDetail
+ * Home page - PINBAOO E-commerce
+ * Tech gadgets marketplace with coupon system
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import CouponPanel from '@/components/CouponPanel';
@@ -23,7 +12,7 @@ import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Search, Filter, Download } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 
@@ -215,7 +204,7 @@ const Home = () => {
   const handleDeliverySubmit = (data: { address: string; phone: string }) => {
     toast({
       title: "Commande confirmée !",
-      description: "Votre commande a été traitée avec succès. Livraison gratuite incluse !",
+      description: "Votre commande a été traitée. Livraison gratuite sous 10-14 jours !",
     });
     setIsDeliveryFormOpen(false);
     clearCoupon();
@@ -239,10 +228,13 @@ const Home = () => {
         <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
-            <span className="text-gradient">DINA</span>
+            <span className="text-pinbaoo-yellow">PINBAOO</span>
           </h1>
-          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables, batteries et accessoires. 
+          <p className="text-xs sm:text-base text-muted-foreground mb-2 max-w-xl mx-auto px-4">
+            L'assurance d'un achat vérifié en Chine
+          </p>
+          <p className="text-sm sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
+            Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables et accessoires. 
             Ajoutez vos produits favoris à votre coupon personnalisé.
           </p>
           
@@ -254,7 +246,7 @@ const Home = () => {
               placeholder="Rechercher un produit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-accent text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-pinbaoo-yellow text-sm sm:text-base"
             />
           </div>
         </section>
@@ -278,14 +270,14 @@ const Home = () => {
                   <Button 
                     variant="outline"
                     size="sm"
-                    className="border-accent text-accent hover:bg-accent hover:text-white text-xs sm:text-sm flex-1 sm:flex-none"
+                    className="border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     <span className="hidden sm:inline">Mon </span>Coupon ({couponItems.length})
                   </Button>
                 </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md bg-background border-border">
                 <SheetHeader>
-                  <SheetTitle className="text-foreground">Mon Coupon DINA</SheetTitle>
+                  <SheetTitle className="text-foreground">Mon Coupon PINBAOO</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <CouponPanel

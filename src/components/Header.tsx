@@ -38,10 +38,10 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               <Menu className="h-4 w-4" />
             </Button>
             <h1 
-              className="text-lg sm:text-2xl font-bold text-foreground tracking-wider cursor-pointer"
+              className="text-lg sm:text-2xl font-bold text-pinbaoo-yellow tracking-wider cursor-pointer"
               onClick={() => navigate('/')}
             >
-              DINA
+              PINBAOO
             </h1>
           </div>
 
@@ -61,7 +61,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               variant="outline"
               size="sm"
               onClick={() => navigate('/auth')}
-              className="text-xs sm:text-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              className="text-xs sm:text-sm border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark"
             >
               <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Connexion</span>
@@ -75,12 +75,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               variant="outline"
               size="sm"
               onClick={() => setIsCouponOpen(true)}
-              className="relative bg-transparent border-accent text-accent hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm px-2 sm:px-3"
+              className="relative bg-transparent border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-xs sm:text-sm px-2 sm:px-3"
             >
               <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
               <span className="hidden sm:inline">Mon Coupon</span>
               {items.length > 0 && (
-                <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-accent text-accent-foreground text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-pinbaoo-green text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                   {items.length}
                 </span>
               )}

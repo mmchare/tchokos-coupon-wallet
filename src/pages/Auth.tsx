@@ -39,7 +39,7 @@ const Auth = () => {
   // Generate email from phone number (for internal auth)
   const phoneToEmail = (phone: string) => {
     const cleanPhone = phone.replace(/\D/g, '');
-    return `${cleanPhone}@dina.app`;
+    return `${cleanPhone}@pinbaoo.app`;
   };
 
   const handleSignUp = async () => {
@@ -87,7 +87,7 @@ const Auth = () => {
 
       toast({
         title: "Compte créé !",
-        description: "Bienvenue sur DINA",
+        description: "Bienvenue sur PINBAOO",
       });
       navigate('/');
     } catch (err) {
@@ -137,7 +137,7 @@ const Auth = () => {
 
     toast({
       title: "Connexion réussie !",
-      description: "Bienvenue sur DINA",
+      description: "Bienvenue sur PINBAOO",
     });
     setIsLoading(false);
     navigate('/');
@@ -146,7 +146,7 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-pinbaoo-yellow border-t-transparent"></div>
       </div>
     );
   }
@@ -156,8 +156,11 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="dina-logo text-5xl mb-4">DINA</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="pinbaoo-logo text-5xl mb-2">PINBAOO</h1>
+          <p className="text-muted-foreground text-sm mb-4">
+            L'assurance d'un achat vérifié en Chine
+          </p>
+          <p className="text-foreground text-lg font-medium">
             {isSignUp ? 'Créez votre compte' : 'Connectez-vous'}
           </p>
         </div>
@@ -232,13 +235,13 @@ const Auth = () => {
               /* Affiliation Code Input */
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Code d'affiliation <span className="text-muted-foreground">(optionnel)</span>
+                  Code de parrainage <span className="text-muted-foreground">(optionnel)</span>
                 </label>
                 <div className="relative">
                   <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                   <Input
                     type="text"
-                    placeholder="Ex: DINA2024"
+                    placeholder="Ex: PINB2024"
                     value={affiliationCode}
                     onChange={(e) => setAffiliationCode(e.target.value.toUpperCase())}
                     maxLength={8}
@@ -254,7 +257,7 @@ const Auth = () => {
             <Button 
               onClick={isSignUp ? handleSignUp : handleSignIn}
               disabled={isLoading}
-              className="coupon-button w-full"
+              className="buy-button w-full"
             >
               {isLoading ? (
                 <>
@@ -279,7 +282,7 @@ const Auth = () => {
             <Button 
               onClick={() => setIsSignUp(!isSignUp)}
               variant="outline"
-              className="w-full"
+              className="w-full border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark"
             >
               {isSignUp ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire"}
             </Button>
@@ -290,9 +293,9 @@ const Auth = () => {
         <div className="text-center mt-8 text-muted-foreground text-sm">
           <p>En vous inscrivant, vous acceptez nos</p>
           <p>
-            <span className="text-accent hover:underline cursor-pointer">Conditions d'utilisation</span>
+            <span className="text-pinbaoo-yellow hover:underline cursor-pointer">Conditions d'utilisation</span>
             {' '} et {' '}
-            <span className="text-accent hover:underline cursor-pointer">Politique de confidentialité</span>
+            <span className="text-pinbaoo-yellow hover:underline cursor-pointer">Politique de confidentialité</span>
           </p>
         </div>
       </div>

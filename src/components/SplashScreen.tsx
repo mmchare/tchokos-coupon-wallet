@@ -10,7 +10,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onComplete, 300); // Wait for fade animation
+      setTimeout(onComplete, 300);
     }, 2500);
 
     return () => clearTimeout(timer);
@@ -20,9 +20,12 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
   return (
     <div className="splash-container">
-      <div className="animate-bounce-in">
-        <h1 className="dina-logo">DINA</h1>
-        <div className="mt-4 h-1 w-24 mx-auto bg-gradient-to-r from-accent to-cyan-500 rounded-full animate-pulse"></div>
+      <div className="animate-bounce-in text-center">
+        <h1 className="pinbaoo-logo text-5xl sm:text-6xl mb-3">PINBAOO</h1>
+        <p className="text-white/80 text-sm sm:text-base font-medium tracking-wide">
+          L'assurance d'un achat vérifié en Chine
+        </p>
+        <div className="mt-6 h-1 w-32 mx-auto bg-gradient-to-r from-pinbaoo-yellow to-pinbaoo-green rounded-full animate-pulse"></div>
       </div>
     </div>
   );

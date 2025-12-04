@@ -39,14 +39,19 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        dina: {
-          primary: "hsl(var(--dina-primary))",
-          accent: "hsl(var(--dina-accent))",
-          secondary: "hsl(var(--dina-secondary))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        pinbaoo: {
+          yellow: "hsl(var(--pinbaoo-yellow))",
+          green: "hsl(var(--pinbaoo-green))",
+          dark: "hsl(var(--pinbaoo-dark))",
         },
         wallet: {
           balance: "hsl(var(--wallet-balance))",
         },
+        whatsapp: "hsl(var(--whatsapp))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, ShoppingBag, LogOut, Gift, Copy, Check } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -100,7 +100,7 @@ const Profile = () => {
     await signOut();
     toast({
       title: "Déconnexion",
-      description: "À bientôt sur DINA !",
+      description: "À bientôt sur PINBAOO !",
     });
     navigate('/auth');
   };
@@ -120,7 +120,7 @@ const Profile = () => {
   if (loading || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-pinbaoo-yellow border-t-transparent"></div>
       </div>
     );
   }
@@ -161,18 +161,18 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
-          {/* Code d'affiliation */}
-          <Card className="bg-gradient-to-r from-accent/20 to-cyan-500/20 border-accent/50">
+          {/* Code de parrainage */}
+          <Card className="bg-gradient-to-r from-pinbaoo-yellow/20 to-pinbaoo-green/20 border-pinbaoo-yellow/50">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center">
-                <Gift className="h-5 w-5 mr-2 text-accent" />
-                Mon Code d'Affiliation
+                <Gift className="h-5 w-5 mr-2 text-pinbaoo-yellow" />
+                Mon Code de Parrainage
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-accent tracking-widest">
+                  <p className="text-3xl font-bold text-pinbaoo-yellow tracking-widest">
                     {referralCode || 'Chargement...'}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -182,7 +182,7 @@ const Profile = () => {
                 <Button
                   onClick={copyReferralCode}
                   variant="outline"
-                  className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                  className="border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark"
                 >
                   {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                   {copied ? 'Copié !' : 'Copier'}
@@ -202,7 +202,7 @@ const Profile = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                className="text-accent hover:bg-accent/10"
+                className="text-pinbaoo-yellow hover:bg-pinbaoo-yellow/10"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
                 {isEditing ? 'Enregistrer' : 'Modifier'}
@@ -253,7 +253,7 @@ const Profile = () => {
 
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-green-600 to-green-500 border-0 text-white">
+            <Card className="bg-gradient-to-br from-pinbaoo-green to-emerald-500 border-0 text-white">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -279,7 +279,7 @@ const Profile = () => {
                     <p className="text-muted-foreground text-sm">Filleuls</p>
                     <p className="text-2xl font-bold text-foreground">{referralCount}</p>
                   </div>
-                  <Gift className="h-8 w-8 text-accent" />
+                  <Gift className="h-8 w-8 text-pinbaoo-yellow" />
                 </div>
               </CardContent>
             </Card>
@@ -291,7 +291,7 @@ const Profile = () => {
                     <p className="text-muted-foreground text-sm">Membre depuis</p>
                     <p className="text-xl font-bold text-foreground capitalize">{memberSince}</p>
                   </div>
-                  <User className="h-8 w-8 text-accent" />
+                  <User className="h-8 w-8 text-pinbaoo-yellow" />
                 </div>
               </CardContent>
             </Card>
