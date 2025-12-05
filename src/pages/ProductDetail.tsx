@@ -1,22 +1,14 @@
-/**
- * MODIFICATION: Utilisation du contexte coupon dans ProductDetail
- *
- * Ligne 10: Import de useCoupon pour accéder au contexte du coupon
- * Ligne 43: Récupération de la fonction addToCoupon depuis le contexte
- * Lignes 110-115: Appel de addToCoupon pour ajouter le produit au coupon global
- */
-
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Star, Plus, Send, Smile } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
+import ProductImageGallery from '@/components/ProductImageGallery';
 
 // Import product images
 import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
@@ -41,9 +33,12 @@ interface Product {
   originalPrice?: number;
   category: string;
   rating: number;
-  image: string;
+  images: string[];
+  videoUrl?: string;
   description: string;
   reviews: Review[];
+  isVerified: boolean;
+  isUniqueStock: boolean;
 }
 
 const ProductDetail = () => {
@@ -55,7 +50,7 @@ const ProductDetail = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
 
-  // Mock products data
+  // Mock products data with multiple images
   const products: Product[] = [
     {
       id: '1',
@@ -64,12 +59,15 @@ const ProductDetail = () => {
       originalPrice: 850000,
       category: 'Smartphones',
       rating: 4.9,
-      image: iphoneImg,
+      images: [iphoneImg, samsungImg, macbookImg, ipadImg, powerbankImg],
+      videoUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4',
       description: 'Le dernier iPhone avec puce A17 Pro, écran Super Retina XDR 6.7", appareil photo 48MP et châssis en titane. Disponible en plusieurs couleurs.',
       reviews: [
         { id: '1', userName: 'Yves M.', rating: 5, comment: 'Incroyable performance ! Meilleur iPhone 📱✨', date: '2024-03-20' },
         { id: '2', userName: 'Claire D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 🔥', date: '2024-03-18' },
-      ]
+      ],
+      isVerified: true,
+      isUniqueStock: true,
     },
     {
       id: '2',
@@ -78,11 +76,13 @@ const ProductDetail = () => {
       originalPrice: 900000,
       category: 'Smartphones',
       rating: 4.8,
-      image: samsungImg,
+      images: [samsungImg, iphoneImg, macbookImg],
       description: 'Smartphone premium avec Snapdragon 8 Gen 3, écran AMOLED 6.8", S Pen intégré et batterie 5000mAh. Performance exceptionnelle.',
       reviews: [
         { id: '1', userName: 'Patrick L.', rating: 5, comment: 'Le meilleur Android du marché ! 🚀', date: '2024-03-19' },
-      ]
+      ],
+      isVerified: true,
+      isUniqueStock: true,
     },
     {
       id: '3',
@@ -91,12 +91,14 @@ const ProductDetail = () => {
       originalPrice: 1250000,
       category: 'Ordinateurs',
       rating: 4.9,
-      image: macbookImg,
+      images: [macbookImg, ipadImg, iphoneImg, samsungImg],
       description: 'MacBook Pro 14" avec puce M3, 16GB RAM, 512GB SSD. Performances incroyables pour les professionnels créatifs.',
       reviews: [
         { id: '1', userName: 'Sophie K.', rating: 5, comment: 'Puissance incroyable ! Parfait pour le montage 💻✨', date: '2024-03-17' },
         { id: '2', userName: 'Marc B.', rating: 5, comment: 'Excellent rapport qualité-prix ! 👌', date: '2024-03-15' },
-      ]
+      ],
+      isVerified: true,
+      isUniqueStock: false,
     },
     {
       id: '4',
@@ -105,11 +107,13 @@ const ProductDetail = () => {
       originalPrice: 650000,
       category: 'Tablettes',
       rating: 4.7,
-      image: ipadImg,
+      images: [ipadImg, macbookImg, iphoneImg],
       description: 'iPad Air 11" avec puce M2, écran Liquid Retina, compatible Apple Pencil. Parfait pour le travail et le divertissement.',
       reviews: [
         { id: '1', userName: 'Marie T.', rating: 5, comment: 'Parfait pour dessiner et travailler ! 🎨', date: '2024-03-16' },
-      ]
+      ],
+      isVerified: true,
+      isUniqueStock: true,
     },
     {
       id: '5',
@@ -118,11 +122,13 @@ const ProductDetail = () => {
       originalPrice: 35000,
       category: 'Accessoires',
       rating: 4.6,
-      image: powerbankImg,
+      images: [powerbankImg, ringLightImg],
       description: 'Powerbank haute capacité avec charge rapide 65W, 3 ports USB. Idéal pour recharger tous vos appareils.',
       reviews: [
         { id: '1', userName: 'Jean P.', rating: 5, comment: 'Excellent produit, charge super rapide ! ⚡', date: '2024-03-14' },
-      ]
+      ],
+      isVerified: false,
+      isUniqueStock: true,
     },
     {
       id: '6',
@@ -131,11 +137,13 @@ const ProductDetail = () => {
       originalPrice: 55000,
       category: 'Accessoires',
       rating: 4.5,
-      image: ringLightImg,
+      images: [ringLightImg, powerbankImg],
       description: 'Éclairage LED professionnel avec trépied, contrôle de luminosité et température de couleur. Parfait pour photo et vidéo.',
       reviews: [
         { id: '1', userName: 'Laura S.', rating: 5, comment: 'Lumière parfaite pour mes vidéos ! 💡📸', date: '2024-03-13' },
-      ]
+      ],
+      isVerified: true,
+      isUniqueStock: false,
     },
   ];
 
@@ -149,11 +157,18 @@ const ProductDetail = () => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: product.images[0],
     });
     toast({
       title: "Produit ajouté !",
       description: `${product.name} a été ajouté à votre coupon`,
+    });
+  };
+
+  const handleBuyNow = () => {
+    toast({
+      title: "Acheter maintenant",
+      description: "Redirection vers le formulaire de livraison...",
     });
   };
 
@@ -191,7 +206,7 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = `Bonjour DINA, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
+    const message = `Bonjour PINBAOO, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
     const whatsappUrl = `https://wa.me/237690000000?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -217,26 +232,20 @@ const ProductDetail = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="space-y-6">
-          {/* Product Image & Info */}
+          {/* Product Image Gallery & Info */}
           <Card className="bg-card border-border">
             <CardContent className="p-4 sm:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Image */}
-                <div className="relative">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-64 md:h-96 object-cover rounded-lg"
-                  />
-                  {discount > 0 && (
-                    <Badge className="absolute top-2 right-2 bg-accent text-accent-foreground">
-                      -{discount}%
-                    </Badge>
-                  )}
-                  <Badge variant="secondary" className="absolute top-2 left-2 bg-black/80 text-white">
-                    {product.category}
-                  </Badge>
-                </div>
+                {/* Image Gallery */}
+                <ProductImageGallery
+                  images={product.images}
+                  videoUrl={product.videoUrl}
+                  productName={product.name}
+                  category={product.category}
+                  discount={discount}
+                  isVerified={product.isVerified}
+                  isUniqueStock={product.isUniqueStock}
+                />
 
                 {/* Info */}
                 <div className="space-y-4">
@@ -284,6 +293,14 @@ const ProductDetail = () => {
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <Button 
+                      onClick={handleBuyNow}
+                      className="buy-button w-full"
+                    >
+                      <ShoppingBag className="h-5 w-5 mr-2" />
+                      Acheter Maintenant
+                    </Button>
+
+                    <Button 
                       onClick={handleAddToCoupon}
                       className="coupon-button w-full"
                     >
@@ -293,7 +310,7 @@ const ProductDetail = () => {
                     
                     <Button
                       onClick={handleWhatsAppClick}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      className="whatsapp-button w-full justify-center"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
