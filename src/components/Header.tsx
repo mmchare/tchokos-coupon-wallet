@@ -1,4 +1,4 @@
-import { ShoppingBag, User, Menu, Sun, Moon, LogIn } from 'lucide-react';
+import { ShoppingBag, User, Menu, Sun, Moon, LogIn, Wallet, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
@@ -45,17 +45,26 @@ const Header = ({ onMenuClick }: HeaderProps) => {
             </h1>
           </div>
 
-          {/* Wallet Balance - Mobile Optimized */}
+          {/* Wallet Balance - 1xbet Style */}
           {user ? (
-            <button 
-              onClick={() => navigate('/recharge')}
-              className="wallet-balance animate-fade-in text-xs sm:text-sm hover:scale-105 transition-transform"
-            >
-              <span className="hidden sm:inline opacity-90">Solde:</span>
-              <span className="sm:ml-2 font-bold">
-                {walletBalance.toLocaleString()} F
-              </span>
-            </button>
+            <div className="flex items-center gap-1 sm:gap-2 animate-fade-in">
+              <button 
+                onClick={() => navigate('/recharge')}
+                className="flex items-center gap-1 sm:gap-2 bg-pinbaoo-green/90 hover:bg-pinbaoo-green text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 shadow-lg"
+              >
+                <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="font-bold text-xs sm:text-sm">
+                  {walletBalance.toLocaleString()} F
+                </span>
+              </button>
+              <button
+                onClick={() => navigate('/recharge')}
+                className="flex items-center justify-center bg-pinbaoo-yellow hover:bg-pinbaoo-yellow/90 text-pinbaoo-dark p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
+                title="Recharger"
+              >
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
+              </button>
+            </div>
           ) : (
             <Button 
               variant="outline"
