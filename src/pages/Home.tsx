@@ -10,6 +10,7 @@ import CouponPanel from '@/components/CouponPanel';
 import CategoryFilter from '@/components/CategoryFilter';
 import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
+import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Search, Download } from 'lucide-react';
@@ -49,6 +50,8 @@ const Home = () => {
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [isDeliveryFormOpen, setIsDeliveryFormOpen] = useState(false);
+  const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
+  const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Tech products data - Prix super attractifs !
@@ -202,13 +205,21 @@ const Home = () => {
   };
 
   const handleDeliverySubmit = (data: { address: string; phone: string }) => {
-    toast({
-      title: "Commande confirmée !",
-      description: "Votre commande a été traitée. Livraison gratuite sous 10-14 jours !",
-    });
+    // Get the names of products being purchased
+    const productNames = couponItems.length === 1 
+      ? couponItems[0].name 
+      : `${couponItems.length} articles`;
+    
+    setPurchasedProductName(productNames);
     setIsDeliveryFormOpen(false);
-    clearCoupon();
     setIsCouponOpen(false);
+    setShowPurchaseConfirmation(true);
+    clearCoupon();
+  };
+
+  const handleCloseConfirmation = () => {
+    setShowPurchaseConfirmation(false);
+    setPurchasedProductName('');
   };
 
   const handleGenerateCode = () => {
@@ -335,6 +346,18 @@ const Home = () => {
         onSubmit={handleDeliverySubmit}
         total={couponItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
       />
+
+      {/* Purchase Confirmation Modal */}
+      {showPurchaseConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card rounded-xl shadow-xl border border-border">
+            <PurchaseConfirmation 
+              productName={purchasedProductName}
+              onClose={handleCloseConfirmation}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

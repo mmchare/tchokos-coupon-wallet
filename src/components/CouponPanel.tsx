@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Share2, Minus, Plus, ShoppingCart, Code } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Code, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CouponItem {
@@ -30,7 +31,32 @@ const CouponPanel = ({
   onGenerateCode 
 }: CouponPanelProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState<string | null>(null);
+
+  const handleProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!couponCode) {
+      toast({
+        title: "Code requis",
+        description: "Générez d'abord un code de partage",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const message = encodeURIComponent(
+      `🛒 Découvrez ma sélection PINBAOO !\n\n` +
+      `📋 Code coupon : ${couponCode}\n\n` +
+      `Chargez ce code sur PINBAOO pour voir les produits !\n` +
+      `👉 L'assurance d'un achat vérifié en Chine`
+    );
+    
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -52,15 +78,6 @@ const CouponPanel = ({
     });
   };
 
-  const handleShareCode = () => {
-    if (couponCode) {
-      navigator.clipboard.writeText(couponCode);
-      toast({
-        title: "Code copié !",
-        description: "Le code a été copié dans le presse-papiers",
-      });
-    }
-  };
 
   if (items.length === 0) {
     return (
@@ -89,10 +106,14 @@ const CouponPanel = ({
             <img 
               src={item.image} 
               alt={item.name}
-              className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
+              className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => handleProductClick(item.id)}
             />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-foreground text-xs sm:text-sm truncate">{item.name}</h4>
+            <div 
+              className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => handleProductClick(item.id)}
+            >
+              <h4 className="font-medium text-foreground text-xs sm:text-sm truncate hover:text-pinbaoo-yellow transition-colors">{item.name}</h4>
               <p className="text-muted-foreground text-xs">
                 {item.price.toLocaleString()} F × {item.quantity}
               </p>
@@ -141,18 +162,17 @@ const CouponPanel = ({
       {/* Code Section */}
       {couponCode && (
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-pinbaoo-yellow/20">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Code Coupon:</p>
               <p className="font-mono text-pinbaoo-yellow font-bold text-sm sm:text-base">{couponCode}</p>
             </div>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareCode}
-              className="border-pinbaoo-green text-pinbaoo-green hover:bg-pinbaoo-green hover:text-white"
+              onClick={handleWhatsAppShare}
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
             >
-              <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Partager sur WhatsApp
             </Button>
           </div>
         </div>
