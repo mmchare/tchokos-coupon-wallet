@@ -8,6 +8,7 @@ import { useCoupon } from '@/contexts/CouponContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CouponPanel from '@/components/CouponPanel';
 import { useToast } from '@/hooks/use-toast';
+import { formatBalance } from '@/lib/formatBalance';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -54,7 +55,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               >
                 <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="font-bold text-xs sm:text-sm">
-                  {walletBalance.toLocaleString()} F
+                  {formatBalance(walletBalance)}
                 </span>
               </button>
               <button
