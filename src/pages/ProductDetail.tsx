@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
+import SimilarProducts from '@/components/SimilarProducts';
 
 // Import product images
 import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
@@ -341,7 +342,13 @@ const ProductDetail = () => {
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground">{review.userName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground">{review.userName}</span>
+                            <span className="verified-badge text-xs">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Client Vérifié
+                            </span>
+                          </div>
                           <span className="text-sm text-muted-foreground">
                             {new Date(review.date).toLocaleDateString('fr-FR')}
                           </span>
@@ -429,6 +436,20 @@ const ProductDetail = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Similar Products Section */}
+          <SimilarProducts
+            currentProductId={product.id}
+            products={products.map(p => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: p.images[0],
+              rating: p.rating,
+              isVerified: p.isVerified,
+            }))}
+          />
         </div>
       </main>
     </div>
