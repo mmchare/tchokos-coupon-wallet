@@ -189,7 +189,7 @@ const Profile = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Partagez ce code avec vos amis. Ils peuvent l'entrer lors de leur inscription pour rejoindre votre réseau.
+                Partage ton code PINBAOO et gagne <span className="text-pinbaoo-yellow font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-pinbaoo-green font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
               </p>
             </CardContent>
           </Card>

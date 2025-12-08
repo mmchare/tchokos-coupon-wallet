@@ -187,7 +187,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total }: DeliveryFormMod
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+                  className="flex-1 bg-pinbaoo-green text-white hover:bg-pinbaoo-green/90"
                 >
                   Valider la commande
                 </Button>
