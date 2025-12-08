@@ -85,7 +85,7 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
             <Input
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-              placeholder="TCH..."
+              placeholder="PIN..."
               className="bg-input border-border text-foreground text-sm sm:text-base"
               maxLength={12}
             />
