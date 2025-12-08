@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ const Profile = () => {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -41,11 +42,12 @@ const Profile = () => {
     }
   }, [profile]);
 
-  // Fetch referral code
+  // Fetch referral code and admin status
   useEffect(() => {
-    const fetchReferralCode = async () => {
+    const fetchUserData = async () => {
       if (!user) return;
       
+      // Fetch referral code
       const { data } = await supabase
         .from('referral_codes')
         .select('code')
@@ -63,9 +65,13 @@ const Profile = () => {
         .eq('referrer_id', user.id);
       
       setReferralCount(count || 0);
+
+      // Check admin status using the secure database function
+      const { data: adminCheck } = await supabase.rpc('is_admin');
+      setIsAdmin(adminCheck === true);
     };
 
-    fetchReferralCode();
+    fetchUserData();
   }, [user]);
 
   const handleSave = async () => {
@@ -296,6 +302,19 @@ const Profile = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Admin Access - Only visible for admins */}
+          {isAdmin && (
+            <div className="pt-8 border-t border-border">
+              <button
+                onClick={() => window.open('https://dashboard.pinbaoo.cm/login', '_blank')}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                <Lock className="h-4 w-4" />
+                <span>Accès Admin</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
