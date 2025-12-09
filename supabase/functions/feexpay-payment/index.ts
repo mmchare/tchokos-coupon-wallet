@@ -110,7 +110,12 @@ serve(async (req: Request) => {
 
     console.log('Calling Feexpay API with:', { ...feexpayPayload, token: '***' });
 
-    const feexpayResponse = await fetch('https://api.feexpay.me/api/transactions/mobile-money', {
+    // Utiliser l'API de test Feexpay (sandbox)
+    const FEEXPAY_API_URL = 'https://api.sandbox.feexpay.me/api/transactions/mobile-money';
+    
+    console.log('Using Feexpay SANDBOX API:', FEEXPAY_API_URL);
+    
+    const feexpayResponse = await fetch(FEEXPAY_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
