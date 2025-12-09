@@ -125,7 +125,7 @@ const ProductImageGallery = ({
           {isVerified && (
             <div className="verified-badge">
               <CheckCircle className="h-4 w-4" />
-              <span>Vérifié par PINBAOO</span>
+              <span>Vérifié par JinBao</span>
             </div>
           )}
           {isUniqueStock && (
