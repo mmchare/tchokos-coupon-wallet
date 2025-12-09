@@ -43,6 +43,14 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        // JinBao Custom Colors
+        jinbao: {
+          red: "hsl(var(--jinbao-red))",
+          blue: "hsl(var(--jinbao-blue))",
+          silver: "hsl(var(--jinbao-silver))",
+          dark: "hsl(var(--jinbao-dark))",
+        },
+        // Legacy aliases for compatibility
         pinbaoo: {
           yellow: "hsl(var(--pinbaoo-yellow))",
           green: "hsl(var(--pinbaoo-green))",

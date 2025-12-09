@@ -149,8 +149,8 @@ const ProductDetail = () => {
   ];
 
   const product = products.find(p => p.id === id) || products[0];
-  const discount = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
+  const discount = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   const handleAddToCoupon = () => {
@@ -254,11 +254,11 @@ const ProductDetail = () => {
                     <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{product.name}</h2>
                     <div className="flex items-center space-x-2">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
+                        <Star
                           key={i}
                           className={`h-5 w-5 ${
-                            i < Math.floor(product.rating) 
-                              ? 'fill-yellow-400 text-yellow-400' 
+                            i < Math.floor(product.rating)
+                              ? 'fill-yellow-400 text-yellow-400'
                               : 'text-muted'
                           }`}
                         />
@@ -268,6 +268,21 @@ const ProductDetail = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* Verified Badge - Bleu Tech */}
+                  {product.isVerified && (
+                    <div className="verified-badge">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Vérifié par JinBao</span>
+                    </div>
+                  )}
+
+                  {/* Stock Warning - Rouge Tech */}
+                  {product.isUniqueStock && (
+                    <div className="stock-warning">
+                      <span>Stock Chine : Article Unique</span>
+                    </div>
+                  )}
 
                   {/* Price */}
                   <div className="space-y-1">
@@ -293,7 +308,7 @@ const ProductDetail = () => {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <Button 
+                    <Button
                       onClick={handleBuyNow}
                       className="buy-button w-full"
                     >
@@ -301,7 +316,7 @@ const ProductDetail = () => {
                       Acheter Maintenant
                     </Button>
 
-                    <Button 
+                    <Button
                       onClick={handleAddToCoupon}
                       className="coupon-button w-full"
                     >
@@ -346,7 +361,7 @@ const ProductDetail = () => {
                             <span className="font-semibold text-foreground">{review.userName}</span>
                             <span className="verified-badge text-xs">
                               <CheckCircle2 className="h-3 w-3" />
-                              Client Vérifié
+                              Client Vérifié JinBao
                             </span>
                           </div>
                           <span className="text-sm text-muted-foreground">
@@ -355,11 +370,11 @@ const ProductDetail = () => {
                         </div>
                         <div className="flex items-center space-x-1 mb-2">
                           {[...Array(5)].map((_, i) => (
-                            <Star 
+                            <Star
                               key={i}
                               className={`h-4 w-4 ${
-                                i < review.rating 
-                                  ? 'fill-yellow-400 text-yellow-400' 
+                                i < review.rating
+                                  ? 'fill-yellow-400 text-yellow-400'
                                   : 'text-muted'
                               }`}
                             />
@@ -386,10 +401,10 @@ const ProductDetail = () => {
                         onClick={() => setUserRating(star)}
                         className="transition-transform hover:scale-110"
                       >
-                        <Star 
+                        <Star
                           className={`h-6 w-6 cursor-pointer ${
-                            star <= userRating 
-                              ? 'fill-yellow-400 text-yellow-400' 
+                            star <= userRating
+                              ? 'fill-yellow-400 text-yellow-400'
                               : 'text-muted hover:text-yellow-400'
                           }`}
                         />
@@ -426,9 +441,9 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleSubmitComment}
-                  className="coupon-button w-full sm:w-auto"
+                  className="buy-button"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   Publier l'avis
@@ -437,8 +452,8 @@ const ProductDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Similar Products Section */}
-          <SimilarProducts
+          {/* Similar Products */}
+          <SimilarProducts 
             currentProductId={product.id}
             products={products.map(p => ({
               id: p.id,
@@ -447,7 +462,7 @@ const ProductDetail = () => {
               originalPrice: p.originalPrice,
               image: p.images[0],
               rating: p.rating,
-              isVerified: p.isVerified,
+              isVerified: p.isVerified
             }))}
           />
         </div>

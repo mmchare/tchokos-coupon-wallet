@@ -1,22 +1,21 @@
 /**
- * Format wallet balance according to JinBao specifications:
- * - < 1000 FCFA: Show exact amount with "FCAF" suffix
- * - >= 1000 FCFA: Show in "k" format with max 1 decimal (rounded)
+ * Format wallet balance according to JinBao Smart Market V2.0 specifications:
+ * - < 1000 FCAF: Show exact amount with "FCAF" suffix (Gris Argent or Noir color)
+ * - >= 1000 FCAF: Show in "k" format with max 1 decimal (rounded), remove trailing zeros
+ *   Examples: 1500 -> "1.5k", 1555 -> "1.6k", 10000 -> "10k"
  */
-export function formatBalance(amount: number): string {
-  if (amount < 1000) {
-    return `${amount} FCAF`;
+export function formatBalance(balance: number): string {
+  if (balance < 1000) {
+    return `${balance} FCAF`;
   }
   
-  const kValue = amount / 1000;
-  
-  // Round to 1 decimal place
-  const rounded = Math.round(kValue * 10) / 10;
+  const inK = balance / 1000;
+  const rounded = Math.round(inK * 10) / 10;
   
   // Remove trailing zero if it's a whole number
-  if (rounded === Math.floor(rounded)) {
-    return `${Math.floor(rounded)}k`;
+  if (rounded % 1 === 0) {
+    return `${rounded}k`;
   }
   
-  return `${rounded}k`;
+  return `${rounded.toFixed(1)}k`;
 }

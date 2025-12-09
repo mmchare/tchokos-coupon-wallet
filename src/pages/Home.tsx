@@ -1,6 +1,6 @@
 /**
- * Home page - JinBao E-commerce
- * Tech gadgets marketplace with coupon system
+ * Home page - JinBao Smart Market
+ * Premium Tech E-commerce with coupon system
  */
 
 import { useState } from 'react';
@@ -239,10 +239,10 @@ const Home = () => {
         <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
-            <span className="text-pinbaoo-yellow">JinBao</span>
+            <span className="text-jinbao-red">JinBao</span>
           </h1>
-          <p className="text-xs sm:text-base text-muted-foreground mb-2 max-w-xl mx-auto px-4">
-            Votre partenaire e-commerce de confiance
+          <p className="text-sm sm:text-lg text-muted-foreground mb-1 uppercase tracking-widest font-medium">
+            Smart Market
           </p>
           <p className="text-sm sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables et accessoires. 
@@ -257,7 +257,7 @@ const Home = () => {
               placeholder="Rechercher un produit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-pinbaoo-yellow text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-jinbao-red text-sm sm:text-base"
             />
           </div>
         </section>
@@ -281,7 +281,7 @@ const Home = () => {
                   <Button 
                     variant="outline"
                     size="sm"
-                    className="border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-xs sm:text-sm flex-1 sm:flex-none"
+                    className="border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     <span className="hidden sm:inline">Mon </span>Coupon ({couponItems.length})
                   </Button>
