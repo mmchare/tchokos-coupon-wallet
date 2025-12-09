@@ -12,14 +12,6 @@ interface PaymentRequest {
   payment_method: 'momo' | 'orange';
   user_id: string;
   description?: string;
-  callback_url?: string;
-}
-
-interface FeexpayResponse {
-  status: string;
-  reference: string;
-  message?: string;
-  redirect_url?: string;
 }
 
 serve(async (req: Request) => {
@@ -44,7 +36,7 @@ serve(async (req: Request) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const { amount, phone_number, payment_method, user_id, description, callback_url }: PaymentRequest = await req.json();
+    const { amount, phone_number, payment_method, user_id, description }: PaymentRequest = await req.json();
 
     console.log('Payment request received:', { amount, phone_number, payment_method, user_id });
 
@@ -63,11 +55,25 @@ serve(async (req: Request) => {
       );
     }
 
-    // Generate unique transaction key
-    const trans_key = `JINBAO_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    // Format phone number for Cameroon (add 237 prefix if needed)
+    let formattedPhone = phone_number.replace(/\s/g, '').replace('+', '');
+    if (!formattedPhone.startsWith('237')) {
+      formattedPhone = '237' + formattedPhone;
+    }
+
+    // Determine the endpoint based on payment method for Cameroon
+    // MTN Cameroon: numbers starting with 67, 65, 68
+    // Orange Cameroon: numbers starting with 69, 65
+    const phoneWithoutPrefix = formattedPhone.replace(/^237/, '');
+    const isMTN = phoneWithoutPrefix.startsWith('67') || phoneWithoutPrefix.startsWith('68') || 
+                  (phoneWithoutPrefix.startsWith('65') && payment_method === 'momo');
     
-    // Determine Feexpay mode based on payment method
-    const mode = payment_method === 'momo' ? 'MOMO' : 'FLOOZ';
+    // Use the correct endpoint for Cameroon operators
+    const endpoint = isMTN 
+      ? 'https://api.feexpay.me/api/transactions/public/requesttopay/mtn_cm'
+      : 'https://api.feexpay.me/api/transactions/public/requesttopay/orange_cm';
+
+    console.log('Using Feexpay endpoint:', endpoint, 'for phone:', formattedPhone);
 
     // Create pending transaction in database
     const { data: transaction, error: txError } = await supabase
@@ -77,7 +83,7 @@ serve(async (req: Request) => {
         type: 'recharge',
         amount,
         description: description || `Recharge via ${payment_method === 'momo' ? 'MTN MoMo' : 'Orange Money'}`,
-        payment_method: payment_method === 'momo' ? 'MTN MoMo' : 'Orange Money',
+        payment_method: isMTN ? 'MTN MoMo' : 'Orange Money',
         status: 'pending'
       })
       .select()
@@ -93,29 +99,23 @@ serve(async (req: Request) => {
 
     console.log('Transaction created:', transaction.id);
 
-    // Call Feexpay API
+    // Build Feexpay payload according to their API documentation
     const feexpayPayload = {
-      shop_id: FEEXPAY_SHOP_ID,
-      token: FEEXPAY_API_KEY,
+      shop: FEEXPAY_SHOP_ID,
       amount: amount,
-      phone_number: phone_number.replace(/\s/g, '').replace('+', ''),
-      mode: mode,
-      trans_key: trans_key,
+      phoneNumber: parseInt(formattedPhone),
+      firstName: 'JinBao',
+      lastName: 'Client',
+      description: description || 'Recharge portefeuille JinBao',
       callback_info: JSON.stringify({
         transaction_id: transaction.id,
         user_id: user_id
-      }),
-      callback_url: callback_url || `${SUPABASE_URL}/functions/v1/feexpay-webhook`
+      })
     };
 
-    console.log('Calling Feexpay API with:', { ...feexpayPayload, token: '***' });
+    console.log('Calling Feexpay API with:', { ...feexpayPayload, shop: '***' });
 
-    // Utiliser l'API de test Feexpay (sandbox)
-    const FEEXPAY_API_URL = 'https://api.sandbox.feexpay.me/api/transactions/mobile-money';
-    
-    console.log('Using Feexpay SANDBOX API:', FEEXPAY_API_URL);
-    
-    const feexpayResponse = await fetch(FEEXPAY_API_URL, {
+    const feexpayResponse = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -124,10 +124,34 @@ serve(async (req: Request) => {
       body: JSON.stringify(feexpayPayload)
     });
 
-    const feexpayData = await feexpayResponse.json();
-    console.log('Feexpay response:', feexpayData);
+    // Log raw response for debugging
+    const responseText = await feexpayResponse.text();
+    console.log('Feexpay raw response:', responseText);
 
-    if (!feexpayResponse.ok || feexpayData.status === 'error') {
+    let feexpayData;
+    try {
+      feexpayData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse Feexpay response:', responseText);
+      // Update transaction status to failed
+      await supabase
+        .from('wallet_transactions')
+        .update({ status: 'failed' })
+        .eq('id', transaction.id);
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Erreur de communication avec Feexpay',
+          details: responseText.substring(0, 200)
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Feexpay parsed response:', feexpayData);
+
+    // Check for error responses
+    if (!feexpayResponse.ok || feexpayData.error || feexpayData.statusCode >= 400) {
       // Update transaction status to failed
       await supabase
         .from('wallet_transactions')
@@ -136,19 +160,20 @@ serve(async (req: Request) => {
 
       return new Response(
         JSON.stringify({ 
-          error: feexpayData.message || 'Erreur lors de l\'initiation du paiement',
+          error: feexpayData.message || feexpayData.error || 'Erreur lors de l\'initiation du paiement',
           details: feexpayData
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Success - return the reference for status polling
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Paiement initié avec succès',
+        message: 'Paiement initié avec succès. Veuillez confirmer sur votre téléphone.',
         transaction_id: transaction.id,
-        reference: trans_key,
+        reference: feexpayData.reference || feexpayData.transref,
         feexpay_data: feexpayData
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
