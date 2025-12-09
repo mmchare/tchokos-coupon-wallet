@@ -169,10 +169,11 @@ const Home = () => {
     },
   ];
 
-  const categories = ['Tous', 'Smartphones', 'Ordinateurs', 'Tablettes', 'Accessoires'];
+  const categories = ['Tous', 'Enchères', 'Smartphones', 'Ordinateurs', 'Tablettes', 'Accessoires'];
 
   const filteredProducts = products.filter(product => {
-    const matchesCategory = activeCategory === 'Tous' || product.category === activeCategory;
+    const matchesCategory = activeCategory === 'Tous' || 
+      (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
     const matchesSearch = searchQuery === '' || 
       product.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
