@@ -34,7 +34,7 @@ const Auth = () => {
   // Generate email from phone number (for internal auth)
   const phoneToEmail = (phone: string) => {
     const cleanPhone = phone.replace(/\D/g, '');
-    return `${cleanPhone}@dina.app`;
+    return `${cleanPhone}@jinbao.app`;
   };
 
   // Simulate OTP generation
@@ -92,7 +92,7 @@ const Auth = () => {
 
     setIsLoading(true);
     const email = phoneToEmail(phoneNumber);
-    const tempPassword = `dina_${phoneNumber}_secure`;
+    const tempPassword = `jinbao_${phoneNumber}_secure`;
 
     // Try to sign in first (existing user)
     const { error: signInError } = await signIn(email, tempPassword);
@@ -106,7 +106,7 @@ const Auth = () => {
       // Existing user, redirect to home
       toast({
         title: "Connexion réussie !",
-        description: "Bienvenue sur DINA",
+        description: "Bienvenue sur JinBao",
       });
       navigate('/');
     }
@@ -124,7 +124,7 @@ const Auth = () => {
 
     setIsLoading(true);
     const email = phoneToEmail(phoneNumber);
-    const tempPassword = `dina_${phoneNumber}_secure`;
+    const tempPassword = `jinbao_${phoneNumber}_secure`;
 
     const { error } = await signUp(
       email,
@@ -149,7 +149,7 @@ const Auth = () => {
     }
 
     toast({
-      title: "Bienvenue sur DINA ! 🎉",
+      title: "Bienvenue sur JinBao ! 🎉",
       description: "Votre compte a été créé avec succès",
     });
     navigate('/');
@@ -175,7 +175,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="pinbaoo-logo text-5xl mb-2">DINA</h1>
+          <h1 className="pinbaoo-logo text-5xl mb-2">JinBao</h1>
           <p className="text-muted-foreground text-sm mb-4">
             Votre partenaire e-commerce de confiance
           </p>
@@ -346,7 +346,7 @@ const Auth = () => {
                 </label>
                 <Input
                   type="text"
-                  placeholder="Ex: DINA2024"
+                  placeholder="Ex: JINBAO2024"
                   value={affiliationCode}
                   onChange={(e) => setAffiliationCode(e.target.value.toUpperCase())}
                   maxLength={8}

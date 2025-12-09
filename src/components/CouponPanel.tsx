@@ -49,9 +49,9 @@ const CouponPanel = ({
     }
     
     const message = encodeURIComponent(
-      `🛒 Découvrez ma sélection DINA !\n\n` +
+      `🛒 Découvrez ma sélection JinBao !\n\n` +
       `📋 Code coupon : ${couponCode}\n\n` +
-      `Chargez ce code sur DINA pour voir les produits !\n` +
+      `Chargez ce code sur JinBao pour voir les produits !\n` +
       `👉 Votre partenaire e-commerce de confiance`
     );
     
@@ -61,7 +61,7 @@ const CouponPanel = ({
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleGenerateCode = () => {
-    const code = `DINA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    const code = `JINBAO${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
     setCouponCode(code);
     
     const couponData = {

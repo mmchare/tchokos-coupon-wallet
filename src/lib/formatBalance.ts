@@ -1,5 +1,5 @@
 /**
- * Format wallet balance according to DINA specifications:
+ * Format wallet balance according to JinBao specifications:
  * - < 1000 FCFA: Show exact amount with "FCAF" suffix
  * - >= 1000 FCFA: Show in "k" format with max 1 decimal (rounded)
  */
