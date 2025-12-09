@@ -106,7 +106,7 @@ const Auth = () => {
       // Existing user, redirect to home
       toast({
         title: "Connexion réussie !",
-        description: "Bienvenue sur JinBao",
+        description: "Bienvenue sur JinBao Smart Market",
       });
       navigate('/');
     }
@@ -150,7 +150,7 @@ const Auth = () => {
 
     toast({
       title: "Bienvenue sur JinBao ! 🎉",
-      description: "Votre compte a été créé avec succès",
+      description: "Votre compte a été créé avec succès. Bonus de bienvenue : 1 000 FCAF !",
     });
     navigate('/');
   };
@@ -165,7 +165,7 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-pinbaoo-yellow border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-jinbao-red border-t-transparent"></div>
       </div>
     );
   }
@@ -175,9 +175,12 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="pinbaoo-logo text-5xl mb-2">JinBao</h1>
-          <p className="text-muted-foreground text-sm mb-4">
-            Votre partenaire e-commerce de confiance
+          <h1 className="jinbao-logo text-5xl mb-2">JinBao</h1>
+          <p className="text-muted-foreground text-sm mb-1 uppercase tracking-widest font-medium">
+            Smart Market
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Premium Tech • Confiance • Efficacité
           </p>
         </div>
 
@@ -230,7 +233,7 @@ const Auth = () => {
               {/* Telegram Fallback */}
               <button
                 onClick={handleTelegramFallback}
-                className="w-full text-center text-sm text-muted-foreground hover:text-pinbaoo-yellow transition-colors"
+                className="w-full text-center text-sm text-muted-foreground hover:text-jinbao-blue transition-colors"
               >
                 <MessageCircle className="inline h-4 w-4 mr-1" />
                 Pas de SMS reçu ? Essayez Telegram
@@ -295,7 +298,7 @@ const Auth = () => {
                 </button>
                 <button
                   onClick={handleSendOTP}
-                  className="text-pinbaoo-yellow hover:underline"
+                  className="text-jinbao-red hover:underline"
                 >
                   Renvoyer le code
                 </button>
@@ -304,7 +307,7 @@ const Auth = () => {
               {/* Telegram Fallback */}
               <button
                 onClick={handleTelegramFallback}
-                className="w-full text-center text-sm text-muted-foreground hover:text-pinbaoo-yellow transition-colors"
+                className="w-full text-center text-sm text-muted-foreground hover:text-jinbao-blue transition-colors"
               >
                 <MessageCircle className="inline h-4 w-4 mr-1" />
                 Pas de SMS reçu ? Essayez Telegram
@@ -353,7 +356,7 @@ const Auth = () => {
                   className="bg-input border-border text-foreground placeholder-muted-foreground uppercase"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Entrez le code d'un ami pour rejoindre son réseau
+                  Entrez le code d'un ami pour recevoir <span className="text-jinbao-blue font-semibold">1 000 FCAF</span> de bonus !
                 </p>
               </div>
 
@@ -382,9 +385,9 @@ const Auth = () => {
         <div className="text-center mt-8 text-muted-foreground text-sm">
           <p>En continuant, vous acceptez nos</p>
           <p>
-            <span className="text-pinbaoo-yellow hover:underline cursor-pointer">Conditions d'utilisation</span>
+            <span className="text-jinbao-red hover:underline cursor-pointer">Conditions d'utilisation</span>
             {' '} et {' '}
-            <span className="text-pinbaoo-yellow hover:underline cursor-pointer">Politique de confidentialité</span>
+            <span className="text-jinbao-red hover:underline cursor-pointer">Politique de confidentialité</span>
           </p>
         </div>
       </div>

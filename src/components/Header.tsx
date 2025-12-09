@@ -68,28 +68,28 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 <Menu className="h-4 w-4" />
               </Button>
               <h1 
-                className="text-lg sm:text-2xl font-bold text-pinbaoo-yellow tracking-wider cursor-pointer"
+                className="text-lg sm:text-2xl font-bold text-jinbao-red tracking-wider cursor-pointer"
                 onClick={() => navigate('/')}
               >
                 JinBao
               </h1>
             </div>
 
-            {/* Wallet Balance - 1xbet Style */}
+            {/* Wallet Balance - Gris Argent style */}
             {user ? (
               <div className="flex items-center gap-1 sm:gap-2 animate-fade-in">
                 <button 
                   onClick={() => navigate('/recharge')}
-                  className="flex items-center gap-1 sm:gap-2 bg-pinbaoo-green/90 hover:bg-pinbaoo-green text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 shadow-lg"
+                  className="flex items-center gap-1 sm:gap-2 bg-muted hover:bg-muted/80 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-border"
                 >
-                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-jinbao-silver" />
                   <span className="font-bold text-xs sm:text-sm">
                     {formatBalance(walletBalance)}
                   </span>
                 </button>
                 <button
                   onClick={() => navigate('/recharge')}
-                  className="flex items-center justify-center bg-pinbaoo-yellow hover:bg-pinbaoo-yellow/90 text-pinbaoo-dark p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
+                  className="flex items-center justify-center bg-jinbao-red hover:bg-jinbao-red/90 text-white p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
                   title="Recharger"
                 >
                   <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
@@ -100,7 +100,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="text-xs sm:text-sm border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark"
+                className="text-xs sm:text-sm border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white"
               >
                 <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Connexion</span>
@@ -114,12 +114,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsCouponOpen(true)}
-                className="relative bg-transparent border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-xs sm:text-sm px-2 sm:px-3"
+                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3"
               >
                 <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Mon Coupon</span>
                 {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-pinbaoo-green text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-jinbao-blue text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                     {items.length}
                   </span>
                 )}

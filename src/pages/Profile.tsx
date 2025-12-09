@@ -106,7 +106,7 @@ const Profile = () => {
     await signOut();
     toast({
       title: "Déconnexion",
-      description: "À bientôt sur JinBao !",
+      description: "À bientôt sur JinBao Smart Market !",
     });
     navigate('/auth');
   };
@@ -126,7 +126,7 @@ const Profile = () => {
   if (loading || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-pinbaoo-yellow border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-jinbao-red border-t-transparent"></div>
       </div>
     );
   }
@@ -168,17 +168,17 @@ const Profile = () => {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           {/* Code de parrainage */}
-          <Card className="bg-gradient-to-r from-pinbaoo-yellow/20 to-pinbaoo-green/20 border-pinbaoo-yellow/50">
+          <Card className="bg-gradient-to-r from-jinbao-red/10 to-jinbao-blue/10 border-jinbao-red/30">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center">
-                <Gift className="h-5 w-5 mr-2 text-pinbaoo-yellow" />
+                <Gift className="h-5 w-5 mr-2 text-jinbao-red" />
                 Mon Code de Parrainage
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-pinbaoo-yellow tracking-widest">
+                  <p className="text-3xl font-bold text-jinbao-red tracking-widest">
                     {referralCode || 'Chargement...'}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -188,14 +188,14 @@ const Profile = () => {
                 <Button
                   onClick={copyReferralCode}
                   variant="outline"
-                  className="border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark"
+                  className="border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white"
                 >
                   {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                   {copied ? 'Copié !' : 'Copier'}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Partage ton code JinBao et gagne <span className="text-pinbaoo-yellow font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-pinbaoo-green font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
+                Partage ton code JinBao et gagne <span className="text-jinbao-red font-semibold">2 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-jinbao-blue font-semibold">1 000 FCAF</span> de bienvenue pour l'essayer !
               </p>
             </CardContent>
           </Card>
@@ -208,7 +208,7 @@ const Profile = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                className="text-pinbaoo-yellow hover:bg-pinbaoo-yellow/10"
+                className="text-jinbao-red hover:bg-jinbao-red/10"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
                 {isEditing ? 'Enregistrer' : 'Modifier'}
@@ -259,7 +259,7 @@ const Profile = () => {
 
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-pinbaoo-green to-emerald-500 border-0 text-white">
+            <Card className="bg-gradient-to-br from-jinbao-red to-red-600 border-0 text-white">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -285,7 +285,7 @@ const Profile = () => {
                     <p className="text-muted-foreground text-sm">Filleuls</p>
                     <p className="text-2xl font-bold text-foreground">{referralCount}</p>
                   </div>
-                  <Gift className="h-8 w-8 text-pinbaoo-yellow" />
+                  <Gift className="h-8 w-8 text-jinbao-red" />
                 </div>
               </CardContent>
             </Card>
@@ -297,7 +297,7 @@ const Profile = () => {
                     <p className="text-muted-foreground text-sm">Membre depuis</p>
                     <p className="text-xl font-bold text-foreground capitalize">{memberSince}</p>
                   </div>
-                  <User className="h-8 w-8 text-pinbaoo-yellow" />
+                  <User className="h-8 w-8 text-jinbao-blue" />
                 </div>
               </CardContent>
             </Card>

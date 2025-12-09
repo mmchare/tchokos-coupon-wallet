@@ -51,8 +51,8 @@ const CouponPanel = ({
     const message = encodeURIComponent(
       `🛒 Découvrez ma sélection JinBao !\n\n` +
       `📋 Code coupon : ${couponCode}\n\n` +
-      `Chargez ce code sur JinBao pour voir les produits !\n` +
-      `👉 Votre partenaire e-commerce de confiance`
+      `Chargez ce code sur JinBao Smart Market pour voir les produits !\n` +
+      `👉 Premium Tech • Confiance • Efficacité`
     );
     
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -94,7 +94,7 @@ const CouponPanel = ({
     <Card className="p-3 sm:p-6 animate-slide-up">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-bold text-foreground">Mon Coupon</h2>
-        <Badge variant="secondary" className="bg-pinbaoo-yellow text-pinbaoo-dark text-xs sm:text-sm">
+        <Badge variant="secondary" className="bg-jinbao-red text-white text-xs sm:text-sm">
           {items.length} article{items.length > 1 ? 's' : ''}
         </Badge>
       </div>
@@ -113,7 +113,7 @@ const CouponPanel = ({
               className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => handleProductClick(item.id)}
             >
-              <h4 className="font-medium text-foreground text-xs sm:text-sm truncate hover:text-pinbaoo-yellow transition-colors">{item.name}</h4>
+              <h4 className="font-medium text-foreground text-xs sm:text-sm truncate hover:text-jinbao-red transition-colors">{item.name}</h4>
               <p className="text-muted-foreground text-xs">
                 {item.price.toLocaleString()} F × {item.quantity}
               </p>
@@ -154,18 +154,18 @@ const CouponPanel = ({
       {/* Total */}
       <div className="flex justify-between items-center mb-4 sm:mb-6">
         <span className="text-base sm:text-lg font-semibold text-foreground">Total:</span>
-        <span className="text-lg sm:text-2xl font-bold text-pinbaoo-yellow">
+        <span className="text-lg sm:text-2xl font-bold text-jinbao-red">
           {total.toLocaleString()} F
         </span>
       </div>
 
       {/* Code Section */}
       {couponCode && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-pinbaoo-yellow/20">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-jinbao-red/20">
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Code Coupon:</p>
-              <p className="font-mono text-pinbaoo-yellow font-bold text-sm sm:text-base">{couponCode}</p>
+              <p className="font-mono text-jinbao-red font-bold text-sm sm:text-base">{couponCode}</p>
             </div>
             <Button
               onClick={handleWhatsAppShare}
@@ -191,7 +191,7 @@ const CouponPanel = ({
         <Button 
           onClick={handleGenerateCode}
           variant="outline"
-          className="w-full border-pinbaoo-yellow text-pinbaoo-yellow hover:bg-pinbaoo-yellow hover:text-pinbaoo-dark text-sm sm:text-base"
+          className="w-full border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-sm sm:text-base"
         >
           <Code className="h-4 w-4 mr-2" />
           Générer Code de Partage
