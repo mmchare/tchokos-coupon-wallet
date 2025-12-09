@@ -1,1 +1,10 @@
 project_id = "xzilbjhrqbpedekuwghu"
+
+[functions.feexpay-payment]
+verify_jwt = false
+
+[functions.feexpay-webhook]
+verify_jwt = false
+
+[functions.create-order]
+verify_jwt = false
