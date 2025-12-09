@@ -71,7 +71,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 className="text-lg sm:text-2xl font-bold text-pinbaoo-yellow tracking-wider cursor-pointer"
                 onClick={() => navigate('/')}
               >
-                PINBAOO
+                DINA
               </h1>
             </div>
 
@@ -153,7 +153,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
           <SheetContent side="right" className="w-full sm:max-w-lg p-4 sm:p-6">
             <SheetHeader className="mb-4">
-              <SheetTitle>Mon Coupon PINBAOO</SheetTitle>
+              <SheetTitle>Mon Coupon DINA</SheetTitle>
             </SheetHeader>
             <CouponPanel
               items={items}

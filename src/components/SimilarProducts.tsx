@@ -31,7 +31,7 @@ const SimilarProducts = ({ currentProductId, products }: SimilarProductsProps) =
     <Card className="bg-card border-border p-4 sm:p-6">
       <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
         <span className="text-pinbaoo-yellow">✨</span>
-        Suggestions PINBAOO
+        Suggestions DINA
       </h3>
       
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">

@@ -49,10 +49,10 @@ const CouponPanel = ({
     }
     
     const message = encodeURIComponent(
-      `🛒 Découvrez ma sélection PINBAOO !\n\n` +
+      `🛒 Découvrez ma sélection DINA !\n\n` +
       `📋 Code coupon : ${couponCode}\n\n` +
-      `Chargez ce code sur PINBAOO pour voir les produits !\n` +
-      `👉 L'assurance d'un achat vérifié en Chine`
+      `Chargez ce code sur DINA pour voir les produits !\n` +
+      `👉 Votre partenaire e-commerce de confiance`
     );
     
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -61,7 +61,7 @@ const CouponPanel = ({
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleGenerateCode = () => {
-    const code = `PINB${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    const code = `DINA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
     setCouponCode(code);
     
     const couponData = {
