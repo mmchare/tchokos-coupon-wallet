@@ -13,7 +13,8 @@ import {
   FileText,
   Menu,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ const navItems = [
   { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
   { path: '/admin/moderation', icon: MessageSquare, label: 'Modération' },
   { path: '/admin/finance', icon: DollarSign, label: 'Finance' },
+  { path: '/admin/campaigns', icon: Send, label: 'Campagnes' },
   { path: '/admin/logs', icon: FileText, label: 'Journal d\'audit' },
 ];
 
