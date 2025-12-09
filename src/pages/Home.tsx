@@ -350,6 +350,7 @@ const Home = () => {
         onClose={() => setIsDeliveryFormOpen(false)}
         onSubmit={handleDeliverySubmit}
         total={couponItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+        items={couponItems}
       />
 
       {/* Purchase Confirmation Modal */}
