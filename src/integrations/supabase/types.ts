@@ -32,6 +32,153 @@ export type Database = {
         }
         Relationships: []
       }
+      bids: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bids_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          city: string
+          created_at: string
+          delivery_address: string
+          id: string
+          logistics_step: number
+          product_id: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          whatsapp_number: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          delivery_address: string
+          id?: string
+          logistics_step?: number
+          product_id?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+          whatsapp_number: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          delivery_address?: string
+          id?: string
+          logistics_step?: number
+          product_id?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          whatsapp_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          auction_end_date: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          is_auction: boolean
+          is_verified: boolean
+          name: string
+          original_price: number | null
+          price: number
+          stock_available: number
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          auction_end_date?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_auction?: boolean
+          is_verified?: boolean
+          name: string
+          original_price?: number | null
+          price?: number
+          stock_available?: number
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          auction_end_date?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_auction?: boolean
+          is_verified?: boolean
+          name?: string
+          original_price?: number | null
+          price?: number
+          stock_available?: number
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
