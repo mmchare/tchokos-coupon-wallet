@@ -7,8 +7,10 @@ import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import AdminPasswordModal from '@/components/AdminPasswordModal';
 
 const Profile = () => {
+  const [showAdminModal, setShowAdminModal] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
@@ -334,7 +336,7 @@ const Profile = () => {
           {isAdmin && (
             <div className="pt-8 border-t border-border">
               <button
-                onClick={() => window.open('https://dashboard.jinbao.cm/login', '_blank')}
+                onClick={() => setShowAdminModal(true)}
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 <Lock className="h-4 w-4" />
@@ -343,6 +345,13 @@ const Profile = () => {
             </div>
           )}
         </div>
+
+        {/* Admin Password Modal */}
+        <AdminPasswordModal
+          open={showAdminModal}
+          onOpenChange={setShowAdminModal}
+          onSuccess={() => navigate('/admin')}
+        />
       </main>
     </div>
   );
