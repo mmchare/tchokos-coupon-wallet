@@ -21,7 +21,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   return (
     <div className="splash-container">
       <div className="animate-bounce-in text-center">
-        <h1 className="pinbaoo-logo text-5xl sm:text-6xl mb-3">DINA</h1>
+        <h1 className="pinbaoo-logo text-5xl sm:text-6xl mb-3">JinBao</h1>
         <p className="text-white/80 text-sm sm:text-base font-medium tracking-wide">
           Votre partenaire e-commerce de confiance
         </p>

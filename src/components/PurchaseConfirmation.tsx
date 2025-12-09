@@ -18,7 +18,7 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
     {
       icon: Package,
       title: "Préparation en Chine",
-      description: "Vérification & emballage par DINA",
+      description: "Vérification & emballage par JinBao",
       status: "current" as const,
     },
     {
@@ -63,7 +63,7 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
       {/* Timeline */}
       <div className="w-full max-w-sm">
         <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
-          Processus DINA
+          Processus JinBao
         </h3>
         
         <div className="relative">

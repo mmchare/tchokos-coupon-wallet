@@ -207,7 +207,7 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = `Bonjour DINA, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
+    const message = `Bonjour JinBao, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
     const whatsappUrl = `https://wa.me/237690000000?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
