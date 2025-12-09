@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2, Gavel } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
+import AuctionBidPanel from '@/components/AuctionBidPanel';
 
 // Import product images
 import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
@@ -25,6 +26,14 @@ interface Review {
   rating: number;
   comment: string;
   date: string;
+  isVerifiedClient?: boolean;
+}
+
+interface Bid {
+  id: string;
+  userName: string;
+  amount: number;
+  timestamp: Date;
 }
 
 interface Product {
@@ -40,6 +49,11 @@ interface Product {
   reviews: Review[];
   isVerified: boolean;
   isUniqueStock: boolean;
+  // Auction fields
+  isAuction?: boolean;
+  auctionEndDate?: Date;
+  startingPrice?: number;
+  bids?: Bid[];
 }
 
 const ProductDetail = () => {
@@ -50,8 +64,9 @@ const ProductDetail = () => {
   const [comment, setComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
+  const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
 
-  // Mock products data with multiple images
+  // Mock products data with multiple images and auction support
   const products: Product[] = [
     {
       id: '1',
@@ -64,11 +79,19 @@ const ProductDetail = () => {
       videoUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4',
       description: 'Le dernier iPhone avec puce A17 Pro, écran Super Retina XDR 6.7", appareil photo 48MP et châssis en titane. Disponible en plusieurs couleurs.',
       reviews: [
-        { id: '1', userName: 'Yves M.', rating: 5, comment: 'Incroyable performance ! Meilleur iPhone 📱✨', date: '2024-03-20' },
-        { id: '2', userName: 'Claire D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 🔥', date: '2024-03-18' },
+        { id: '1', userName: 'Yves M.', rating: 5, comment: 'Incroyable performance ! Meilleur iPhone 📱✨', date: '2024-03-20', isVerifiedClient: true },
+        { id: '2', userName: 'Claire D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 🔥', date: '2024-03-18', isVerifiedClient: true },
       ],
       isVerified: true,
       isUniqueStock: true,
+      isAuction: true,
+      auctionEndDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      startingPrice: 280000,
+      bids: [
+        { id: 'b1', userName: 'Patrick K.', amount: 290000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+        { id: 'b2', userName: 'Marie L.', amount: 310000, timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000) },
+        { id: 'b3', userName: 'Jean B.', amount: 350000, timestamp: new Date(Date.now() - 30 * 60 * 1000) },
+      ],
     },
     {
       id: '2',
@@ -80,10 +103,17 @@ const ProductDetail = () => {
       images: [samsungImg, iphoneImg, macbookImg],
       description: 'Smartphone premium avec Snapdragon 8 Gen 3, écran AMOLED 6.8", S Pen intégré et batterie 5000mAh. Performance exceptionnelle.',
       reviews: [
-        { id: '1', userName: 'Patrick L.', rating: 5, comment: 'Le meilleur Android du marché ! 🚀', date: '2024-03-19' },
+        { id: '1', userName: 'Patrick L.', rating: 5, comment: 'Le meilleur Android du marché ! 🚀', date: '2024-03-19', isVerifiedClient: true },
       ],
       isVerified: true,
       isUniqueStock: true,
+      isAuction: true,
+      auctionEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+      startingPrice: 300000,
+      bids: [
+        { id: 'b1', userName: 'Sophie M.', amount: 320000, timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000) },
+        { id: 'b2', userName: 'Marc T.', amount: 380000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+      ],
     },
     {
       id: '3',
@@ -95,8 +125,8 @@ const ProductDetail = () => {
       images: [macbookImg, ipadImg, iphoneImg, samsungImg],
       description: 'MacBook Pro 14" avec puce M3, 16GB RAM, 512GB SSD. Performances incroyables pour les professionnels créatifs.',
       reviews: [
-        { id: '1', userName: 'Sophie K.', rating: 5, comment: 'Puissance incroyable ! Parfait pour le montage 💻✨', date: '2024-03-17' },
-        { id: '2', userName: 'Marc B.', rating: 5, comment: 'Excellent rapport qualité-prix ! 👌', date: '2024-03-15' },
+        { id: '1', userName: 'Sophie K.', rating: 5, comment: 'Puissance incroyable ! Parfait pour le montage 💻✨', date: '2024-03-17', isVerifiedClient: true },
+        { id: '2', userName: 'Marc B.', rating: 5, comment: 'Excellent rapport qualité-prix ! 👌', date: '2024-03-15', isVerifiedClient: true },
       ],
       isVerified: true,
       isUniqueStock: false,
@@ -111,7 +141,7 @@ const ProductDetail = () => {
       images: [ipadImg, macbookImg, iphoneImg],
       description: 'iPad Air 11" avec puce M2, écran Liquid Retina, compatible Apple Pencil. Parfait pour le travail et le divertissement.',
       reviews: [
-        { id: '1', userName: 'Marie T.', rating: 5, comment: 'Parfait pour dessiner et travailler ! 🎨', date: '2024-03-16' },
+        { id: '1', userName: 'Marie T.', rating: 5, comment: 'Parfait pour dessiner et travailler ! 🎨', date: '2024-03-16', isVerifiedClient: true },
       ],
       isVerified: true,
       isUniqueStock: true,
@@ -126,7 +156,7 @@ const ProductDetail = () => {
       images: [powerbankImg, ringLightImg],
       description: 'Powerbank haute capacité avec charge rapide 65W, 3 ports USB. Idéal pour recharger tous vos appareils.',
       reviews: [
-        { id: '1', userName: 'Jean P.', rating: 5, comment: 'Excellent produit, charge super rapide ! ⚡', date: '2024-03-14' },
+        { id: '1', userName: 'Jean P.', rating: 5, comment: 'Excellent produit, charge super rapide ! ⚡', date: '2024-03-14', isVerifiedClient: true },
       ],
       isVerified: false,
       isUniqueStock: true,
@@ -141,7 +171,7 @@ const ProductDetail = () => {
       images: [ringLightImg, powerbankImg],
       description: 'Éclairage LED professionnel avec trépied, contrôle de luminosité et température de couleur. Parfait pour photo et vidéo.',
       reviews: [
-        { id: '1', userName: 'Laura S.', rating: 5, comment: 'Lumière parfaite pour mes vidéos ! 💡📸', date: '2024-03-13' },
+        { id: '1', userName: 'Laura S.', rating: 5, comment: 'Lumière parfaite pour mes vidéos ! 💡📸', date: '2024-03-13', isVerifiedClient: true },
       ],
       isVerified: true,
       isUniqueStock: false,
@@ -172,6 +202,27 @@ const ProductDetail = () => {
       description: "Redirection vers le formulaire de livraison...",
     });
   };
+
+  // Handle placing a bid
+  const handlePlaceBid = (amount: number) => {
+    const newBid: Bid = {
+      id: `b${Date.now()}`,
+      userName: 'Vous',
+      amount,
+      timestamp: new Date(),
+    };
+    
+    setAuctionBids(prev => ({
+      ...prev,
+      [product.id]: [...(prev[product.id] || product.bids || []), newBid],
+    }));
+  };
+
+  // Get current bids for product
+  const currentBids = auctionBids[product.id] || product.bids || [];
+  const currentMaxBid = currentBids.length > 0 
+    ? Math.max(...currentBids.map(b => b.amount)) 
+    : (product.startingPrice || product.price);
 
   const handleSubmitComment = () => {
     if (!comment.trim()) {
@@ -287,13 +338,26 @@ const ProductDetail = () => {
                   {/* Price */}
                   <div className="space-y-1">
                     <div className="flex items-center space-x-3">
-                      <span className="text-3xl font-bold text-foreground">
-                        {product.price.toLocaleString()} F
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-lg text-muted-foreground line-through">
-                          {product.originalPrice.toLocaleString()} F
-                        </span>
+                      {product.isAuction ? (
+                        <>
+                          <span className="text-3xl font-bold text-jinbao-red">
+                            {currentMaxBid.toLocaleString()} F
+                          </span>
+                          <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+                            Offre actuelle
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-bold text-foreground">
+                            {product.price.toLocaleString()} F
+                          </span>
+                          {product.originalPrice && (
+                            <span className="text-lg text-muted-foreground line-through">
+                              {product.originalPrice.toLocaleString()} F
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -308,13 +372,23 @@ const ProductDetail = () => {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <Button
-                      onClick={handleBuyNow}
-                      className="buy-button w-full"
-                    >
-                      <ShoppingBag className="h-5 w-5 mr-2" />
-                      Acheter Maintenant
-                    </Button>
+                    {product.isAuction ? (
+                      <Button
+                        onClick={() => document.querySelector('#auction-panel')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="bg-jinbao-red hover:bg-jinbao-red/90 text-white w-full"
+                      >
+                        <Gavel className="h-5 w-5 mr-2" />
+                        Enchérir
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleBuyNow}
+                        className="buy-button w-full"
+                      >
+                        <ShoppingBag className="h-5 w-5 mr-2" />
+                        Acheter Maintenant
+                      </Button>
+                    )}
 
                     <Button
                       onClick={handleAddToCoupon}
@@ -338,6 +412,19 @@ const ProductDetail = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Auction Panel - Only show for auction products */}
+          {product.isAuction && product.auctionEndDate && (
+            <AuctionBidPanel
+              productId={product.id}
+              productName={product.name}
+              startingPrice={product.startingPrice || product.price}
+              currentMaxBid={currentMaxBid}
+              auctionEndDate={product.auctionEndDate}
+              bids={currentBids}
+              onPlaceBid={handlePlaceBid}
+            />
+          )}
 
           {/* Reviews Section */}
           <Card className="bg-card border-border">
