@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, ShoppingCart, Users, DollarSign, Gavel, TrendingUp } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Gavel, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { format, subDays, subMonths, differenceInDays } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface Stats {
   totalProducts: number;
@@ -10,7 +14,19 @@ interface Stats {
   totalRevenue: number;
   activeAuctions: number;
   pendingOrders: number;
+  avgDeliveryDays: number;
 }
+
+interface Order {
+  id: string;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+  logistics_step: number;
+  products?: { category: string | null } | null;
+}
+
+const COLORS = ['#E2231A', '#1E90FF', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState<Stats>({
@@ -19,9 +35,13 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalRevenue: 0,
     activeAuctions: 0,
-    pendingOrders: 0
+    pendingOrders: 0,
+    avgDeliveryDays: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [revenuePeriod, setRevenuePeriod] = useState('30');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -32,28 +52,37 @@ const AdminDashboard = () => {
         .from('products')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch orders count
-      const { count: ordersCount } = await supabase
+      // Fetch orders with product data
+      const { data: ordersData } = await supabase
         .from('orders')
-        .select('*', { count: 'exact', head: true });
+        .select(`
+          id, total_amount, created_at, updated_at, logistics_step,
+          products (category)
+        `);
 
-      // Fetch pending orders
-      const { count: pendingCount } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .neq('logistics_step', 4);
+      const orders = ordersData as Order[] || [];
+
+      // Calculate pending orders
+      const pendingOrders = orders.filter(o => o.logistics_step < 4).length;
+
+      // Calculate average delivery time for completed orders
+      const deliveredOrders = orders.filter(o => o.logistics_step === 4);
+      let avgDeliveryDays = 0;
+      if (deliveredOrders.length > 0) {
+        const totalDays = deliveredOrders.reduce((sum, order) => {
+          const days = differenceInDays(new Date(order.updated_at), new Date(order.created_at));
+          return sum + days;
+        }, 0);
+        avgDeliveryDays = Math.round(totalDays / deliveredOrders.length);
+      }
 
       // Fetch users count
       const { count: usersCount } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch total revenue from completed orders
-      const { data: revenueData } = await supabase
-        .from('orders')
-        .select('total_amount');
-      
-      const totalRevenue = revenueData?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+      // Calculate total revenue
+      const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
 
       // Fetch active auctions
       const { count: auctionsCount } = await supabase
@@ -62,13 +91,23 @@ const AdminDashboard = () => {
         .eq('is_auction', true)
         .gt('auction_end_date', new Date().toISOString());
 
+      // Calculate category distribution
+      const categoryMap: Record<string, number> = {};
+      orders.forEach(order => {
+        const category = order.products?.category || 'Autres';
+        categoryMap[category] = (categoryMap[category] || 0) + Number(order.total_amount);
+      });
+      const categoryChartData = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
+      setCategoryData(categoryChartData);
+
       setStats({
         totalProducts: productsCount || 0,
-        totalOrders: ordersCount || 0,
+        totalOrders: orders.length,
         totalUsers: usersCount || 0,
         totalRevenue,
         activeAuctions: auctionsCount || 0,
-        pendingOrders: pendingCount || 0
+        pendingOrders,
+        avgDeliveryDays
       });
 
       setIsLoading(false);
@@ -76,6 +115,76 @@ const AdminDashboard = () => {
 
     fetchStats();
   }, []);
+
+  // Fetch revenue data based on period
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      let startDate: Date;
+      let groupBy: 'day' | 'month';
+
+      if (revenuePeriod === '7') {
+        startDate = subDays(new Date(), 7);
+        groupBy = 'day';
+      } else if (revenuePeriod === '30') {
+        startDate = subDays(new Date(), 30);
+        groupBy = 'day';
+      } else {
+        startDate = subMonths(new Date(), 12);
+        groupBy = 'month';
+      }
+
+      // Fetch orders for period
+      const { data: ordersData } = await supabase
+        .from('orders')
+        .select('total_amount, created_at')
+        .gte('created_at', startDate.toISOString())
+        .order('created_at', { ascending: true });
+
+      // Fetch wallet recharges for period
+      const { data: rechargesData } = await supabase
+        .from('wallet_transactions')
+        .select('amount, created_at')
+        .eq('type', 'credit')
+        .eq('status', 'completed')
+        .gte('created_at', startDate.toISOString())
+        .order('created_at', { ascending: true });
+
+      // Group data by date
+      const revenueMap: Record<string, { ventes: number; recharges: number }> = {};
+
+      ordersData?.forEach(order => {
+        const dateKey = groupBy === 'day'
+          ? format(new Date(order.created_at), 'dd/MM')
+          : format(new Date(order.created_at), 'MMM', { locale: fr });
+        
+        if (!revenueMap[dateKey]) {
+          revenueMap[dateKey] = { ventes: 0, recharges: 0 };
+        }
+        revenueMap[dateKey].ventes += Number(order.total_amount);
+      });
+
+      rechargesData?.forEach(tx => {
+        const dateKey = groupBy === 'day'
+          ? format(new Date(tx.created_at), 'dd/MM')
+          : format(new Date(tx.created_at), 'MMM', { locale: fr });
+        
+        if (!revenueMap[dateKey]) {
+          revenueMap[dateKey] = { ventes: 0, recharges: 0 };
+        }
+        revenueMap[dateKey].recharges += Number(tx.amount);
+      });
+
+      const chartData = Object.entries(revenueMap).map(([date, data]) => ({
+        date,
+        ventes: data.ventes,
+        recharges: data.recharges
+      }));
+
+      setRevenueData(chartData);
+    };
+
+    fetchRevenueData();
+  }, [revenuePeriod]);
 
   const statCards = [
     { label: 'Produits', value: stats.totalProducts, icon: Package, color: 'text-jinbao-blue' },
@@ -85,6 +194,8 @@ const AdminDashboard = () => {
     { label: 'Enchères actives', value: stats.activeAuctions, icon: Gavel, color: 'text-orange-500' },
     { label: 'Revenus total', value: `${stats.totalRevenue.toLocaleString()} F`, icon: DollarSign, color: 'text-jinbao-red' },
   ];
+
+  const isDeliveryDelayed = stats.avgDeliveryDays > 14;
 
   return (
     <div className="space-y-6">
@@ -110,27 +221,142 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* KPI Delivery Performance */}
+      <Card className={`border-2 ${isDeliveryDelayed ? 'border-destructive bg-destructive/10' : 'border-green-500/30 bg-green-500/10'}`}>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {isDeliveryDelayed ? (
+                <AlertTriangle className="h-12 w-12 text-destructive" />
+              ) : (
+                <Clock className="h-12 w-12 text-green-500" />
+              )}
+              <div>
+                <p className="text-3xl font-bold text-foreground">
+                  {isLoading ? '...' : `${stats.avgDeliveryDays} jours`}
+                </p>
+                <p className="text-muted-foreground">Délai moyen de livraison</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className={`text-lg font-medium ${isDeliveryDelayed ? 'text-destructive' : 'text-green-500'}`}>
+                {isDeliveryDelayed ? '⚠️ Au-dessus de l\'objectif' : '✓ Dans l\'objectif'}
+              </p>
+              <p className="text-sm text-muted-foreground">Cible : 14 jours max</p>
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className="mt-4 h-3 bg-muted rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all ${isDeliveryDelayed ? 'bg-destructive' : 'bg-green-500'}`}
+              style={{ width: `${Math.min((stats.avgDeliveryDays / 14) * 100, 100)}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
         <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">Actions rapides</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-foreground">Évolution des revenus</CardTitle>
+            <Select value={revenuePeriod} onValueChange={setRevenuePeriod}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">7 jours</SelectItem>
+                <SelectItem value="30">30 jours</SelectItem>
+                <SelectItem value="365">12 mois</SelectItem>
+              </SelectContent>
+            </Select>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-muted-foreground text-sm">
-              Utilisez le menu latéral pour naviguer vers les différentes sections du dashboard.
-            </p>
+          <CardContent>
+            <div className="h-64">
+              {revenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => [`${value.toLocaleString()} F`]}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="ventes"
+                      name="Ventes"
+                      stroke="#E2231A"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="recharges"
+                      name="Recharges"
+                      stroke="#10B981"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Aucune donnée disponible
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
+        {/* Category Pie Chart */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Activité récente</CardTitle>
+            <CardTitle className="text-foreground">Répartition des ventes par catégorie</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-sm">
-              Consultez le journal d'audit pour voir l'historique des actions administratives.
-            </p>
+            <div className="h-64">
+              {categoryData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    >
+                      {categoryData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => [`${value.toLocaleString()} F`]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Aucune donnée disponible
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
