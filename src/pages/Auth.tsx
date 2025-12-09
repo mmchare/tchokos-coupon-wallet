@@ -34,7 +34,7 @@ const Auth = () => {
   // Generate email from phone number (for internal auth)
   const phoneToEmail = (phone: string) => {
     const cleanPhone = phone.replace(/\D/g, '');
-    return `${cleanPhone}@pinbaoo.app`;
+    return `${cleanPhone}@dina.app`;
   };
 
   // Simulate OTP generation
@@ -92,7 +92,7 @@ const Auth = () => {
 
     setIsLoading(true);
     const email = phoneToEmail(phoneNumber);
-    const tempPassword = `pinbaoo_${phoneNumber}_secure`;
+    const tempPassword = `dina_${phoneNumber}_secure`;
 
     // Try to sign in first (existing user)
     const { error: signInError } = await signIn(email, tempPassword);
@@ -106,7 +106,7 @@ const Auth = () => {
       // Existing user, redirect to home
       toast({
         title: "Connexion réussie !",
-        description: "Bienvenue sur PINBAOO",
+        description: "Bienvenue sur DINA",
       });
       navigate('/');
     }
@@ -124,7 +124,7 @@ const Auth = () => {
 
     setIsLoading(true);
     const email = phoneToEmail(phoneNumber);
-    const tempPassword = `pinbaoo_${phoneNumber}_secure`;
+    const tempPassword = `dina_${phoneNumber}_secure`;
 
     const { error } = await signUp(
       email,
@@ -149,7 +149,7 @@ const Auth = () => {
     }
 
     toast({
-      title: "Bienvenue sur PINBAOO ! 🎉",
+      title: "Bienvenue sur DINA ! 🎉",
       description: "Votre compte a été créé avec succès",
     });
     navigate('/');
@@ -175,9 +175,9 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="pinbaoo-logo text-5xl mb-2">PINBAOO</h1>
+          <h1 className="pinbaoo-logo text-5xl mb-2">DINA</h1>
           <p className="text-muted-foreground text-sm mb-4">
-            L'assurance d'un achat vérifié en Chine
+            Votre partenaire e-commerce de confiance
           </p>
         </div>
 
@@ -346,7 +346,7 @@ const Auth = () => {
                 </label>
                 <Input
                   type="text"
-                  placeholder="Ex: PINB2024"
+                  placeholder="Ex: DINA2024"
                   value={affiliationCode}
                   onChange={(e) => setAffiliationCode(e.target.value.toUpperCase())}
                   maxLength={8}

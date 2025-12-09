@@ -1,5 +1,5 @@
 /**
- * Home page - PINBAOO E-commerce
+ * Home page - DINA E-commerce
  * Tech gadgets marketplace with coupon system
  */
 
@@ -239,10 +239,10 @@ const Home = () => {
         <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Bienvenue sur{' '}
-            <span className="text-pinbaoo-yellow">PINBAOO</span>
+            <span className="text-pinbaoo-yellow">DINA</span>
           </h1>
           <p className="text-xs sm:text-base text-muted-foreground mb-2 max-w-xl mx-auto px-4">
-            L'assurance d'un achat vérifié en Chine
+            Votre partenaire e-commerce de confiance
           </p>
           <p className="text-sm sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables et accessoires. 
@@ -288,7 +288,7 @@ const Home = () => {
                 </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md bg-background border-border">
                 <SheetHeader>
-                  <SheetTitle className="text-foreground">Mon Coupon PINBAOO</SheetTitle>
+                  <SheetTitle className="text-foreground">Mon Coupon DINA</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <CouponPanel

@@ -106,7 +106,7 @@ const Profile = () => {
     await signOut();
     toast({
       title: "Déconnexion",
-      description: "À bientôt sur PINBAOO !",
+      description: "À bientôt sur DINA !",
     });
     navigate('/auth');
   };
@@ -195,7 +195,7 @@ const Profile = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Partage ton code PINBAOO et gagne <span className="text-pinbaoo-yellow font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-pinbaoo-green font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
+                Partage ton code DINA et gagne <span className="text-pinbaoo-yellow font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-pinbaoo-green font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
               </p>
             </CardContent>
           </Card>
@@ -307,7 +307,7 @@ const Profile = () => {
           {isAdmin && (
             <div className="pt-8 border-t border-border">
               <button
-                onClick={() => window.open('https://dashboard.pinbaoo.cm/login', '_blank')}
+                onClick={() => window.open('https://dashboard.dina.cm/login', '_blank')}
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 <Lock className="h-4 w-4" />
