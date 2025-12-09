@@ -33,6 +33,7 @@ interface Product {
   category: string;
   rating: number;
   image: string;
+  isAuction?: boolean;
 }
 
 interface CouponItem {
@@ -63,7 +64,8 @@ const Home = () => {
       originalPrice: 950000,
       category: 'Smartphones',
       rating: 4.9,
-      image: iphoneImg
+      image: iphoneImg,
+      isAuction: true, // Enchère active
     },
     {
       id: '2',
@@ -72,7 +74,8 @@ const Home = () => {
       originalPrice: 780000,
       category: 'Smartphones',
       rating: 4.8,
-      image: samsungImg
+      image: samsungImg,
+      isAuction: true, // Enchère active
     },
     {
       id: '3',
@@ -81,7 +84,7 @@ const Home = () => {
       originalPrice: 1400000,
       category: 'Ordinateurs',
       rating: 4.9,
-      image: macbookImg
+      image: macbookImg,
     },
     {
       id: '4',
@@ -317,6 +320,7 @@ const Home = () => {
             <ProductCard
               key={product.id}
               {...product}
+              isAuction={product.isAuction}
               onAddToCoupon={handleAddToCoupon}
             />
           ))}
