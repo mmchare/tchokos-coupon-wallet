@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ const Profile = () => {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -65,6 +66,14 @@ const Profile = () => {
         .eq('referrer_id', user.id);
       
       setReferralCount(count || 0);
+
+      // Fetch orders count
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      
+      setOrderCount(ordersCount || 0);
 
       // Check admin status using the secure database function
       const { data: adminCheck } = await supabase.rpc('is_admin');
@@ -275,6 +284,24 @@ const Profile = () => {
                 >
                   Recharger
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="bg-card border-border cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => navigate('/orders')}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Commandes</p>
+                    <p className="text-2xl font-bold text-foreground">{orderCount}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-8 w-8 text-jinbao-blue" />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

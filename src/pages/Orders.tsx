@@ -1,0 +1,179 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Package, ShoppingBag, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import OrderTrackingCard from '@/components/OrderTrackingCard';
+
+interface Order {
+  id: string;
+  status: string;
+  logistics_step: number;
+  total_amount: number;
+  city: string;
+  delivery_address: string;
+  whatsapp_number: string;
+  created_at: string;
+  product_id: string | null;
+  product?: {
+    name: string;
+    images: string[] | null;
+  } | null;
+}
+
+const Orders = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          product:products(name, images)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching orders:', error);
+      } else {
+        setOrders(data || []);
+      }
+      
+      setLoading(false);
+    };
+
+    fetchOrders();
+  }, [user]);
+
+  const filterOrders = (status: string) => {
+    if (status === 'all') return orders;
+    if (status === 'active') return orders.filter(o => o.logistics_step < 4 && o.status !== 'cancelled');
+    if (status === 'delivered') return orders.filter(o => o.logistics_step === 4 || o.status === 'delivered');
+    return orders;
+  };
+
+  const filteredOrders = filterOrders(activeTab);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-jinbao-red" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Package className="h-6 w-6 text-jinbao-red" />
+              <h1 className="text-2xl font-bold text-foreground">Mes Commandes</h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="all" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
+              Toutes ({orders.length})
+            </TabsTrigger>
+            <TabsTrigger value="active" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
+              En cours ({orders.filter(o => o.logistics_step < 4 && o.status !== 'cancelled').length})
+            </TabsTrigger>
+            <TabsTrigger value="delivered" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
+              Livrées ({orders.filter(o => o.logistics_step === 4 || o.status === 'delivered').length})
+            </TabsTrigger>
+          </TabsList>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-jinbao-red mb-4" />
+              <p className="text-muted-foreground">Chargement de vos commandes...</p>
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <Card className="bg-card border-border">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {activeTab === 'all' ? 'Aucune commande' : 
+                   activeTab === 'active' ? 'Aucune commande en cours' : 
+                   'Aucune commande livrée'}
+                </h3>
+                <p className="text-muted-foreground text-center mb-6">
+                  {activeTab === 'all' 
+                    ? "Vous n'avez pas encore passé de commande"
+                    : activeTab === 'active'
+                    ? "Toutes vos commandes ont été livrées"
+                    : "Vos commandes en cours apparaîtront ici une fois livrées"}
+                </p>
+                <Button
+                  onClick={() => navigate('/')}
+                  className="bg-jinbao-red hover:bg-jinbao-red/90 text-white"
+                >
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Découvrir nos produits
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <TabsContent value={activeTab} className="space-y-4 mt-0">
+              {filteredOrders.map((order) => (
+                <OrderTrackingCard key={order.id} order={order} />
+              ))}
+            </TabsContent>
+          )}
+        </Tabs>
+
+        {/* Delivery Info */}
+        <Card className="mt-6 bg-jinbao-blue/10 border-jinbao-blue/30">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <Package className="h-8 w-8 text-jinbao-blue" />
+              <div>
+                <p className="font-semibold text-foreground">Délai de livraison JinBao</p>
+                <p className="text-sm text-muted-foreground">
+                  10-14 jours maximum pour la livraison depuis la Chine
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+};
+
+export default Orders;

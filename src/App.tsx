@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Recharge from "./pages/Recharge";
 import Profile from "./pages/Profile";
 import ProductDetail from "./pages/ProductDetail";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/recharge" element={<Recharge />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/orders" element={<Orders />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
