@@ -179,7 +179,7 @@ const Recharge = () => {
     setPaymentStatus('pending');
 
     try {
-      const { data, error } = await supabase.functions.invoke('feexpay-payment', {
+      const { data, error } = await supabase.functions.invoke('notchpay-payment', {
         body: {
           amount: parseInt(amount),
           phone_number: phoneNumber,
@@ -481,7 +481,7 @@ const Recharge = () => {
                       <span>{parseInt(amount).toLocaleString()} F</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Frais Feexpay</span>
+                      <span>Frais Notchpay</span>
                       <span>0 F</span>
                     </div>
                     <div className="h-px bg-border my-2" />
