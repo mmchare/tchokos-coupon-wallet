@@ -124,10 +124,9 @@ serve(async (req) => {
       console.error("Africa's Talking returned non-JSON:", smsResponseText);
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: "Code généré (erreur API SMS)",
-          debug_code: otpCode,
-          sms_error: smsResponseText
+          success: false, 
+          error: "Erreur d'authentification SMS - vérifiez vos credentials Africa's Talking",
+          debug_code: isSandbox ? otpCode : undefined
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -139,10 +138,9 @@ serve(async (req) => {
       console.error("SMS sending failed:", smsResult);
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: "Code généré (erreur SMS)",
-          debug_code: otpCode,
-          sms_error: smsResult
+          success: false, 
+          error: "Échec de l'envoi SMS",
+          debug_code: isSandbox ? otpCode : undefined
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
