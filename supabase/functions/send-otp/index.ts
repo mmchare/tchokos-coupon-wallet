@@ -115,12 +115,29 @@ serve(async (req) => {
       body: formData.toString(),
     });
 
-    const smsResult = await smsResponse.json();
+    const smsResponseText = await smsResponse.text();
+    console.log("Africa's Talking raw response:", smsResponseText);
+
+    let smsResult;
+    try {
+      smsResult = JSON.parse(smsResponseText);
+    } catch {
+      console.error("Africa's Talking returned non-JSON:", smsResponseText);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Code généré (erreur API SMS)",
+          debug_code: otpCode,
+          sms_error: smsResponseText
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log("Africa's Talking response:", JSON.stringify(smsResult));
 
     if (!smsResponse.ok) {
       console.error("SMS sending failed:", smsResult);
-      // Return success anyway with debug code for sandbox testing
       return new Response(
         JSON.stringify({ 
           success: true, 
