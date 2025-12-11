@@ -187,6 +187,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         onClose={() => setIsDeliveryFormOpen(false)}
         onSubmit={handleDeliverySubmit}
         total={total}
+        items={items}
       />
 
       {/* Purchase Confirmation Modal */}
