@@ -98,12 +98,16 @@ serve(async (req: Request) => {
     const validProductId = isValidUUID(product_id) ? product_id : 
                            isValidUUID(items[0]?.id) ? items[0].id : null;
 
+    // Get product name and image from items
+    const productName = items.length === 1 ? items[0].name : items.map(i => i.name).join(', ');
+    
     // Create order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id,
         product_id: validProductId,
+        product_name: productName,
         total_amount,
         city,
         delivery_address,
