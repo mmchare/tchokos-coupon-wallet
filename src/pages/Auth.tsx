@@ -7,6 +7,7 @@ import { Phone, ArrowRight, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { supabase } from '@/integrations/supabase/client';
 
 type AuthStep = 'phone' | 'otp' | 'profile';
 
@@ -22,7 +23,7 @@ const Auth = () => {
   const [affiliationCode, setAffiliationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [debugCode, setDebugCode] = useState<string | null>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -37,13 +38,6 @@ const Auth = () => {
     return `${cleanPhone}@jinbao.app`;
   };
 
-  // Simulate OTP generation
-  const generateOTP = () => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
-    return otp;
-  };
-
   const handleSendOTP = async () => {
     if (!phoneNumber || phoneNumber.length < 8) {
       toast({
@@ -55,20 +49,50 @@ const Auth = () => {
     }
 
     setIsLoading(true);
+    setDebugCode(null);
     
-    // Simulate sending OTP via SMS
-    const otp = generateOTP();
-    
-    // In production, this would call an SMS API
-    // For demo, we show the OTP in a toast
-    setTimeout(() => {
-      toast({
-        title: "Code envoyé par SMS ! 📱",
-        description: `Votre code de vérification est : ${otp}`,
+    try {
+      // Call the send-otp edge function
+      const { data, error } = await supabase.functions.invoke('send-otp', {
+        body: { phone: phoneNumber }
       });
+
+      if (error) {
+        console.error('Error sending OTP:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'envoyer le code SMS",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // In sandbox mode, show the debug code
+      if (data?.debug_code) {
+        setDebugCode(data.debug_code);
+        toast({
+          title: "Code envoyé ! 📱",
+          description: `Mode test - Code: ${data.debug_code}`,
+        });
+      } else {
+        toast({
+          title: "Code envoyé par SMS ! 📱",
+          description: "Vérifiez vos messages SMS",
+        });
+      }
+      
       setStep('otp');
+    } catch (err) {
+      console.error('Send OTP error:', err);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleVerifyOTP = async () => {
@@ -81,34 +105,52 @@ const Auth = () => {
       return;
     }
 
-    if (otpCode !== generatedOtp) {
+    setIsLoading(true);
+
+    try {
+      // Call the verify-otp edge function
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: { phone: phoneNumber, code: otpCode }
+      });
+
+      if (error || !data?.success) {
+        toast({
+          title: "Code incorrect",
+          description: data?.error || "Le code de vérification est incorrect ou expiré",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // OTP verified successfully, now handle auth
+      const email = phoneToEmail(phoneNumber);
+      const tempPassword = `jinbao_${phoneNumber}_secure`;
+
+      // Try to sign in first (existing user)
+      const { error: signInError } = await signIn(email, tempPassword);
+
+      if (signInError) {
+        // User doesn't exist, proceed to profile completion
+        setIsNewUser(true);
+        setStep('profile');
+        setIsLoading(false);
+      } else {
+        // Existing user, redirect to home
+        toast({
+          title: "Connexion réussie !",
+          description: "Bienvenue sur JinBao Smart Market",
+        });
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Verify OTP error:', err);
       toast({
-        title: "Code incorrect",
-        description: "Le code de vérification est incorrect",
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la vérification",
         variant: "destructive"
       });
-      return;
-    }
-
-    setIsLoading(true);
-    const email = phoneToEmail(phoneNumber);
-    const tempPassword = `jinbao_${phoneNumber}_secure`;
-
-    // Try to sign in first (existing user)
-    const { error: signInError } = await signIn(email, tempPassword);
-
-    if (signInError) {
-      // User doesn't exist, proceed to profile completion
-      setIsNewUser(true);
-      setStep('profile');
       setIsLoading(false);
-    } else {
-      // Existing user, redirect to home
-      toast({
-        title: "Connexion réussie !",
-        description: "Bienvenue sur JinBao Smart Market",
-      });
-      navigate('/');
     }
   };
 
@@ -252,6 +294,13 @@ const Auth = () => {
               <p className="text-muted-foreground text-center text-sm">
                 Entrez le code à 6 chiffres envoyé au {phoneNumber}
               </p>
+              {debugCode && (
+                <div className="bg-jinbao-blue/10 border border-jinbao-blue/30 rounded-lg p-3 mt-2">
+                  <p className="text-jinbao-blue text-sm font-medium text-center">
+                    🧪 Mode Sandbox - Code: <span className="font-bold">{debugCode}</span>
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="flex justify-center">
