@@ -96,10 +96,9 @@ serve(async (req) => {
     formData.append("to", formattedPhone);
     formData.append("message", smsMessage);
     
-    // Only add custom Sender ID in production (sandbox doesn't support custom sender IDs)
-    if (!isSandbox) {
-      formData.append("from", "JinBao");
-    }
+    // Note: Custom Sender ID "JinBao" requires approval from Africa's Talking
+    // For now, we send without a custom sender ID (SMS will come from a generic number)
+    // To use a custom sender ID, request approval at: https://account.africastalking.com/apps/sandbox/sms/shortcodes/create
 
     console.log("Sending SMS via Africa's Talking...");
     console.log("Using URL:", atBaseUrl);
