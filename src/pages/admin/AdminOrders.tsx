@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ChevronRight, Phone } from 'lucide-react';
+import { Search, ChevronRight, Phone, Link2, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -27,6 +27,7 @@ interface Order {
   products?: {
     name: string;
     images: string[] | null;
+    source_link?: string | null;
   } | null;
   profiles?: {
     full_name: string;
@@ -55,7 +56,7 @@ const AdminOrders = () => {
       .from('orders')
       .select(`
         *,
-        products (name, images),
+        products (name, images, source_link),
         profiles:user_id (full_name, phone)
       `)
       .order('created_at', { ascending: false });
@@ -220,6 +221,7 @@ const AdminOrders = () => {
                 <TableHead>Client</TableHead>
                 <TableHead>Montant</TableHead>
                 <TableHead>Livraison</TableHead>
+                <TableHead>Source Fournisseur</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
@@ -227,13 +229,13 @@ const AdminOrders = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     Chargement...
                   </TableCell>
                 </TableRow>
               ) : filteredOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Aucune commande trouvée
                   </TableCell>
                 </TableRow>
@@ -285,6 +287,21 @@ const AdminOrders = () => {
                         <p className="font-medium">{order.city}</p>
                         <p className="text-muted-foreground line-clamp-1">{order.delivery_address}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {order.products?.source_link ? (
+                        <a
+                          href={order.products.source_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-jinbao-red/10 text-jinbao-red rounded text-xs font-medium hover:bg-jinbao-red/20 transition-colors"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Acheter
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">Non disponible</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
