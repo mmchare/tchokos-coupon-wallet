@@ -164,6 +164,33 @@ export type Database = {
           },
         ]
       }
+      otp_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone: string
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           auction_end_date: string | null
@@ -177,6 +204,7 @@ export type Database = {
           name: string
           original_price: number | null
           price: number
+          source_link: string | null
           stock_available: number
           updated_at: string
           video_url: string | null
@@ -193,6 +221,7 @@ export type Database = {
           name: string
           original_price?: number | null
           price?: number
+          source_link?: string | null
           stock_available?: number
           updated_at?: string
           video_url?: string | null
@@ -209,6 +238,7 @@ export type Database = {
           name?: string
           original_price?: number | null
           price?: number
+          source_link?: string | null
           stock_available?: number
           updated_at?: string
           video_url?: string | null
