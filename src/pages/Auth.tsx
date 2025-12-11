@@ -24,6 +24,15 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [debugCode, setDebugCode] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -76,13 +85,14 @@ const Auth = () => {
           description: `Mode test - Code: ${data.debug_code}`,
         });
       } else {
-        toast({
+      toast({
           title: "Code envoyé par SMS ! 📱",
           description: "Vérifiez vos messages SMS",
         });
       }
       
       setStep('otp');
+      setResendCooldown(60); // Start 60-second cooldown
     } catch (err) {
       console.error('Send OTP error:', err);
       toast({
@@ -347,9 +357,16 @@ const Auth = () => {
                 </button>
                 <button
                   onClick={handleSendOTP}
-                  className="text-jinbao-red hover:underline"
+                  disabled={resendCooldown > 0 || isLoading}
+                  className={`transition-colors ${
+                    resendCooldown > 0 
+                      ? 'text-muted-foreground cursor-not-allowed' 
+                      : 'text-jinbao-red hover:underline'
+                  }`}
                 >
-                  Renvoyer le code
+                  {resendCooldown > 0 
+                    ? `Renvoyer dans ${resendCooldown}s` 
+                    : 'Renvoyer le code'}
                 </button>
               </div>
 
