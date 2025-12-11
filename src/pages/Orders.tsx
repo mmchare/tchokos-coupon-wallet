@@ -18,6 +18,8 @@ interface Order {
   whatsapp_number: string;
   created_at: string;
   product_id: string | null;
+  product_name: string | null;
+  product_image: string | null;
   product?: {
     name: string;
     images: string[] | null;

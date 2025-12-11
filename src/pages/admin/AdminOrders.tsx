@@ -15,6 +15,8 @@ interface Order {
   id: string;
   user_id: string;
   product_id: string | null;
+  product_name: string | null;
+  product_image: string | null;
   total_amount: number;
   status: string;
   logistics_step: number;
@@ -133,8 +135,9 @@ const AdminOrders = () => {
   };
 
   const filteredOrders = orders.filter(o => {
+    const productName = o.product_name || o.products?.name || '';
     const matchesSearch =
-      o.products?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       o.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       o.city.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -245,15 +248,15 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {order.products?.images?.[0] && (
+                        {(order.product_image || order.products?.images?.[0]) && (
                           <img
-                            src={order.products.images[0]}
+                            src={order.product_image || order.products?.images?.[0]}
                             alt=""
                             className="h-10 w-10 rounded object-cover"
                           />
                         )}
                         <div>
-                          <p className="font-medium line-clamp-1">{order.products?.name || 'Produit'}</p>
+                          <p className="font-medium line-clamp-1">{order.product_name || order.products?.name || 'Produit'}</p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
                           </p>

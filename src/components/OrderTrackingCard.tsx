@@ -13,6 +13,8 @@ interface OrderTrackingCardProps {
     delivery_address: string;
     whatsapp_number: string;
     created_at: string;
+    product_name?: string | null;
+    product_image?: string | null;
     product?: {
       name: string;
       images: string[] | null;
@@ -88,15 +90,19 @@ const OrderTrackingCard = ({ order }: OrderTrackingCardProps) => {
     window.open(`https://wa.me/237696417018?text=${message}`, '_blank');
   };
 
+  // Get the product name from either product_name field or joined product
+  const displayProductName = order.product_name || order.product?.name || 'Produit';
+  const displayProductImage = order.product_image || order.product?.images?.[0];
+
   return (
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-3">
-            {order.product?.images?.[0] && (
+            {displayProductImage && (
               <img 
-                src={order.product.images[0]} 
-                alt={order.product.name || 'Produit'}
+                src={displayProductImage} 
+                alt={displayProductName}
                 className="w-12 h-12 rounded-lg object-cover"
               />
             )}
@@ -105,7 +111,7 @@ const OrderTrackingCard = ({ order }: OrderTrackingCardProps) => {
                 Commande #{order.id.slice(0, 8).toUpperCase()}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {order.product?.name || 'Produits multiples'}
+                {displayProductName}
               </p>
             </div>
           </div>

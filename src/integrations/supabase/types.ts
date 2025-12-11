@@ -109,6 +109,8 @@ export type Database = {
           id: string
           logistics_step: number
           product_id: string | null
+          product_image: string | null
+          product_name: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -122,6 +124,8 @@ export type Database = {
           id?: string
           logistics_step?: number
           product_id?: string | null
+          product_image?: string | null
+          product_name?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -135,6 +139,8 @@ export type Database = {
           id?: string
           logistics_step?: number
           product_id?: string | null
+          product_image?: string | null
+          product_name?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
