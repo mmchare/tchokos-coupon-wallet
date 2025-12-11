@@ -87,12 +87,23 @@ serve(async (req: Request) => {
       );
     }
 
+    // Helper function to validate UUID format
+    const isValidUUID = (str: string | null | undefined): boolean => {
+      if (!str) return false;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+
+    // Only use product_id if it's a valid UUID
+    const validProductId = isValidUUID(product_id) ? product_id : 
+                           isValidUUID(items[0]?.id) ? items[0].id : null;
+
     // Create order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id,
-        product_id: product_id || items[0]?.id || null,
+        product_id: validProductId,
         total_amount,
         city,
         delivery_address,
