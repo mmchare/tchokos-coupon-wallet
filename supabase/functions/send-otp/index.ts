@@ -95,7 +95,11 @@ serve(async (req) => {
     formData.append("username", atUsername);
     formData.append("to", formattedPhone);
     formData.append("message", smsMessage);
-    formData.append("from", "JinBao"); // Sender ID (may need approval in production)
+    
+    // Only add custom Sender ID in production (sandbox doesn't support custom sender IDs)
+    if (!isSandbox) {
+      formData.append("from", "JinBao");
+    }
 
     console.log("Sending SMS via Africa's Talking...");
     console.log("Using URL:", atBaseUrl);
