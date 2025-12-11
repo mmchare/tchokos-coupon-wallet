@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -23,6 +23,7 @@ interface Product {
   auction_end_date: string | null;
   images: string[] | null;
   video_url: string | null;
+  source_link: string | null;
 }
 
 const AdminProducts = () => {
@@ -31,6 +32,11 @@ const AdminProducts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -43,8 +49,9 @@ const AdminProducts = () => {
     is_verified: false,
     is_auction: false,
     auction_end_date: '',
-    images: '',
-    video_url: ''
+    images: [] as string[],
+    video_url: '',
+    source_link: ''
   });
 
   const fetchProducts = async () => {
@@ -55,7 +62,7 @@ const AdminProducts = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setProducts(data);
+      setProducts(data as Product[]);
     }
     setIsLoading(false);
   };
@@ -76,8 +83,9 @@ const AdminProducts = () => {
       is_verified: false,
       is_auction: false,
       auction_end_date: '',
-      images: '',
-      video_url: ''
+      images: [],
+      video_url: '',
+      source_link: ''
     });
     setIsDialogOpen(true);
   };
@@ -94,14 +102,118 @@ const AdminProducts = () => {
       is_verified: product.is_verified,
       is_auction: product.is_auction,
       auction_end_date: product.auction_end_date?.split('T')[0] || '',
-      images: product.images?.join(', ') || '',
-      video_url: product.video_url || ''
+      images: product.images || [],
+      video_url: product.video_url || '',
+      source_link: product.source_link || ''
     });
     setIsDialogOpen(true);
   };
 
+  const uploadFile = async (file: File, type: 'image' | 'video'): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${type}s/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('product-media')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('product-media')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image/')) continue;
+
+      const url = await uploadFile(file, 'image');
+      if (url) {
+        uploadedUrls.push(url);
+      }
+    }
+
+    if (uploadedUrls.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls]
+      }));
+      toast({ title: "Succès", description: `${uploadedUrls.length} image(s) uploadée(s)` });
+    }
+
+    setUploadingImages(false);
+  };
+
+  const handleVideoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.type.startsWith('video/')) {
+      toast({ title: "Erreur", description: "Le fichier doit être une vidéo", variant: "destructive" });
+      return;
+    }
+
+    setUploadingVideo(true);
+    const url = await uploadFile(file, 'video');
+    
+    if (url) {
+      setFormData(prev => ({ ...prev, video_url: url }));
+      toast({ title: "Succès", description: "Vidéo uploadée" });
+    } else {
+      toast({ title: "Erreur", description: "Erreur lors de l'upload", variant: "destructive" });
+    }
+
+    setUploadingVideo(false);
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleImageUpload(e.dataTransfer.files);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate source_link (required)
+    if (!formData.source_link) {
+      toast({ 
+        title: "Erreur", 
+        description: "Le lien source fournisseur chinois est obligatoire", 
+        variant: "destructive" 
+      });
+      return;
+    }
 
     const productData = {
       name: formData.name,
@@ -115,8 +227,9 @@ const AdminProducts = () => {
       auction_end_date: formData.is_auction && formData.auction_end_date 
         ? new Date(formData.auction_end_date).toISOString() 
         : null,
-      images: formData.images ? formData.images.split(',').map(s => s.trim()).filter(Boolean) : [],
-      video_url: formData.video_url || null
+      images: formData.images.length > 0 ? formData.images : [],
+      video_url: formData.video_url || null,
+      source_link: formData.source_link
     };
 
     if (editingProduct) {
@@ -130,7 +243,6 @@ const AdminProducts = () => {
         return;
       }
 
-      // Log action
       await supabase.rpc('log_admin_action', {
         p_action: 'UPDATE_PRODUCT',
         p_target_type: 'product',
@@ -169,7 +281,6 @@ const AdminProducts = () => {
       return;
     }
 
-    // Log action
     await supabase.rpc('log_admin_action', {
       p_action: 'DELETE_PRODUCT',
       p_target_type: 'product',
@@ -221,19 +332,20 @@ const AdminProducts = () => {
                 <TableHead>Stock</TableHead>
                 <TableHead>Vérifié</TableHead>
                 <TableHead>Enchère</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Chargement...
                   </TableCell>
                 </TableRow>
               ) : filteredProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Aucun produit trouvé
                   </TableCell>
                 </TableRow>
@@ -266,6 +378,21 @@ const AdminProducts = () => {
                       <span className={product.is_auction ? "text-jinbao-red" : "text-muted-foreground"}>
                         {product.is_auction ? "Oui" : "Non"}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {product.source_link ? (
+                        <a
+                          href={product.source_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-jinbao-blue hover:underline flex items-center gap-1"
+                        >
+                          <Link2 className="h-3 w-3" />
+                          Voir
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => openEditDialog(product)}>
@@ -301,6 +428,23 @@ const AdminProducts = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
+              </div>
+
+              {/* Source Link - Required */}
+              <div className="col-span-2">
+                <label className="text-sm font-medium text-jinbao-red">
+                  🔗 Lien Source Fournisseur Chinois *
+                </label>
+                <Input
+                  value={formData.source_link}
+                  onChange={(e) => setFormData({ ...formData, source_link: e.target.value })}
+                  placeholder="https://www.1688.com/... ou https://taobao.com/..."
+                  className="border-jinbao-red/50 focus:border-jinbao-red"
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ce lien est obligatoire pour permettre l'achat chez le fournisseur après commande client.
+                </p>
               </div>
 
               <div>
@@ -348,23 +492,101 @@ const AdminProducts = () => {
                 />
               </div>
 
+              {/* Image Upload Section */}
               <div className="col-span-2">
-                <label className="text-sm font-medium">URLs des images (séparées par des virgules)</label>
-                <Textarea
-                  value={formData.images}
-                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  placeholder="https://..., https://..."
-                  rows={2}
-                />
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Image className="h-4 w-4" />
+                  Photos du produit
+                </label>
+                
+                {/* Drag and Drop Zone */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isDragging 
+                      ? 'border-jinbao-red bg-jinbao-red/10' 
+                      : 'border-border hover:border-jinbao-red/50'
+                  }`}
+                >
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {uploadingImages ? 'Upload en cours...' : 'Glissez-déposez ou cliquez pour ajouter des images'}
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(e.target.files)}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Image Previews */}
+                {formData.images.length > 0 && (
+                  <div className="mt-3 grid grid-cols-4 gap-2">
+                    {formData.images.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="h-20 w-full object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
+              {/* Video Upload Section */}
               <div className="col-span-2">
-                <label className="text-sm font-medium">URL de la vidéo</label>
-                <Input
-                  value={formData.video_url}
-                  onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                  placeholder="https://..."
-                />
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  Vidéo du produit
+                </label>
+                
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={uploadingVideo}
+                    className="flex-1"
+                  >
+                    {uploadingVideo ? 'Upload en cours...' : 'Uploader une vidéo'}
+                  </Button>
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => handleVideoUpload(e.target.files)}
+                    className="hidden"
+                  />
+                </div>
+                
+                {formData.video_url && (
+                  <div className="mt-2 flex items-center gap-2 p-2 bg-muted rounded">
+                    <Video className="h-4 w-4 text-jinbao-blue" />
+                    <span className="text-sm truncate flex-1">{formData.video_url}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, video_url: '' })}
+                      className="text-destructive hover:text-destructive/80"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
