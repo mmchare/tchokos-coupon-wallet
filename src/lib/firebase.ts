@@ -1,3 +1,4 @@
+// Firebase configuration for JinBao Smart Market
 import { initializeApp } from "firebase/app";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
