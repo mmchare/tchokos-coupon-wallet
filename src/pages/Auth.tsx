@@ -14,7 +14,7 @@ type AuthStep = 'phone' | 'otp' | 'profile';
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshProfile } = useAuth();
   
   const [step, setStep] = useState<AuthStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -23,6 +23,7 @@ const Auth = () => {
   const [affiliationCode, setAffiliationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [verifiedPhone, setVerifiedPhone] = useState('');
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -67,12 +68,17 @@ const Auth = () => {
     try {
       const formattedPhone = formatPhoneE164(phoneNumber);
       
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+      // Call our Termii edge function
+      const { data, error } = await supabase.functions.invoke('send-otp', {
+        body: { phone: formattedPhone }
       });
 
       if (error) {
-        throw error;
+        throw new Error(error.message);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Échec de l'envoi du SMS");
       }
 
       toast({
@@ -109,35 +115,46 @@ const Auth = () => {
     try {
       const formattedPhone = formatPhoneE164(phoneNumber);
       
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: otpCode,
-        type: 'sms',
+      // Call our Termii verify edge function
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: { phone: formattedPhone, code: otpCode }
       });
 
       if (error) {
-        throw error;
+        throw new Error(error.message);
       }
 
-      // Check if user has a profile (new user needs to complete profile)
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', data.user.id)
-          .single();
+      if (!data.success) {
+        throw new Error(data.error || "Code incorrect ou expiré");
+      }
 
-        if (!profile?.full_name) {
-          // New user - needs to complete profile
-          setStep('profile');
-        } else {
-          // Existing user - redirect to home
-          toast({
-            title: "Connexion réussie !",
-            description: "Bienvenue sur JinBao Smart Market",
-          });
-          navigate('/');
-        }
+      // OTP verified successfully - check if user exists
+      setVerifiedPhone(data.phone);
+      
+      // Check if profile exists for this phone
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('phone', data.phone)
+        .maybeSingle();
+
+      if (existingProfile?.full_name) {
+        // Existing user - sign them in via custom session
+        toast({
+          title: "Connexion réussie !",
+          description: "Bienvenue sur JinBao Smart Market",
+        });
+        
+        // Store verified phone in localStorage for session persistence
+        localStorage.setItem('jinbao_verified_phone', data.phone);
+        localStorage.setItem('jinbao_user_id', existingProfile.id);
+        
+        // Refresh auth context
+        await refreshProfile();
+        navigate('/');
+      } else {
+        // New user - needs to complete profile
+        setStep('profile');
       }
     } catch (err: any) {
       console.error('Verify OTP error:', err);
@@ -164,29 +181,44 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
-      if (!currentUser) {
-        throw new Error('Utilisateur non connecté');
-      }
+      const formattedPhone = verifiedPhone || formatPhoneE164(phoneNumber);
 
-      const formattedPhone = formatPhoneE164(phoneNumber);
-
-      // Update profile
-      const { error: profileError } = await supabase
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .update({
-          full_name: fullName,
-          phone: formattedPhone,
-        })
-        .eq('id', currentUser.id);
+        .select('id')
+        .eq('phone', formattedPhone)
+        .maybeSingle();
 
-      if (profileError) {
-        throw profileError;
+      let profileId: string;
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ full_name: fullName })
+          .eq('id', existingProfile.id);
+
+        if (updateError) throw updateError;
+        profileId = existingProfile.id;
+      } else {
+        // Create new profile - generate a UUID
+        const newId = crypto.randomUUID();
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: newId,
+            phone: formattedPhone,
+            full_name: fullName,
+            wallet_balance: 0
+          });
+
+        if (createError) throw createError;
+        profileId = newId;
       }
 
       // Handle referral code if provided
-      if (affiliationCode) {
+      if (affiliationCode && profileId) {
         const { data: referralData } = await supabase
           .from('referral_codes')
           .select('user_id')
@@ -194,23 +226,39 @@ const Auth = () => {
           .single();
 
         if (referralData) {
-          await supabase.from('referrals').insert({
-            referrer_id: referralData.user_id,
-            referred_id: currentUser.id,
-          });
+          // Check if referral already exists
+          const { data: existingReferral } = await supabase
+            .from('referrals')
+            .select('id')
+            .eq('referred_id', profileId)
+            .maybeSingle();
 
-          // Add welcome bonus
-          await supabase
-            .from('profiles')
-            .update({ wallet_balance: 1000 })
-            .eq('id', currentUser.id);
+          if (!existingReferral) {
+            await supabase.from('referrals').insert({
+              referrer_id: referralData.user_id,
+              referred_id: profileId,
+            });
+
+            // Add welcome bonus
+            await supabase
+              .from('profiles')
+              .update({ wallet_balance: 1000 })
+              .eq('id', profileId);
+          }
         }
       }
+
+      // Store session info
+      localStorage.setItem('jinbao_verified_phone', formattedPhone);
+      localStorage.setItem('jinbao_user_id', profileId);
 
       toast({
         title: "Bienvenue sur JinBao ! 🎉",
         description: affiliationCode ? "Votre compte a été créé avec succès. Bonus de bienvenue : 1 000 FCAF !" : "Votre compte a été créé avec succès.",
       });
+
+      // Refresh auth context
+      await refreshProfile();
       navigate('/');
     } catch (err: any) {
       console.error('Complete profile error:', err);
