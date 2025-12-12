@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
-import { auth, setupRecaptcha, sendFirebaseOTP } from '@/lib/firebase';
-import { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 
 type AuthStep = 'phone' | 'otp' | 'profile';
+
+// Firebase config for REST API
+const FIREBASE_API_KEY = "AIzaSyDLo_h439EITxQkDpoVGIc-kGzC1NQMWbg";
 
 const Auth = () => {
   const { toast } = useToast();
@@ -25,27 +26,9 @@ const Auth = () => {
   const [affiliationCode, setAffiliationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [debugCode, setDebugCode] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
-  
-  // Firebase state
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
-
-  // Initialize reCAPTCHA on mount
-  useEffect(() => {
-    // Cleanup previous verifier if exists
-    if (recaptchaVerifierRef.current) {
-      recaptchaVerifierRef.current.clear();
-      recaptchaVerifierRef.current = null;
-    }
-    
-    return () => {
-      if (recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current.clear();
-      }
-    };
-  }, []);
+  const [sessionInfo, setSessionInfo] = useState<string | null>(null);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -68,8 +51,8 @@ const Auth = () => {
     return `${cleanPhone}@jinbao.app`;
   };
 
-  // Format phone for display
-  const formatPhoneForDisplay = (phone: string) => {
+  // Format phone for Firebase (E.164 format)
+  const formatPhoneForFirebase = (phone: string) => {
     let formatted = phone.replace(/\s/g, '');
     if (!formatted.startsWith('+')) {
       if (formatted.startsWith('237')) {
@@ -92,46 +75,70 @@ const Auth = () => {
     }
 
     setIsLoading(true);
+    setDebugCode(null);
     
     try {
-      // Setup reCAPTCHA if not already done
-      if (!recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current = setupRecaptcha('recaptcha-container');
-      }
-
-      // Send OTP via Firebase
-      const confirmation = await sendFirebaseOTP(phoneNumber, recaptchaVerifierRef.current);
-      setConfirmationResult(confirmation);
+      const formattedPhone = formatPhoneForFirebase(phoneNumber);
       
-      toast({
-        title: "Code envoyé par SMS ! 📱",
-        description: "Vérifiez vos messages SMS",
-      });
+      // Use Firebase Identity Toolkit REST API to send verification code
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=${FIREBASE_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: formattedPhone,
+            recaptchaToken: 'RECAPTCHA_NOT_REQUIRED_FOR_TESTING'
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Firebase error:', data.error);
+        
+        // Fallback to Africa's Talking if Firebase fails
+        const { data: otpData, error: otpError } = await supabase.functions.invoke('send-otp', {
+          body: { phone: phoneNumber }
+        });
+
+        if (otpError || !otpData?.success) {
+          throw new Error(otpData?.error || 'Failed to send OTP');
+        }
+
+        if (otpData?.debug_code) {
+          setDebugCode(otpData.debug_code);
+          toast({
+            title: "Code envoyé ! 📱",
+            description: `Mode test - Code: ${otpData.debug_code}`,
+          });
+        } else {
+          toast({
+            title: "Code envoyé par SMS ! 📱",
+            description: "Vérifiez vos messages SMS",
+          });
+        }
+        
+        setSessionInfo('africastalking');
+      } else {
+        // Firebase success
+        setSessionInfo(data.sessionInfo);
+        toast({
+          title: "Code envoyé par SMS ! 📱",
+          description: "Vérifiez vos messages SMS (via Firebase)",
+        });
+      }
       
       setStep('otp');
       setResendCooldown(60);
     } catch (err: any) {
-      console.error('Firebase Phone Auth error:', err);
-      
-      // Reset reCAPTCHA on error
-      if (recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current.clear();
-        recaptchaVerifierRef.current = null;
-      }
-      
-      let errorMessage = "Impossible d'envoyer le code SMS";
-      
-      if (err.code === 'auth/invalid-phone-number') {
-        errorMessage = "Numéro de téléphone invalide";
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMessage = "Trop de tentatives. Réessayez plus tard.";
-      } else if (err.code === 'auth/captcha-check-failed') {
-        errorMessage = "Vérification reCAPTCHA échouée. Rechargez la page.";
-      }
-      
+      console.error('Send OTP error:', err);
       toast({
         title: "Erreur",
-        description: errorMessage,
+        description: err.message || "Impossible d'envoyer le code SMS",
         variant: "destructive"
       });
     } finally {
@@ -149,25 +156,49 @@ const Auth = () => {
       return;
     }
 
-    if (!confirmationResult) {
-      toast({
-        title: "Erreur",
-        description: "Session expirée. Veuillez renvoyer le code.",
-        variant: "destructive"
-      });
-      setStep('phone');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // Verify OTP with Firebase
-      const result = await confirmationResult.confirm(otpCode);
-      
-      if (result.user) {
-        // Firebase verification successful
-        // Now sync with Supabase
+      let verified = false;
+
+      if (sessionInfo === 'africastalking') {
+        // Verify with Africa's Talking
+        const { data, error } = await supabase.functions.invoke('verify-otp', {
+          body: { phone: phoneNumber, code: otpCode }
+        });
+
+        if (error || !data?.success) {
+          throw new Error(data?.error || 'Code incorrect');
+        }
+        verified = true;
+      } else if (sessionInfo) {
+        // Verify with Firebase REST API
+        const response = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key=${FIREBASE_API_KEY}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionInfo: sessionInfo,
+              code: otpCode
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error.message || 'Code incorrect');
+        }
+        verified = true;
+      } else {
+        throw new Error('Session expirée. Veuillez renvoyer le code.');
+      }
+
+      if (verified) {
+        // OTP verified successfully, now sync with Supabase
         const email = phoneToEmail(phoneNumber);
         const tempPassword = `jinbao_${phoneNumber.replace(/\D/g, '')}_secure`;
 
@@ -189,18 +220,9 @@ const Auth = () => {
       }
     } catch (err: any) {
       console.error('Verify OTP error:', err);
-      
-      let errorMessage = "Le code de vérification est incorrect";
-      
-      if (err.code === 'auth/invalid-verification-code') {
-        errorMessage = "Code incorrect. Vérifiez et réessayez.";
-      } else if (err.code === 'auth/code-expired') {
-        errorMessage = "Code expiré. Veuillez renvoyer un nouveau code.";
-      }
-      
       toast({
         title: "Code incorrect",
-        description: errorMessage,
+        description: err.message || "Le code de vérification est incorrect",
         variant: "destructive"
       });
     } finally {
@@ -227,7 +249,7 @@ const Auth = () => {
       email,
       tempPassword,
       fullName,
-      formatPhoneForDisplay(phoneNumber),
+      formatPhoneForFirebase(phoneNumber),
       affiliationCode || undefined
     );
 
@@ -253,12 +275,8 @@ const Auth = () => {
   };
 
   const handleResendOTP = async () => {
-    // Reset reCAPTCHA for resend
-    if (recaptchaVerifierRef.current) {
-      recaptchaVerifierRef.current.clear();
-      recaptchaVerifierRef.current = null;
-    }
     setOtpCode('');
+    setSessionInfo(null);
     await handleSendOTP();
   };
 
@@ -280,9 +298,6 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* reCAPTCHA container (invisible) */}
-        <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
-        
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="jinbao-logo text-5xl mb-2">JinBao</h1>
@@ -360,8 +375,15 @@ const Auth = () => {
                 Vérification
               </CardTitle>
               <p className="text-muted-foreground text-center text-sm">
-                Entrez le code à 6 chiffres envoyé au {formatPhoneForDisplay(phoneNumber)}
+                Entrez le code à 6 chiffres envoyé au {formatPhoneForFirebase(phoneNumber)}
               </p>
+              {debugCode && (
+                <div className="bg-jinbao-blue/10 border border-jinbao-blue/30 rounded-lg p-3 mt-2">
+                  <p className="text-jinbao-blue text-sm font-medium text-center">
+                    🧪 Mode Sandbox - Code: <span className="font-bold">{debugCode}</span>
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="flex justify-center">
@@ -404,7 +426,8 @@ const Auth = () => {
                   onClick={() => {
                     setStep('phone');
                     setOtpCode('');
-                    setConfirmationResult(null);
+                    setSessionInfo(null);
+                    setDebugCode(null);
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
