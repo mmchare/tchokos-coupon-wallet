@@ -11,8 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 type AuthStep = 'phone' | 'otp' | 'profile';
 
-// Firebase config for REST API
-const FIREBASE_API_KEY = "AIzaSyDLo_h439EITxQkDpoVGIc-kGzC1NQMWbg";
 
 const Auth = () => {
   const { toast } = useToast();
@@ -78,60 +76,31 @@ const Auth = () => {
     setDebugCode(null);
     
     try {
-      const formattedPhone = formatPhoneForFirebase(phoneNumber);
-      
-      // Use Firebase Identity Toolkit REST API to send verification code
-      const response = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=${FIREBASE_API_KEY}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phoneNumber: formattedPhone,
-            recaptchaToken: 'RECAPTCHA_NOT_REQUIRED_FOR_TESTING'
-          })
-        }
-      );
+      // Send OTP via Africa's Talking edge function
+      const { data: otpData, error: otpError } = await supabase.functions.invoke('send-otp', {
+        body: { phone: phoneNumber }
+      });
 
-      const data = await response.json();
+      console.log('OTP Response:', otpData);
 
-      if (data.error) {
-        console.error('Firebase error:', data.error);
-        
-        // Fallback to Africa's Talking if Firebase fails
-        const { data: otpData, error: otpError } = await supabase.functions.invoke('send-otp', {
-          body: { phone: phoneNumber }
+      if (otpError || !otpData?.success) {
+        throw new Error(otpData?.error || 'Failed to send OTP');
+      }
+
+      if (otpData?.debug_code) {
+        setDebugCode(otpData.debug_code);
+        toast({
+          title: "Code envoyé ! 📱",
+          description: `Mode test - Code: ${otpData.debug_code}`,
         });
-
-        if (otpError || !otpData?.success) {
-          throw new Error(otpData?.error || 'Failed to send OTP');
-        }
-
-        if (otpData?.debug_code) {
-          setDebugCode(otpData.debug_code);
-          toast({
-            title: "Code envoyé ! 📱",
-            description: `Mode test - Code: ${otpData.debug_code}`,
-          });
-        } else {
-          toast({
-            title: "Code envoyé par SMS ! 📱",
-            description: "Vérifiez vos messages SMS",
-          });
-        }
-        
-        setSessionInfo('africastalking');
       } else {
-        // Firebase success
-        setSessionInfo(data.sessionInfo);
         toast({
           title: "Code envoyé par SMS ! 📱",
-          description: "Vérifiez vos messages SMS (via Firebase)",
+          description: "Vérifiez vos messages SMS",
         });
       }
       
+      setSessionInfo('africastalking');
       setStep('otp');
       setResendCooldown(60);
     } catch (err: any) {
@@ -159,64 +128,35 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      let verified = false;
+      // Verify OTP via Africa's Talking edge function
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: { phone: phoneNumber, code: otpCode }
+      });
 
-      if (sessionInfo === 'africastalking') {
-        // Verify with Africa's Talking
-        const { data, error } = await supabase.functions.invoke('verify-otp', {
-          body: { phone: phoneNumber, code: otpCode }
-        });
+      console.log('Verify OTP Response:', data);
 
-        if (error || !data?.success) {
-          throw new Error(data?.error || 'Code incorrect');
-        }
-        verified = true;
-      } else if (sessionInfo) {
-        // Verify with Firebase REST API
-        const response = await fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key=${FIREBASE_API_KEY}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              sessionInfo: sessionInfo,
-              code: otpCode
-            })
-          }
-        );
-
-        const data = await response.json();
-
-        if (data.error) {
-          throw new Error(data.error.message || 'Code incorrect');
-        }
-        verified = true;
-      } else {
-        throw new Error('Session expirée. Veuillez renvoyer le code.');
+      if (error || !data?.success) {
+        throw new Error(data?.error || 'Code incorrect');
       }
 
-      if (verified) {
-        // OTP verified successfully, now sync with Supabase
-        const email = phoneToEmail(phoneNumber);
-        const tempPassword = `jinbao_${phoneNumber.replace(/\D/g, '')}_secure`;
+      // OTP verified successfully, now sync with Supabase
+      const email = phoneToEmail(phoneNumber);
+      const tempPassword = `jinbao_${phoneNumber.replace(/\D/g, '')}_secure`;
 
-        // Try to sign in first (existing user)
-        const { error: signInError } = await signIn(email, tempPassword);
+      // Try to sign in first (existing user)
+      const { error: signInError } = await signIn(email, tempPassword);
 
-        if (signInError) {
-          // User doesn't exist in Supabase, proceed to profile completion
-          setIsNewUser(true);
-          setStep('profile');
-        } else {
-          // Existing user, redirect to home
-          toast({
-            title: "Connexion réussie !",
-            description: "Bienvenue sur JinBao Smart Market",
-          });
-          navigate('/');
-        }
+      if (signInError) {
+        // User doesn't exist in Supabase, proceed to profile completion
+        setIsNewUser(true);
+        setStep('profile');
+      } else {
+        // Existing user, redirect to home
+        toast({
+          title: "Connexion réussie !",
+          description: "Bienvenue sur JinBao Smart Market",
+        });
+        navigate('/');
       }
     } catch (err: any) {
       console.error('Verify OTP error:', err);
