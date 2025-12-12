@@ -38,7 +38,7 @@ serve(async (req) => {
 
     // Get Termii credentials
     const termiiApiKey = Deno.env.get("TERMII_API_KEY");
-    const termiiSenderId = Deno.env.get("TERMII_SENDER_ID") || "JinBao";
+    const termiiSenderId = Deno.env.get("TERMII_SENDER_ID") || "Termii";
 
     if (!termiiApiKey) {
       console.error("Termii API key not configured");
