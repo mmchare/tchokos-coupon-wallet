@@ -21,23 +21,35 @@ serve(async (req) => {
       );
     }
 
-    // Format phone number for Cameroon (remove spaces, ensure proper format)
+    // Format phone number (remove spaces, ensure proper format without +)
     let formattedPhone = phone.replace(/\s+/g, "").replace(/[^\d+]/g, "");
     
-    // Add +237 prefix if not present
-    if (!formattedPhone.startsWith("+")) {
-      if (formattedPhone.startsWith("237")) {
-        formattedPhone = "+" + formattedPhone;
-      } else {
-        formattedPhone = "+237" + formattedPhone;
-      }
+    // Remove + prefix for Termii (requires international format without +)
+    if (formattedPhone.startsWith("+")) {
+      formattedPhone = formattedPhone.substring(1);
+    }
+    
+    // Add 237 prefix if not present (Cameroon)
+    if (!formattedPhone.startsWith("237")) {
+      formattedPhone = "237" + formattedPhone;
     }
 
-    console.log("Sending OTP to:", formattedPhone);
+    console.log("Sending OTP via Termii to:", formattedPhone);
 
-    // Generate 6-digit OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log("Generated OTP:", otpCode);
+    // Get Termii credentials
+    const termiiApiKey = Deno.env.get("TERMII_API_KEY");
+    const termiiSenderId = Deno.env.get("TERMII_SENDER_ID") || "JinBao";
+
+    if (!termiiApiKey) {
+      console.error("Termii API key not configured");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Configuration SMS manquante"
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -48,114 +60,63 @@ serve(async (req) => {
     await supabase
       .from("otp_codes")
       .delete()
-      .eq("phone", formattedPhone);
+      .eq("phone", "+" + formattedPhone);
 
-    // Store OTP in database with 5 min expiration
+    // Send OTP via Termii Token API
+    const termiiPayload = {
+      api_key: termiiApiKey,
+      message_type: "NUMERIC",
+      to: formattedPhone,
+      from: termiiSenderId,
+      channel: "generic",
+      pin_attempts: 3,
+      pin_time_to_live: 5,
+      pin_length: 6,
+      pin_placeholder: "< 1234 >",
+      message_text: "Votre code de verification JinBao est < 1234 >. Valide 5 minutes.",
+      pin_type: "NUMERIC"
+    };
+
+    console.log("Termii request payload:", JSON.stringify({ ...termiiPayload, api_key: "[HIDDEN]" }));
+
+    const termiiResponse = await fetch("https://v3.api.termii.com/api/sms/otp/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(termiiPayload),
+    });
+
+    const termiiResult = await termiiResponse.json();
+    console.log("Termii response:", JSON.stringify(termiiResult));
+
+    if (!termiiResponse.ok || termiiResult.status !== "success") {
+      console.error("Termii SMS sending failed:", termiiResult);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: termiiResult.message || "Échec de l'envoi SMS"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Store pin_id in database for verification
     const { error: insertError } = await supabase.from("otp_codes").insert({
-      phone: formattedPhone,
-      code: otpCode,
+      phone: "+" + formattedPhone,
+      code: termiiResult.pinId, // Store Termii's pin_id as code for verification
       expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     });
 
     if (insertError) {
-      console.error("Error storing OTP:", insertError);
-      return new Response(
-        JSON.stringify({ error: "Erreur lors de la génération du code" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("Error storing OTP pin_id:", insertError);
     }
-
-    // Send SMS via Africa's Talking
-    const atApiKey = Deno.env.get("AFRICASTALKING_API_KEY");
-    const atUsername = Deno.env.get("AFRICASTALKING_USERNAME");
-
-    if (!atApiKey || !atUsername) {
-      console.error("Africa's Talking credentials not configured");
-      // In sandbox mode, return success but indicate SMS not sent
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Code généré (SMS désactivé en mode test)",
-          debug_code: otpCode // Only in sandbox mode
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Africa's Talking SMS API
-    const smsMessage = `JinBao Smart Market: Votre code de verification est ${otpCode}. Valide 5 minutes.`;
-    
-    // Determine if sandbox or production
-    const isSandbox = atUsername === "sandbox" || atUsername.toLowerCase().includes("sandbox");
-    const atBaseUrl = isSandbox 
-      ? "https://api.sandbox.africastalking.com/version1/messaging"
-      : "https://api.africastalking.com/version1/messaging";
-
-    const formData = new URLSearchParams();
-    formData.append("username", atUsername);
-    formData.append("to", formattedPhone);
-    formData.append("message", smsMessage);
-    
-    // Note: Custom Sender ID "JinBao" requires approval from Africa's Talking
-    // For now, we send without a custom sender ID (SMS will come from a generic number)
-    // To use a custom sender ID, request approval at: https://account.africastalking.com/apps/sandbox/sms/shortcodes/create
-
-    console.log("Sending SMS via Africa's Talking...");
-    console.log("Using URL:", atBaseUrl);
-    console.log("Username:", atUsername);
-
-    const smsResponse = await fetch(atBaseUrl, {
-      method: "POST",
-      headers: {
-        "apiKey": atApiKey,
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json",
-      },
-      body: formData.toString(),
-    });
-
-    const smsResponseText = await smsResponse.text();
-    console.log("Africa's Talking raw response:", smsResponseText);
-
-    let smsResult;
-    try {
-      smsResult = JSON.parse(smsResponseText);
-    } catch {
-      console.error("Africa's Talking returned non-JSON:", smsResponseText);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Erreur d'authentification SMS - vérifiez vos credentials Africa's Talking",
-          debug_code: isSandbox ? otpCode : undefined
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log("Africa's Talking response:", JSON.stringify(smsResult));
-
-    if (!smsResponse.ok) {
-      console.error("SMS sending failed:", smsResult);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Échec de l'envoi SMS",
-          debug_code: isSandbox ? otpCode : undefined
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check if SMS was actually sent
-    const recipients = smsResult?.SMSMessageData?.Recipients || [];
-    const sentSuccessfully = recipients.some((r: any) => r.status === "Success");
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: sentSuccessfully ? "Code envoyé par SMS" : "Code généré",
-        sms_sent: sentSuccessfully,
-        debug_code: isSandbox ? otpCode : undefined // Only show code in sandbox
+        message: "Code envoyé par SMS",
+        pinId: termiiResult.pinId
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
