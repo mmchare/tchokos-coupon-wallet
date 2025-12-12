@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, ArrowRight, MessageCircle } from 'lucide-react';
+import { Phone, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -11,11 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 type AuthStep = 'phone' | 'otp' | 'profile';
 
-
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, signUp, signIn, loading } = useAuth();
+  const { user, loading } = useAuth();
   
   const [step, setStep] = useState<AuthStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -23,10 +22,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [affiliationCode, setAffiliationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [debugCode, setDebugCode] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [sessionInfo, setSessionInfo] = useState<string | null>(null);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -43,14 +39,8 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  // Generate email from phone number (for internal auth)
-  const phoneToEmail = (phone: string) => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    return `${cleanPhone}@jinbao.app`;
-  };
-
-  // Format phone for Firebase (E.164 format)
-  const formatPhoneForFirebase = (phone: string) => {
+  // Format phone to E.164 format
+  const formatPhoneE164 = (phone: string) => {
     let formatted = phone.replace(/\s/g, '');
     if (!formatted.startsWith('+')) {
       if (formatted.startsWith('237')) {
@@ -73,34 +63,23 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    setDebugCode(null);
     
     try {
-      // Send OTP via Africa's Talking edge function
-      const { data: otpData, error: otpError } = await supabase.functions.invoke('send-otp', {
-        body: { phone: phoneNumber }
+      const formattedPhone = formatPhoneE164(phoneNumber);
+      
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
       });
 
-      console.log('OTP Response:', otpData);
-
-      if (otpError || !otpData?.success) {
-        throw new Error(otpData?.error || 'Failed to send OTP');
+      if (error) {
+        throw error;
       }
 
-      if (otpData?.debug_code) {
-        setDebugCode(otpData.debug_code);
-        toast({
-          title: "Code envoyé ! 📱",
-          description: `Mode test - Code: ${otpData.debug_code}`,
-        });
-      } else {
-        toast({
-          title: "Code envoyé par SMS ! 📱",
-          description: "Vérifiez vos messages SMS",
-        });
-      }
+      toast({
+        title: "Code envoyé ! 📱",
+        description: "Vérifiez vos SMS pour le code de vérification",
+      });
       
-      setSessionInfo('africastalking');
       setStep('otp');
       setResendCooldown(60);
     } catch (err: any) {
@@ -128,35 +107,37 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // Verify OTP via Africa's Talking edge function
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { phone: phoneNumber, code: otpCode }
+      const formattedPhone = formatPhoneE164(phoneNumber);
+      
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otpCode,
+        type: 'sms',
       });
 
-      console.log('Verify OTP Response:', data);
-
-      if (error || !data?.success) {
-        throw new Error(data?.error || 'Code incorrect');
+      if (error) {
+        throw error;
       }
 
-      // OTP verified successfully, now sync with Supabase
-      const email = phoneToEmail(phoneNumber);
-      const tempPassword = `jinbao_${phoneNumber.replace(/\D/g, '')}_secure`;
+      // Check if user has a profile (new user needs to complete profile)
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', data.user.id)
+          .single();
 
-      // Try to sign in first (existing user)
-      const { error: signInError } = await signIn(email, tempPassword);
-
-      if (signInError) {
-        // User doesn't exist in Supabase, proceed to profile completion
-        setIsNewUser(true);
-        setStep('profile');
-      } else {
-        // Existing user, redirect to home
-        toast({
-          title: "Connexion réussie !",
-          description: "Bienvenue sur JinBao Smart Market",
-        });
-        navigate('/');
+        if (!profile?.full_name) {
+          // New user - needs to complete profile
+          setStep('profile');
+        } else {
+          // Existing user - redirect to home
+          toast({
+            title: "Connexion réussie !",
+            description: "Bienvenue sur JinBao Smart Market",
+          });
+          navigate('/');
+        }
       }
     } catch (err: any) {
       console.error('Verify OTP error:', err);
@@ -181,50 +162,71 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    const cleanPhone = phoneNumber.replace(/\D/g, '');
-    const email = phoneToEmail(phoneNumber);
-    const tempPassword = `jinbao_${cleanPhone}_secure`;
-
-    const { error } = await signUp(
-      email,
-      tempPassword,
-      fullName,
-      formatPhoneForFirebase(phoneNumber),
-      affiliationCode || undefined
-    );
-
-    if (error) {
-      let message = "Une erreur s'est produite";
-      if (error.message.includes('already registered')) {
-        message = "Ce numéro est déjà utilisé.";
+    
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        throw new Error('Utilisateur non connecté');
       }
+
+      const formattedPhone = formatPhoneE164(phoneNumber);
+
+      // Update profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone: formattedPhone,
+        })
+        .eq('id', currentUser.id);
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Handle referral code if provided
+      if (affiliationCode) {
+        const { data: referralData } = await supabase
+          .from('referral_codes')
+          .select('user_id')
+          .eq('code', affiliationCode.toUpperCase())
+          .single();
+
+        if (referralData) {
+          await supabase.from('referrals').insert({
+            referrer_id: referralData.user_id,
+            referred_id: currentUser.id,
+          });
+
+          // Add welcome bonus
+          await supabase
+            .from('profiles')
+            .update({ wallet_balance: 1000 })
+            .eq('id', currentUser.id);
+        }
+      }
+
+      toast({
+        title: "Bienvenue sur JinBao ! 🎉",
+        description: affiliationCode ? "Votre compte a été créé avec succès. Bonus de bienvenue : 1 000 FCAF !" : "Votre compte a été créé avec succès.",
+      });
+      navigate('/');
+    } catch (err: any) {
+      console.error('Complete profile error:', err);
       toast({
         title: "Erreur",
-        description: message,
+        description: err.message || "Une erreur s'est produite",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    toast({
-      title: "Bienvenue sur JinBao ! 🎉",
-      description: "Votre compte a été créé avec succès. Bonus de bienvenue : 1 000 FCAF !",
-    });
-    navigate('/');
   };
 
   const handleResendOTP = async () => {
     setOtpCode('');
-    setSessionInfo(null);
     await handleSendOTP();
-  };
-
-  const handleTelegramFallback = () => {
-    toast({
-      title: "Telegram",
-      description: "Fonctionnalité Telegram disponible prochainement",
-    });
   };
 
   if (loading) {
@@ -294,15 +296,6 @@ const Auth = () => {
                   </>
                 )}
               </Button>
-
-              {/* Telegram Fallback */}
-              <button
-                onClick={handleTelegramFallback}
-                className="w-full text-center text-sm text-muted-foreground hover:text-jinbao-blue transition-colors"
-              >
-                <MessageCircle className="inline h-4 w-4 mr-1" />
-                Pas de SMS reçu ? Essayez Telegram
-              </button>
             </CardContent>
           </Card>
         )}
@@ -315,15 +308,8 @@ const Auth = () => {
                 Vérification
               </CardTitle>
               <p className="text-muted-foreground text-center text-sm">
-                Entrez le code à 6 chiffres envoyé au {formatPhoneForFirebase(phoneNumber)}
+                Entrez le code à 6 chiffres envoyé au {formatPhoneE164(phoneNumber)}
               </p>
-              {debugCode && (
-                <div className="bg-jinbao-blue/10 border border-jinbao-blue/30 rounded-lg p-3 mt-2">
-                  <p className="text-jinbao-blue text-sm font-medium text-center">
-                    🧪 Mode Sandbox - Code: <span className="font-bold">{debugCode}</span>
-                  </p>
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="flex justify-center">
@@ -366,8 +352,6 @@ const Auth = () => {
                   onClick={() => {
                     setStep('phone');
                     setOtpCode('');
-                    setSessionInfo(null);
-                    setDebugCode(null);
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
@@ -387,21 +371,12 @@ const Auth = () => {
                     : 'Renvoyer le code'}
                 </button>
               </div>
-
-              {/* Telegram Fallback */}
-              <button
-                onClick={handleTelegramFallback}
-                className="w-full text-center text-sm text-muted-foreground hover:text-jinbao-blue transition-colors"
-              >
-                <MessageCircle className="inline h-4 w-4 mr-1" />
-                Pas de SMS reçu ? Essayez Telegram
-              </button>
             </CardContent>
           </Card>
         )}
 
         {/* Step: Profile Completion (New Users Only) */}
-        {step === 'profile' && isNewUser && (
+        {step === 'profile' && (
           <Card className="bg-card border-border animate-slide-up">
             <CardHeader>
               <CardTitle className="text-foreground text-center">
