@@ -3,35 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, ArrowRight } from 'lucide-react';
+import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { supabase } from '@/integrations/supabase/client';
 
-type AuthStep = 'phone' | 'otp' | 'profile';
+type AuthStep = 'email' | 'profile' | 'magic-link-sent';
 
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, loading, refreshProfile } = useAuth();
+  const { user, loading, signInWithMagicLink, signUp } = useAuth();
   
-  const [step, setStep] = useState<AuthStep>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otpCode, setOtpCode] = useState('');
+  const [step, setStep] = useState<AuthStep>('email');
+  const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [affiliationCode, setAffiliationCode] = useState('');
+  const [promoCode, setPromoCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [verifiedPhone, setVerifiedPhone] = useState('');
-
-  // Countdown timer for resend cooldown
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -40,71 +28,15 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  // Format phone to E.164 format
-  const formatPhoneE164 = (phone: string) => {
-    let formatted = phone.replace(/\s/g, '');
-    if (!formatted.startsWith('+')) {
-      if (formatted.startsWith('237')) {
-        formatted = '+' + formatted;
-      } else {
-        formatted = '+237' + formatted;
-      }
-    }
-    return formatted;
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleSendOTP = async () => {
-    if (!phoneNumber || phoneNumber.length < 8) {
+  const handleSubmitEmail = async () => {
+    if (!validateEmail(email)) {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer un numéro de téléphone valide",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      const formattedPhone = formatPhoneE164(phoneNumber);
-      
-      // Call our Termii edge function
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { phone: formattedPhone }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || "Échec de l'envoi du SMS");
-      }
-
-      toast({
-        title: "Code envoyé ! 📱",
-        description: "Vérifiez vos SMS pour le code de vérification",
-      });
-      
-      setStep('otp');
-      setResendCooldown(60);
-    } catch (err: any) {
-      console.error('Send OTP error:', err);
-      toast({
-        title: "Erreur",
-        description: err.message || "Impossible d'envoyer le code SMS",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (otpCode.length !== 6) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer le code à 6 chiffres",
+        description: "Veuillez entrer une adresse email valide",
         variant: "destructive"
       });
       return;
@@ -113,54 +45,30 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const formattedPhone = formatPhoneE164(phoneNumber);
-      
-      // Call our Termii verify edge function
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { phone: formattedPhone, code: otpCode }
-      });
+      // Try to sign in with magic link - Supabase will handle if user exists or not
+      const { error, isNewUser: newUser } = await signInWithMagicLink(email);
 
       if (error) {
-        throw new Error(error.message);
+        throw error;
       }
 
-      if (!data.success) {
-        throw new Error(data.error || "Code incorrect ou expiré");
-      }
-
-      // OTP verified successfully - check if user exists
-      setVerifiedPhone(data.phone);
-      
-      // Check if profile exists for this phone
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('phone', data.phone)
-        .maybeSingle();
-
-      if (existingProfile?.full_name) {
-        // Existing user - sign them in via custom session
-        toast({
-          title: "Connexion réussie !",
-          description: "Bienvenue sur JinBao Smart Market",
-        });
-        
-        // Store verified phone in localStorage for session persistence
-        localStorage.setItem('jinbao_verified_phone', data.phone);
-        localStorage.setItem('jinbao_user_id', existingProfile.id);
-        
-        // Refresh auth context
-        await refreshProfile();
-        navigate('/');
-      } else {
-        // New user - needs to complete profile
+      if (newUser) {
+        // New user needs to complete profile
+        setIsNewUser(true);
         setStep('profile');
+      } else {
+        // Existing user - magic link sent
+        setStep('magic-link-sent');
+        toast({
+          title: "Lien envoyé ! 📧",
+          description: "Vérifiez votre boîte mail pour vous connecter",
+        });
       }
     } catch (err: any) {
-      console.error('Verify OTP error:', err);
+      console.error('Auth error:', err);
       toast({
-        title: "Code incorrect",
-        description: err.message || "Le code de vérification est incorrect",
+        title: "Erreur",
+        description: err.message || "Une erreur s'est produite",
         variant: "destructive"
       });
     } finally {
@@ -181,85 +89,17 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const formattedPhone = verifiedPhone || formatPhoneE164(phoneNumber);
+      const { error } = await signUp(email, fullName, promoCode);
 
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', formattedPhone)
-        .maybeSingle();
-
-      let profileId: string;
-
-      if (existingProfile) {
-        // Update existing profile
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ full_name: fullName })
-          .eq('id', existingProfile.id);
-
-        if (updateError) throw updateError;
-        profileId = existingProfile.id;
-      } else {
-        // Create new profile - generate a UUID
-        const newId = crypto.randomUUID();
-        const { error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: newId,
-            phone: formattedPhone,
-            full_name: fullName,
-            wallet_balance: 0
-          });
-
-        if (createError) throw createError;
-        profileId = newId;
+      if (error) {
+        throw error;
       }
 
-      // Handle referral code if provided
-      if (affiliationCode && profileId) {
-        const { data: referralData } = await supabase
-          .from('referral_codes')
-          .select('user_id')
-          .eq('code', affiliationCode.toUpperCase())
-          .single();
-
-        if (referralData) {
-          // Check if referral already exists
-          const { data: existingReferral } = await supabase
-            .from('referrals')
-            .select('id')
-            .eq('referred_id', profileId)
-            .maybeSingle();
-
-          if (!existingReferral) {
-            await supabase.from('referrals').insert({
-              referrer_id: referralData.user_id,
-              referred_id: profileId,
-            });
-
-            // Add welcome bonus
-            await supabase
-              .from('profiles')
-              .update({ wallet_balance: 1000 })
-              .eq('id', profileId);
-          }
-        }
-      }
-
-      // Store session info
-      localStorage.setItem('jinbao_verified_phone', formattedPhone);
-      localStorage.setItem('jinbao_user_id', profileId);
-
+      setStep('magic-link-sent');
       toast({
-        title: "Bienvenue sur JinBao ! 🎉",
-        description: affiliationCode ? "Votre compte a été créé avec succès. Bonus de bienvenue : 1 000 FCAF !" : "Votre compte a été créé avec succès.",
+        title: "Compte créé ! 📧",
+        description: "Vérifiez votre boîte mail pour activer votre compte",
       });
-
-      // Refresh auth context
-      await refreshProfile();
-      navigate('/');
     } catch (err: any) {
       console.error('Complete profile error:', err);
       toast({
@@ -272,15 +112,31 @@ const Auth = () => {
     }
   };
 
-  const handleResendOTP = async () => {
-    setOtpCode('');
-    await handleSendOTP();
+  const handleResendMagicLink = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signInWithMagicLink(email);
+      if (error) throw error;
+      
+      toast({
+        title: "Lien renvoyé ! 📧",
+        description: "Vérifiez votre boîte mail",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message || "Impossible de renvoyer le lien",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-jinbao-red border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
@@ -299,87 +155,38 @@ const Auth = () => {
           </p>
         </div>
 
-        {/* Step: Phone Number */}
-        {step === 'phone' && (
+        {/* Step: Email Input */}
+        {step === 'email' && (
           <Card className="bg-card border-border animate-slide-up">
             <CardHeader>
               <CardTitle className="text-foreground text-center">
-                Connexion par SMS
+                Connexion / Inscription
               </CardTitle>
               <p className="text-muted-foreground text-center text-sm">
-                Entrez votre numéro, nous vous enverrons un code par SMS
+                Entrez votre email, nous vous enverrons un lien de connexion
               </p>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Numéro de téléphone
+                  Adresse Email
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                   <Input
-                    type="tel"
-                    placeholder="+237 6XX XXX XXX"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    type="email"
+                    placeholder="votre@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmitEmail()}
                     className="pl-10 bg-input border-border text-foreground placeholder-muted-foreground"
                   />
                 </div>
               </div>
 
               <Button 
-                onClick={handleSendOTP}
+                onClick={handleSubmitEmail}
                 disabled={isLoading}
-                className="buy-button w-full"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    Envoi en cours...
-                  </>
-                ) : (
-                  <>
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Recevoir le code SMS
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step: OTP Verification */}
-        {step === 'otp' && (
-          <Card className="bg-card border-border animate-slide-up">
-            <CardHeader>
-              <CardTitle className="text-foreground text-center">
-                Vérification
-              </CardTitle>
-              <p className="text-muted-foreground text-center text-sm">
-                Entrez le code à 6 chiffres envoyé au {formatPhoneE164(phoneNumber)}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(value) => setOtpCode(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <Button 
-                onClick={handleVerifyOTP}
-                disabled={isLoading || otpCode.length !== 6}
                 className="buy-button w-full"
               >
                 {isLoading ? (
@@ -390,35 +197,10 @@ const Auth = () => {
                 ) : (
                   <>
                     <ArrowRight className="h-4 w-4 mr-2" />
-                    Vérifier le code
+                    Continuer
                   </>
                 )}
               </Button>
-
-              <div className="flex justify-between text-sm">
-                <button
-                  onClick={() => {
-                    setStep('phone');
-                    setOtpCode('');
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← Modifier le numéro
-                </button>
-                <button
-                  onClick={handleResendOTP}
-                  disabled={resendCooldown > 0 || isLoading}
-                  className={`transition-colors ${
-                    resendCooldown > 0 
-                      ? 'text-muted-foreground cursor-not-allowed' 
-                      : 'text-jinbao-red hover:underline'
-                  }`}
-                >
-                  {resendCooldown > 0 
-                    ? `Renvoyer dans ${resendCooldown}s` 
-                    : 'Renvoyer le code'}
-                </button>
-              </div>
             </CardContent>
           </Card>
         )}
@@ -428,17 +210,29 @@ const Auth = () => {
           <Card className="bg-card border-border animate-slide-up">
             <CardHeader>
               <CardTitle className="text-foreground text-center">
-                Finalisation du profil
+                Créer votre compte
               </CardTitle>
               <p className="text-muted-foreground text-center text-sm">
                 Dernière étape avant de commencer !
               </p>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* Email Display */}
+              <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">{email}</span>
+                <button 
+                  onClick={() => setStep('email')}
+                  className="ml-auto text-xs text-primary hover:underline"
+                >
+                  Modifier
+                </button>
+              </div>
+
               {/* Full Name Input */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Nom / Pseudo <span className="text-destructive">*</span>
+                  Nom de compte <span className="text-destructive">*</span>
                 </label>
                 <Input
                   type="text"
@@ -449,21 +243,21 @@ const Auth = () => {
                 />
               </div>
 
-              {/* Affiliation Code Input */}
+              {/* Promo Code Input */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Code de parrainage <span className="text-muted-foreground">(optionnel)</span>
+                  Code promo <span className="text-muted-foreground">(optionnel)</span>
                 </label>
                 <Input
                   type="text"
                   placeholder="Ex: JINBAO2024"
-                  value={affiliationCode}
-                  onChange={(e) => setAffiliationCode(e.target.value.toUpperCase())}
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                   maxLength={8}
                   className="bg-input border-border text-foreground placeholder-muted-foreground uppercase"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Entrez le code d'un ami pour recevoir <span className="text-jinbao-blue font-semibold">1 000 FCAF</span> de bonus !
+                  Entrez le code d'un ami pour recevoir <span className="text-primary font-semibold">1 000 FCAF</span> de bonus !
                 </p>
               </div>
 
@@ -480,10 +274,60 @@ const Auth = () => {
                 ) : (
                   <>
                     <ArrowRight className="h-4 w-4 mr-2" />
-                    Commencer l'aventure
+                    Créer mon compte
                   </>
                 )}
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step: Magic Link Sent */}
+        {step === 'magic-link-sent' && (
+          <Card className="bg-card border-border animate-slide-up">
+            <CardHeader>
+              <div className="flex justify-center mb-4">
+                <div className="bg-primary/10 p-4 rounded-full">
+                  <CheckCircle className="h-12 w-12 text-primary" />
+                </div>
+              </div>
+              <CardTitle className="text-foreground text-center">
+                Vérifiez votre boîte mail
+              </CardTitle>
+              <p className="text-muted-foreground text-center text-sm">
+                Nous avons envoyé un lien de connexion à
+              </p>
+              <p className="text-foreground text-center font-medium">
+                {email}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="bg-muted/50 rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Cliquez sur le lien dans l'email pour vous connecter. 
+                  Le lien est valide pendant 24 heures.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={handleResendMagicLink}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {isLoading ? "Envoi..." : "Renvoyer le lien"}
+                </Button>
+                <button
+                  onClick={() => {
+                    setStep('email');
+                    setEmail('');
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Utiliser une autre adresse email
+                </button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -492,9 +336,9 @@ const Auth = () => {
         <div className="text-center mt-8 text-muted-foreground text-sm">
           <p>En continuant, vous acceptez nos</p>
           <p>
-            <span className="text-jinbao-red hover:underline cursor-pointer">Conditions d'utilisation</span>
+            <span className="text-primary hover:underline cursor-pointer">Conditions d'utilisation</span>
             {' '} et {' '}
-            <span className="text-jinbao-red hover:underline cursor-pointer">Politique de confidentialité</span>
+            <span className="text-primary hover:underline cursor-pointer">Politique de confidentialité</span>
           </p>
         </div>
       </div>

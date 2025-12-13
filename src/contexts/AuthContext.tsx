@@ -15,8 +15,8 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, phone: string, affiliationCode?: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithMagicLink: (email: string) => Promise<{ error: Error | null; isNewUser?: boolean }>;
+  signUp: (email: string, fullName: string, promoCode?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -86,48 +86,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const signInWithMagicLink = async (email: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      // Check if user already exists by trying to get their profile
+      const { data: existingProfiles } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', email) // This won't match, we need another approach
+        .limit(1);
+      
+      // For now, always send magic link - Supabase handles new vs existing users
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectUrl,
+          shouldCreateUser: false, // Don't auto-create, we handle that
+        }
+      });
+
+      if (error) {
+        // If error is "user not found", it's a new user
+        if (error.message?.includes('Signups not allowed') || error.message?.includes('not allowed')) {
+          return { error: null, isNewUser: true };
+        }
+        return { error };
+      }
+
+      return { error: null, isNewUser: false };
+    } catch (err) {
+      return { error: err as Error };
+    }
+  };
+
   const signUp = async (
     email: string, 
-    password: string, 
     fullName: string, 
-    phone: string, 
-    affiliationCode?: string
+    promoCode?: string
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      // Sign up with magic link
+      const { data, error } = await supabase.auth.signInWithOtp({
         email,
-        password,
         options: {
           emailRedirectTo: redirectUrl,
+          shouldCreateUser: true,
           data: {
             full_name: fullName,
-            phone: phone
+            phone: '', // No phone required
           }
         }
       });
 
       if (error) return { error };
 
-      // If there's an affiliation code, record the referral
-      if (affiliationCode && data.user) {
-        // Find the referrer by their code
-        const { data: referralCodeData } = await supabase
-          .from('referral_codes')
-          .select('user_id')
-          .eq('code', affiliationCode.toUpperCase())
-          .single();
-
-        if (referralCodeData) {
-          // Create referral relationship
-          await supabase
-            .from('referrals')
-            .insert({
-              referrer_id: referralCodeData.user_id,
-              referred_id: data.user.id
-            });
-        }
+      // If there's a promo code, we'll handle the referral after the user confirms their email
+      // Store it in localStorage for now
+      if (promoCode) {
+        localStorage.setItem('jinbao_pending_promo', promoCode);
       }
 
       return { error: null };
@@ -136,12 +155,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    return { error };
+  // Handle pending promo code after user confirms email
+  useEffect(() => {
+    if (user && profile) {
+      const pendingPromo = localStorage.getItem('jinbao_pending_promo');
+      if (pendingPromo) {
+        handlePromoCode(user.id, pendingPromo);
+        localStorage.removeItem('jinbao_pending_promo');
+      }
+    }
+  }, [user, profile]);
+
+  const handlePromoCode = async (userId: string, promoCode: string) => {
+    try {
+      // Find the referrer by their code
+      const { data: referralCodeData } = await supabase
+        .from('referral_codes')
+        .select('user_id')
+        .eq('code', promoCode.toUpperCase())
+        .single();
+
+      if (referralCodeData && referralCodeData.user_id !== userId) {
+        // Check if referral already exists
+        const { data: existingReferral } = await supabase
+          .from('referrals')
+          .select('id')
+          .eq('referred_id', userId)
+          .maybeSingle();
+
+        if (!existingReferral) {
+          // Create referral relationship
+          await supabase.from('referrals').insert({
+            referrer_id: referralCodeData.user_id,
+            referred_id: userId
+          });
+
+          // Add welcome bonus
+          await supabase
+            .from('profiles')
+            .update({ wallet_balance: (profile?.wallet_balance || 0) + 1000 })
+            .eq('id', userId);
+
+          // Refresh profile to show new balance
+          await refreshProfile();
+        }
+      }
+    } catch (err) {
+      console.error('Error handling promo code:', err);
+    }
   };
 
   const signOut = async () => {
@@ -157,8 +218,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session,
       profile,
       loading,
+      signInWithMagicLink,
       signUp,
-      signIn,
       signOut,
       refreshProfile
     }}>

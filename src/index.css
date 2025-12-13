@@ -50,12 +50,17 @@ All colors MUST be HSL.
     --jinbao-silver: 0 0% 66%;                /* Gris Argent #A9A9A9 - Qualité/Détails */
     --jinbao-dark: 0 0% 4%;                   /* Noir Profond #0A0A0A */
     
+    /* Vibrant Chinese E-commerce Colors */
+    --vibrant-red: 0 100% 50%;                /* Rouge Vif #FF0000 - Prix & Réductions */
+    --vibrant-yellow: 45 100% 50%;            /* Jaune/Orange Vif #FFB800 - Étoiles & Wallet */
+    --vibrant-orange: 30 100% 50%;            /* Orange Vif #FF8000 */
+    
     /* Legacy aliases for compatibility */
     --pinbaoo-yellow: 3 83% 49%;              /* Now Rouge Tech */
     --pinbaoo-green: 210 100% 56%;            /* Now Bleu Tech */
     --pinbaoo-dark: 0 0% 4%;
     
-    --wallet-balance: 0 0% 66%;               /* Gris Argent for wallet */
+    --wallet-balance: 45 100% 50%;            /* Jaune Vif for wallet */
     --whatsapp: 142 70% 45%;                  /* WhatsApp green (standard) */
     --stock-warning: 3 83% 49%;               /* Rouge Tech for stock alerts */
     --price-strikethrough: 0 0% 66%;          /* Gris Argent for struck prices */
@@ -312,6 +317,27 @@ All colors MUST be HSL.
     color: hsl(0 0% 66%);
   }
 
+  /* Vibrant Colors - Chinese E-commerce */
+  .text-vibrant-red {
+    color: hsl(0 100% 50%);
+  }
+
+  .text-vibrant-yellow {
+    color: hsl(45 100% 50%);
+  }
+
+  .bg-vibrant-red {
+    background-color: hsl(0 100% 50%);
+  }
+
+  .bg-vibrant-yellow {
+    background-color: hsl(45 100% 50%);
+  }
+
+  .fill-vibrant-yellow {
+    fill: hsl(45 100% 50%);
+  }
+
   /* Legacy aliases */
   .text-pinbaoo {
     color: hsl(3 83% 49%);
@@ -339,6 +365,29 @@ All colors MUST be HSL.
 
   .animate-bounce-in {
     animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Masonry Grid Styles */
+  .masonry-grid {
+    display: flex;
+    margin-left: -8px;
+    width: auto;
+  }
+
+  .masonry-grid-column {
+    padding-left: 8px;
+    background-clip: padding-box;
+  }
+
+  .masonry-card {
+    @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .masonry-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px hsl(0 0% 0% / 0.15);
+    border-color: hsl(0 100% 50%);
   }
 }
 

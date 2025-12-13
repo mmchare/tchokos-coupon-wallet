@@ -50,6 +50,12 @@ export default {
           silver: "hsl(var(--jinbao-silver))",
           dark: "hsl(var(--jinbao-dark))",
         },
+        // Vibrant Chinese E-commerce Colors
+        vibrant: {
+          red: "hsl(var(--vibrant-red))",
+          yellow: "hsl(var(--vibrant-yellow))",
+          orange: "hsl(var(--vibrant-orange))",
+        },
         // Legacy aliases for compatibility
         pinbaoo: {
           yellow: "hsl(var(--pinbaoo-yellow))",
