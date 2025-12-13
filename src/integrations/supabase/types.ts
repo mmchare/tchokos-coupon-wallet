@@ -250,21 +250,21 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
-          phone: string
+          phone: string | null
           wallet_balance: number
         }
         Insert: {
           created_at?: string
           full_name: string
           id: string
-          phone: string
+          phone?: string | null
           wallet_balance?: number
         }
         Update: {
           created_at?: string
           full_name?: string
           id?: string
-          phone?: string
+          phone?: string | null
           wallet_balance?: number
         }
         Relationships: []
