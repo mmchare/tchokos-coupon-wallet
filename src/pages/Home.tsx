@@ -1,18 +1,19 @@
 /**
  * Home page - JinBao Smart Market
- * Premium Tech E-commerce with coupon system
+ * Masonry Grid Layout (Xianyu/Pinterest style)
  */
 
 import { useState } from 'react';
+import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
-import ProductCard from '@/components/ProductCard';
-import CouponPanel from '@/components/CouponPanel';
+import MasonryProductCard from '@/components/MasonryProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
+import CouponPanel from '@/components/CouponPanel';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Search, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
@@ -55,7 +56,7 @@ const Home = () => {
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Tech products data - Prix super attractifs !
+  // Tech products data
   const products: Product[] = [
     {
       id: '1',
@@ -65,7 +66,7 @@ const Home = () => {
       category: 'Smartphones',
       rating: 4.9,
       image: iphoneImg,
-      isAuction: true, // Enchère active
+      isAuction: true,
     },
     {
       id: '2',
@@ -75,7 +76,7 @@ const Home = () => {
       category: 'Smartphones',
       rating: 4.8,
       image: samsungImg,
-      isAuction: true, // Enchère active
+      isAuction: true,
     },
     {
       id: '3',
@@ -179,21 +180,12 @@ const Home = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCoupon = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    addToCoupon({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-    });
-
-    toast({
-      title: "Ajouté au coupon !",
-      description: `${product.name} a été ajouté à votre coupon`,
-    });
+  // Masonry breakpoints
+  const breakpointColumns = {
+    default: 3,
+    1024: 3,
+    768: 2,
+    480: 2
   };
 
   const handleRemoveFromCoupon = (productId: string) => {
@@ -209,7 +201,6 @@ const Home = () => {
   };
 
   const handleDeliverySubmit = (data: { address: string; phone: string }) => {
-    // Get the names of products being purchased
     const productNames = couponItems.length === 1 
       ? couponItems[0].name 
       : `${couponItems.length} articles`;
@@ -226,10 +217,6 @@ const Home = () => {
     setPurchasedProductName('');
   };
 
-  const handleGenerateCode = () => {
-    // This is handled in CouponPanel component
-  };
-
   const handleLoadCoupon = (items: CouponItem[]) => {
     loadCoupon(items);
   };
@@ -239,72 +226,50 @@ const Home = () => {
       <Header onMenuClick={() => {}} />
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Hero Section */}
-        <section className="text-center mb-8 sm:mb-12 animate-fade-in px-2">
-          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-            Bienvenue sur{' '}
-            <span className="text-jinbao-red">JinBao</span>
+        {/* Hero Section - Compact */}
+        <section className="text-center mb-6 animate-fade-in px-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
+            <span className="text-vibrant-red">JinBao</span> Smart Market
           </h1>
-          <p className="text-sm sm:text-lg text-muted-foreground mb-1 uppercase tracking-widest font-medium">
-            Smart Market
-          </p>
-          <p className="text-sm sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Découvrez notre collection premium de gadgets tech : smartphones, tablettes, ordinateurs portables et accessoires. 
-            Ajoutez vos produits favoris à votre coupon personnalisé.
+          <p className="text-sm text-muted-foreground mb-4 max-w-xl mx-auto">
+            Gadgets tech premium à prix imbattables
           </p>
           
           {/* Search Bar */}
-          <div className="max-w-md mx-auto relative mb-6 sm:mb-8 px-4">
-            <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
+          <div className="max-w-md mx-auto relative mb-4">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
               type="text"
-              placeholder="Rechercher un produit..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-jinbao-red text-sm sm:text-base"
+              className="w-full pl-10 pr-4 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
             />
           </div>
         </section>
 
-        {/* Category Filter */}
-        <section className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground px-2 sm:px-0">Nos Produits</h2>
-            <div className="flex space-x-2 sm:space-x-3 px-2 sm:px-0">
+        {/* Category Filter & Actions */}
+        <section className="mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
+            <h2 className="text-lg font-bold text-foreground px-1">Catalogue</h2>
+            <div className="flex space-x-2 px-1">
               <Button 
                 onClick={() => setIsLoadCouponOpen(true)}
                 variant="outline"
                 size="sm"
-                className="text-xs sm:text-sm flex-1 sm:flex-none"
+                className="text-xs flex-1 sm:flex-none"
               >
-                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Charger </span>Code
+                <Download className="h-3 w-3 mr-1" />
+                Code
               </Button>
-              <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
-                <SheetTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm flex-1 sm:flex-none"
-                  >
-                    <span className="hidden sm:inline">Mon </span>Coupon ({couponItems.length})
-                  </Button>
-                </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md bg-background border-border">
-                <SheetHeader>
-                  <SheetTitle className="text-foreground">Mon Coupon JinBao</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
-                  <CouponPanel
-                    items={couponItems}
-                    onRemoveItem={handleRemoveFromCoupon}
-                    onUpdateQuantity={handleUpdateCouponQuantity}
-                    onPurchase={handlePurchase}
-                    onGenerateCode={handleGenerateCode}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
+              <Button 
+                onClick={() => setIsCouponOpen(true)}
+                variant="outline"
+                size="sm"
+                className="border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs flex-1 sm:flex-none"
+              >
+                Coupon ({couponItems.length})
+              </Button>
             </div>
           </div>
           
@@ -315,27 +280,53 @@ const Home = () => {
           />
         </section>
 
-        {/* Products Grid */}
-        <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 px-2 sm:px-0">
+        {/* Masonry Products Grid */}
+        <Masonry
+          breakpointCols={breakpointColumns}
+          className="masonry-grid"
+          columnClassName="masonry-grid-column"
+        >
           {filteredProducts.map((product) => (
-            <ProductCard
+            <MasonryProductCard
               key={product.id}
-              {...product}
+              id={product.id}
+              image={product.image}
+              name={product.name}
+              price={product.price}
+              originalPrice={product.originalPrice}
+              rating={product.rating}
               isAuction={product.isAuction}
-              onAddToCoupon={handleAddToCoupon}
             />
           ))}
-        </section>
+        </Masonry>
 
         {/* Empty State */}
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">
-              Aucun produit trouvé dans cette catégorie
+            <p className="text-muted-foreground">
+              Aucun produit trouvé
             </p>
           </div>
         )}
       </main>
+
+      {/* Coupon Sheet */}
+      <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
+        <SheetContent className="w-full sm:max-w-md bg-background border-border">
+          <SheetHeader>
+            <SheetTitle className="text-foreground">Mon Coupon</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <CouponPanel
+              items={couponItems}
+              onRemoveItem={handleRemoveFromCoupon}
+              onUpdateQuantity={handleUpdateCouponQuantity}
+              onPurchase={handlePurchase}
+              onGenerateCode={() => {}}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Load Coupon Modal */}
       <LoadCouponModal

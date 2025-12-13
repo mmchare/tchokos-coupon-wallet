@@ -75,21 +75,21 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               </h1>
             </div>
 
-            {/* Wallet Balance - Gris Argent style */}
+            {/* Wallet Balance - Jaune/Orange Vif style */}
             {user ? (
               <div className="flex items-center gap-1 sm:gap-2 animate-fade-in">
                 <button 
                   onClick={() => navigate('/recharge')}
-                  className="flex items-center gap-1 sm:gap-2 bg-muted hover:bg-muted/80 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-border"
+                  className="flex items-center gap-1 sm:gap-2 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30"
                 >
-                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-jinbao-silver" />
-                  <span className="font-bold text-xs sm:text-sm">
+                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
+                  <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
                     {formatBalance(walletBalance)}
                   </span>
                 </button>
                 <button
                   onClick={() => navigate('/recharge')}
-                  className="flex items-center justify-center bg-jinbao-red hover:bg-jinbao-red/90 text-white p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
+                  className="flex items-center justify-center bg-vibrant-red hover:bg-vibrant-red/90 text-white p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
                   title="Recharger"
                 >
                   <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
