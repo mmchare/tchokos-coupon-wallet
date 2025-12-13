@@ -36,23 +36,6 @@ const MasonryProductCard = ({
           className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        
-        {/* Discount Badge - Rouge Vif */}
-        {discount > 0 && (
-          <div className="absolute top-2 right-2 bg-vibrant-red text-white text-xs font-bold px-2 py-1 rounded-md shadow-lg">
-            -{discount}%
-          </div>
-        )}
-        
-        {/* Auction Badge */}
-        {isAuction && (
-          <div className="absolute bottom-2 left-2 right-2">
-            <div className="bg-vibrant-red/95 backdrop-blur-sm text-white text-xs px-2 py-1.5 rounded-md flex items-center justify-center gap-1 animate-pulse">
-              <Gavel className="h-3 w-3" />
-              <span className="font-medium">Enchère</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Product Info */}
@@ -62,10 +45,20 @@ const MasonryProductCard = ({
           {name}
         </h3>
         
-        {/* Rating Stars - Jaune/Orange Vif */}
-        <div className="flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-vibrant-yellow text-vibrant-yellow" />
-          <span className="text-xs font-medium text-vibrant-yellow">{rating}</span>
+        {/* Rating Stars & Auction Indicator */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 fill-vibrant-yellow text-vibrant-yellow" />
+            <span className="text-xs font-medium text-vibrant-yellow">{rating}</span>
+          </div>
+          
+          {/* Auction Indicator - Bleu Tech */}
+          {isAuction && (
+            <div className="flex items-center gap-1 text-primary">
+              <Gavel className="h-3 w-3" />
+              <span className="text-xs font-medium">Enchère</span>
+            </div>
+          )}
         </div>
 
         {/* Price Section */}
