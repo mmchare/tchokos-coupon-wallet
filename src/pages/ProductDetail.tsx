@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2, Gavel } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageCircle, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -49,7 +48,6 @@ interface Product {
   reviews: Review[];
   isVerified: boolean;
   isUniqueStock: boolean;
-  // Auction fields
   isAuction?: boolean;
   auctionEndDate?: Date;
   startingPrice?: number;
@@ -65,8 +63,10 @@ const ProductDetail = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
-  // Mock products data with multiple images and auction support
+  // Mock products data
   const products: Product[] = [
     {
       id: '1',
@@ -85,7 +85,7 @@ const ProductDetail = () => {
       isVerified: true,
       isUniqueStock: true,
       isAuction: true,
-      auctionEndDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      auctionEndDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       startingPrice: 280000,
       bids: [
         { id: 'b1', userName: 'Patrick K.', amount: 290000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
@@ -108,7 +108,7 @@ const ProductDetail = () => {
       isVerified: true,
       isUniqueStock: true,
       isAuction: true,
-      auctionEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+      auctionEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       startingPrice: 300000,
       bids: [
         { id: 'b1', userName: 'Sophie M.', amount: 320000, timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000) },
@@ -196,14 +196,6 @@ const ProductDetail = () => {
     });
   };
 
-  const handleBuyNow = () => {
-    toast({
-      title: "Acheter maintenant",
-      description: "Redirection vers le formulaire de livraison...",
-    });
-  };
-
-  // Handle placing a bid
   const handlePlaceBid = (amount: number) => {
     const newBid: Bid = {
       id: `b${Date.now()}`,
@@ -218,38 +210,24 @@ const ProductDetail = () => {
     }));
   };
 
-  // Get current bids for product
   const currentBids = auctionBids[product.id] || product.bids || [];
   const currentMaxBid = currentBids.length > 0 
     ? Math.max(...currentBids.map(b => b.amount)) 
     : (product.startingPrice || product.price);
 
   const handleSubmitComment = () => {
-    if (!comment.trim()) {
+    if (!comment.trim() || userRating === 0) {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer un commentaire",
+        description: "Veuillez entrer un commentaire et une note",
         variant: "destructive"
       });
       return;
     }
-
-    if (userRating === 0) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez donner une note",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Commentaire ajouté !",
-      description: "Merci pour votre avis",
-    });
-
+    toast({ title: "Avis publié !", description: "Merci pour votre retour" });
     setComment('');
     setUserRating(0);
+    setShowReviewForm(false);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -259,162 +237,148 @@ const ProductDetail = () => {
 
   const handleWhatsAppClick = () => {
     const message = `Bonjour JinBao, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
-    const whatsappUrl = `https://wa.me/237690000000?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(`https://wa.me/237690000000?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: product.name, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({ title: "Lien copié !" });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Détails du produit</h1>
-          </div>
+    <div className="min-h-screen bg-background pb-24">
+      {/* Floating Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsFavorite(!isFavorite)}
+            className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
+          >
+            <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+          </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="space-y-6">
-          {/* Product Image Gallery & Info */}
-          <Card className="bg-card border-border">
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Image Gallery */}
-                <ProductImageGallery
-                  images={product.images}
-                  videoUrl={product.videoUrl}
-                  productName={product.name}
-                  category={product.category}
-                  discount={discount}
-                  isVerified={product.isVerified}
-                  isUniqueStock={product.isUniqueStock}
+      {/* Full-Width Image Gallery */}
+      <div className="w-full">
+        <ProductImageGallery
+          images={product.images}
+          videoUrl={product.videoUrl}
+          productName={product.name}
+          category={product.category}
+          discount={discount}
+          isVerified={product.isVerified}
+          isUniqueStock={product.isUniqueStock}
+        />
+      </div>
+
+      {/* Product Info Section */}
+      <div className="px-4 -mt-4 relative z-10">
+        {/* Price Card - Xianyu Style */}
+        <div className="bg-card rounded-2xl shadow-lg border border-border p-4 space-y-4">
+          {/* Price Row */}
+          <div className="flex items-end justify-between">
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm text-vibrant-red">F</span>
+              <span className="text-3xl font-bold text-vibrant-red">
+                {product.isAuction ? currentMaxBid.toLocaleString() : product.price.toLocaleString()}
+              </span>
+              {product.originalPrice && (
+                <span className="text-sm text-muted-foreground line-through">
+                  {product.originalPrice.toLocaleString()} F
+                </span>
+              )}
+            </div>
+            {discount > 0 && (
+              <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-full">
+                -{discount}%
+              </span>
+            )}
+          </div>
+
+          {/* Auction Badge */}
+          {product.isAuction && (
+            <div className="flex items-center gap-2 text-sm">
+              <Gavel className="h-4 w-4 text-primary" />
+              <span className="text-primary font-medium">Enchère en cours</span>
+              <span className="text-muted-foreground">• Offre actuelle</span>
+            </div>
+          )}
+
+          {/* Product Name */}
+          <h1 className="text-xl font-bold text-foreground leading-tight">
+            {product.name}
+          </h1>
+
+          {/* Rating & Reviews */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < Math.floor(product.rating)
+                      ? 'fill-vibrant-yellow text-vibrant-yellow'
+                      : 'text-muted'
+                  }`}
                 />
+              ))}
+              <span className="text-sm font-medium text-foreground ml-1">{product.rating}</span>
+            </div>
+            <span className="text-muted-foreground text-sm">
+              {product.reviews.length} avis
+            </span>
+          </div>
 
-                {/* Info */}
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{product.name}</h2>
-                    <div className="flex items-center space-x-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${
-                            i < Math.floor(product.rating)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted'
-                          }`}
-                        />
-                      ))}
-                      <span className="text-muted-foreground">
-                        {product.rating} ({product.reviews.length} avis)
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Verified Badge - Bleu Tech */}
-                  {product.isVerified && (
-                    <div className="verified-badge">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Vérifié par JinBao</span>
-                    </div>
-                  )}
-
-                  {/* Stock Warning - Rouge Tech */}
-                  {product.isUniqueStock && (
-                    <div className="stock-warning">
-                      <span>Stock Chine : Article Unique</span>
-                    </div>
-                  )}
-
-                  {/* Price */}
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-3">
-                      {product.isAuction ? (
-                        <>
-                          <span className="text-3xl font-bold text-jinbao-red">
-                            {currentMaxBid.toLocaleString()} F
-                          </span>
-                          <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                            Offre actuelle
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-3xl font-bold text-foreground">
-                            {product.price.toLocaleString()} F
-                          </span>
-                          {product.originalPrice && (
-                            <span className="text-lg text-muted-foreground line-through">
-                              {product.originalPrice.toLocaleString()} F
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-foreground">Description</h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    {product.isAuction ? (
-                      <Button
-                        onClick={() => document.querySelector('#auction-panel')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="bg-jinbao-red hover:bg-jinbao-red/90 text-white w-full"
-                      >
-                        <Gavel className="h-5 w-5 mr-2" />
-                        Enchérir
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleBuyNow}
-                        className="buy-button w-full"
-                      >
-                        <ShoppingBag className="h-5 w-5 mr-2" />
-                        Acheter Maintenant
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={handleAddToCoupon}
-                      className="coupon-button w-full"
-                    >
-                      <Plus className="h-5 w-5 mr-2" />
-                      Ajouter au Coupon
-                    </Button>
-                    
-                    <Button
-                      onClick={handleWhatsAppClick}
-                      className="whatsapp-button w-full justify-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                      </svg>
-                      Contacter sur WhatsApp
-                    </Button>
-                  </div>
-                </div>
+          {/* Badges Row */}
+          <div className="flex flex-wrap gap-2">
+            {product.isVerified && (
+              <div className="verified-badge">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Vérifié JinBao</span>
               </div>
-            </CardContent>
-          </Card>
+            )}
+            {product.isUniqueStock && (
+              <div className="stock-warning">
+                <span>Stock limité</span>
+              </div>
+            )}
+          </div>
+        </div>
 
-          {/* Auction Panel - Only show for auction products */}
-          {product.isAuction && product.auctionEndDate && (
+        {/* Description Card */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3">
+          <h3 className="font-semibold text-foreground mb-2">Description</h3>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+
+        {/* Auction Panel */}
+        {product.isAuction && product.auctionEndDate && (
+          <div className="mt-3">
             <AuctionBidPanel
               productId={product.id}
               productName={product.name}
@@ -424,122 +388,94 @@ const ProductDetail = () => {
               bids={currentBids}
               onPlaceBid={handlePlaceBid}
             />
-          )}
+          </div>
+        )}
 
-          {/* Reviews Section */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Avis des clients</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Existing Reviews */}
-              <div className="space-y-4">
-                {product.reviews.map((review) => (
-                  <div key={review.id} className="border-b border-border pb-4 last:border-0">
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-accent text-accent-foreground">
-                          {review.userName.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-foreground">{review.userName}</span>
-                            <span className="verified-badge text-xs">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Client Vérifié JinBao
-                            </span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(review.date).toLocaleDateString('fr-FR')}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1 mb-2">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-muted'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-muted-foreground">{review.comment}</p>
-                      </div>
+        {/* Reviews Section */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3">
+          <div 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setShowReviewForm(!showReviewForm)}
+          >
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-muted-foreground" />
+              <h3 className="font-semibold text-foreground">
+                Avis ({product.reviews.length})
+              </h3>
+            </div>
+            <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${showReviewForm ? 'rotate-90' : ''}`} />
+          </div>
+
+          {/* Reviews List - Always visible */}
+          <div className="mt-4 space-y-3">
+            {product.reviews.slice(0, 3).map((review) => (
+              <div key={review.id} className="flex gap-3">
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                    {review.userName.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-foreground">{review.userName}</span>
+                    <div className="flex items-center">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="h-3 w-3 fill-vibrant-yellow text-vibrant-yellow" />
+                      ))}
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{review.comment}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Review Form - Collapsible */}
+          {showReviewForm && (
+            <div className="mt-4 pt-4 border-t border-border space-y-3">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} onClick={() => setUserRating(star)}>
+                    <Star
+                      className={`h-6 w-6 ${
+                        star <= userRating ? 'fill-vibrant-yellow text-vibrant-yellow' : 'text-muted'
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
-
-              {/* Add Review Form */}
-              <div className="space-y-4 pt-4 border-t border-border">
-                <h3 className="font-semibold text-foreground">Laisser un avis</h3>
-                
-                {/* Rating */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Votre note</label>
-                  <div className="flex items-center space-x-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setUserRating(star)}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star
-                          className={`h-6 w-6 cursor-pointer ${
-                            star <= userRating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted hover:text-yellow-400'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Comment */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Votre commentaire</label>
-                  <div className="relative">
-                    <Textarea
-                      placeholder="Partagez votre expérience avec ce produit..."
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className="bg-input border-border text-foreground placeholder-muted-foreground min-h-[100px]"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="absolute bottom-2 right-2 h-8 w-8"
-                    >
-                      <Smile className="h-5 w-5" />
-                    </Button>
-                    
-                    {showEmojiPicker && (
-                      <div className="absolute bottom-12 right-2 z-50">
-                        <EmojiPicker onEmojiSelect={handleEmojiSelect} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
+              <div className="relative">
+                <Textarea
+                  placeholder="Votre avis..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="bg-muted/50 border-border min-h-[80px] pr-10"
+                />
                 <Button
-                  onClick={handleSubmitComment}
-                  className="buy-button"
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="absolute bottom-2 right-2 h-7 w-7"
                 >
-                  <Send className="h-4 w-4 mr-2" />
-                  Publier l'avis
+                  <Smile className="h-4 w-4" />
                 </Button>
+                {showEmojiPicker && (
+                  <div className="absolute bottom-10 right-2 z-50">
+                    <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
+              <Button onClick={handleSubmitComment} size="sm" className="buy-button">
+                <Send className="h-4 w-4 mr-2" />
+                Publier
+              </Button>
+            </div>
+          )}
+        </div>
 
-          {/* Similar Products */}
+        {/* Similar Products */}
+        <div className="mt-3">
           <SimilarProducts 
             currentProductId={product.id}
             products={products.map(p => ({
@@ -553,7 +489,53 @@ const ProductDetail = () => {
             }))}
           />
         </div>
-      </main>
+      </div>
+
+      {/* Fixed Bottom Action Bar - Xianyu Style */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-3 z-50">
+        <div className="flex items-center gap-2 max-w-4xl mx-auto">
+          {/* WhatsApp Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleWhatsAppClick}
+            className="h-12 w-12 rounded-full flex-shrink-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[hsl(142_70%_45%)]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+          </Button>
+
+          {/* Add to Coupon Button */}
+          <Button
+            variant="outline"
+            onClick={handleAddToCoupon}
+            className="flex-1 h-12 rounded-full border-primary text-primary hover:bg-primary/10"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Coupon
+          </Button>
+
+          {/* Buy Now / Bid Button */}
+          {product.isAuction ? (
+            <Button
+              onClick={() => document.querySelector('#auction-panel')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex-[2] h-12 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold"
+            >
+              <Gavel className="h-5 w-5 mr-2" />
+              Enchérir
+            </Button>
+          ) : (
+            <Button
+              onClick={() => toast({ title: "Acheter maintenant", description: "Redirection..." })}
+              className="flex-[2] h-12 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold"
+            >
+              <ShoppingBag className="h-5 w-5 mr-2" />
+              Acheter
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
