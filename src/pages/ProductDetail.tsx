@@ -281,8 +281,22 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = `Bonjour JinBao, je suis intéressé(e) par le produit: ${product.name} au prix de ${product.price.toLocaleString()} F. J'aimerais avoir plus d'informations.`;
-    window.open(`https://wa.me/237690000000?text=${encodeURIComponent(message)}`, '_blank');
+    const productUrl = `${window.location.origin}/product/${id}`;
+    const imageUrl = product?.images?.[0] || '';
+    const message = `Bonjour JinBao! 👋
+
+Je suis intéressé(e) par ce produit:
+
+🛍️ *${product.name}*
+💰 Prix: ${product.price.toLocaleString()} FCFA
+
+📷 Photo: ${imageUrl}
+
+🔗 Lien du produit: ${productUrl}
+
+Pouvez-vous me donner plus d'informations?`;
+    
+    window.open(`https://wa.me/237655852010?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleShare = () => {
