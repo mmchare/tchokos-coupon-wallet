@@ -1,80 +1,56 @@
 import { useNavigate } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import Masonry from 'react-masonry-css';
+import MasonryProductCard from './MasonryProductCard';
 
-interface Product {
+interface SimilarProduct {
   id: string;
   name: string;
   price: number;
   originalPrice?: number;
   image: string;
   rating: number;
-  isVerified?: boolean;
+  isAuction?: boolean;
 }
 
 interface SimilarProductsProps {
+  products: SimilarProduct[];
   currentProductId: string;
-  products: Product[];
 }
 
-const SimilarProducts = ({ currentProductId, products }: SimilarProductsProps) => {
-  const navigate = useNavigate();
-  
-  // Filter out current product and get up to 4 similar products
-  const similarProducts = products
-    .filter(p => p.id !== currentProductId)
-    .slice(0, 4);
+const SimilarProducts = ({ products, currentProductId }: SimilarProductsProps) => {
+  const filteredProducts = products.filter(p => p.id !== currentProductId);
 
-  if (similarProducts.length === 0) return null;
+  if (filteredProducts.length === 0) return null;
+
+  const breakpointColumnsObj = {
+    default: 2,
+    640: 2,
+  };
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-border p-4">
-      <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-        <span>Suggestions</span>
+    <div className="mt-6">
+      <h3 className="text-lg font-bold text-foreground mb-4 px-4">
+        Produits similaires
       </h3>
-      
-      <div className="grid grid-cols-2 gap-2">
-        {similarProducts.map((product) => {
-          const discount = product.originalPrice 
-            ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
-            : 0;
-
-          return (
-            <div
+      <div className="px-4">
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex -ml-3 w-auto"
+          columnClassName="pl-3 bg-clip-padding"
+        >
+          {filteredProducts.map((product) => (
+            <MasonryProductCard
               key={product.id}
-              onClick={() => navigate(`/product/${product.id}`)}
-              className="bg-muted/30 rounded-xl overflow-hidden cursor-pointer group transition-all hover:shadow-md"
-            >
-              {/* Image - No discount badge */}
-              <div className="relative aspect-square overflow-hidden">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-
-              {/* Info */}
-              <div className="p-2 space-y-1">
-                <h4 className="text-xs font-medium text-foreground line-clamp-2 leading-tight">
-                  {product.name}
-                </h4>
-                
-                {/* Rating */}
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-vibrant-yellow text-vibrant-yellow" />
-                  <span className="text-[10px] text-muted-foreground">{product.rating}</span>
-                </div>
-                
-                {/* Price */}
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-bold text-vibrant-red">
-                    {product.price.toLocaleString()} F
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+              id={product.id}
+              image={product.image}
+              name={product.name}
+              price={product.price}
+              originalPrice={product.originalPrice}
+              rating={product.rating}
+              isAuction={product.isAuction}
+            />
+          ))}
+        </Masonry>
       </div>
     </div>
   );

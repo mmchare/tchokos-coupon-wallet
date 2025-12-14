@@ -120,7 +120,24 @@ const AdminCampaigns = () => {
     setIsSending(true);
 
     try {
-      // Log the campaign
+      // Create notifications for each recipient
+      const notifications = recipients.map(recipient => ({
+        user_id: recipient.id,
+        message_type: 'CAMPAGNE',
+        message_body: `${formData.title}: ${formData.message}`,
+        is_read: false
+      }));
+
+      // Insert all notifications
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (notifError) {
+        throw notifError;
+      }
+
+      // Log the campaign action
       await supabase.rpc('log_admin_action', {
         p_action: 'SEND_CAMPAIGN',
         p_target_type: 'campaign',
@@ -133,11 +150,6 @@ const AdminCampaigns = () => {
           recipient_ids: recipients.map(r => r.id)
         }
       });
-
-      // In a real implementation, this would trigger:
-      // 1. Push notifications via FCM/OneSignal
-      // 2. SMS via Twilio/Africa's Talking
-      // For now, we just log it
 
       toast({
         title: "Campagne envoyée !",

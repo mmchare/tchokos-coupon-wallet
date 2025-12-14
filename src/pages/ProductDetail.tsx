@@ -252,7 +252,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 overflow-y-auto overflow-x-hidden">
       {/* Floating Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
         <Button
@@ -487,7 +487,7 @@ const ProductDetail = () => {
               originalPrice: p.originalPrice,
               image: p.images[0],
               rating: p.rating,
-              isVerified: p.isVerified
+              isAuction: p.isAuction
             }))}
           />
         </div>
