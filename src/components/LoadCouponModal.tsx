@@ -37,11 +37,11 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
     setIsLoading(true);
 
     try {
-      // Récupérer le coupon depuis Supabase
+      // Récupérer le coupon depuis Supabase - recherche insensible à la casse
       const { data, error } = await supabase
         .from('shared_coupons')
         .select('items, expires_at')
-        .eq('code', couponCode.toUpperCase())
+        .ilike('code', couponCode.trim())
         .maybeSingle();
       
       if (error) throw error;
@@ -103,10 +103,10 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
             </label>
             <Input
               value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-              placeholder="PIN..."
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase().trim())}
+              placeholder="Ex: ABC123"
               className="bg-input border-border text-foreground text-sm sm:text-base"
-              maxLength={12}
+              maxLength={6}
             />
           </div>
           
