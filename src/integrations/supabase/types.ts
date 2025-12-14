@@ -436,6 +436,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_referral_code_exists: { Args: { p_code: string }; Returns: boolean }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       create_otp_code: {
         Args: { p_code: string; p_phone: string }
@@ -452,6 +453,7 @@ export type Database = {
         }
         Returns: string
       }
+      validate_referral_code: { Args: { p_code: string }; Returns: string }
       verify_admin_password: {
         Args: { input_password: string }
         Returns: boolean
