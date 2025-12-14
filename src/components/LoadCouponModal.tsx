@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CouponItem {
   id: string;
@@ -23,7 +24,7 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLoadCoupon = () => {
+  const handleLoadCoupon = async () => {
     if (!couponCode.trim()) {
       toast({
         title: "Erreur",
@@ -36,30 +37,48 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
     setIsLoading(true);
 
     try {
-      // Récupérer le coupon depuis le localStorage
-      const savedCoupon = localStorage.getItem(`coupon_${couponCode.toUpperCase()}`);
+      // Récupérer le coupon depuis Supabase
+      const { data, error } = await supabase
+        .from('shared_coupons')
+        .select('items, expires_at')
+        .eq('code', couponCode.toUpperCase())
+        .maybeSingle();
       
-      if (!savedCoupon) {
+      if (error) throw error;
+
+      if (!data) {
         toast({
           title: "Code invalide",
-          description: "Ce code coupon n'existe pas ou a expiré",
+          description: "Ce code coupon n'existe pas",
           variant: "destructive"
         });
         setIsLoading(false);
         return;
       }
 
-      const couponData = JSON.parse(savedCoupon);
-      onLoadCoupon(couponData.items);
+      // Vérifier si le coupon a expiré
+      if (new Date(data.expires_at) < new Date()) {
+        toast({
+          title: "Code expiré",
+          description: "Ce code coupon a expiré",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const items = (Array.isArray(data.items) ? data.items : []) as unknown as CouponItem[];
+      onLoadCoupon(items);
       
       toast({
         title: "Coupon chargé !",
-        description: `${couponData.items.length} article(s) ajouté(s) à votre coupon`,
+        description: `${items.length} article(s) ajouté(s) à votre coupon`,
       });
       
       setCouponCode('');
       onClose();
     } catch (error) {
+      console.error('Error loading coupon:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger le coupon",

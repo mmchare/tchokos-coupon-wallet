@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, ShoppingCart, Code, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 interface CouponItem {
   id: string;
   name: string;
@@ -32,7 +33,9 @@ const CouponPanel = ({
 }: CouponPanelProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -60,22 +63,46 @@ const CouponPanel = ({
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const handleGenerateCode = () => {
+  const handleGenerateCode = async () => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour générer un code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
     const code = `JINBAO${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-    setCouponCode(code);
     
-    const couponData = {
-      code,
-      items,
-      createdAt: new Date().toISOString()
-    };
-    localStorage.setItem(`coupon_${code}`, JSON.stringify(couponData));
-    
-    onGenerateCode();
-    toast({
-      title: "Code généré !",
-      description: `Votre code coupon: ${code}`,
-    });
+    try {
+      const { error } = await supabase
+        .from('shared_coupons')
+        .insert({
+          code,
+          items: JSON.parse(JSON.stringify(items)),
+          creator_id: user.id,
+        });
+
+      if (error) throw error;
+
+      setCouponCode(code);
+      onGenerateCode();
+      toast({
+        title: "Code généré !",
+        description: `Votre code coupon: ${code}`,
+      });
+    } catch (error) {
+      console.error('Error generating coupon code:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
 
@@ -191,10 +218,11 @@ const CouponPanel = ({
         <Button 
           onClick={handleGenerateCode}
           variant="outline"
+          disabled={isGenerating}
           className="w-full border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-sm sm:text-base"
         >
           <Code className="h-4 w-4 mr-2" />
-          Générer Code de Partage
+          {isGenerating ? 'Génération...' : 'Générer Code de Partage'}
         </Button>
       </div>
     </Card>
