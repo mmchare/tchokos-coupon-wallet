@@ -49,18 +49,29 @@ export type Database = {
           created_at: string
           id: string
           phone: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           phone: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           phone?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bids: {
         Row: {
