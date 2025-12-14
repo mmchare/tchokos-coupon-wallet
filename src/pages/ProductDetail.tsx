@@ -7,6 +7,7 @@ import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2,
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
+import { useActivityTracking } from '@/hooks/useActivityTracking';
 import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
@@ -54,6 +55,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const { addToCoupon } = useCoupon();
+  const { trackView, trackAddToCart } = useActivityTracking();
   const [comment, setComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
@@ -151,13 +153,16 @@ const ProductDetail = () => {
         }
 
         setProduct(transformedProduct);
+        
+        // Track product view
+        trackView(data.id);
       }
 
       setIsLoading(false);
     };
 
     fetchProduct();
-  }, [id, toast]);
+  }, [id, toast, trackView]);
 
   if (isLoading) {
     return (
@@ -189,6 +194,10 @@ const ProductDetail = () => {
       price: product.price,
       image: product.images[0],
     });
+    
+    // Track add to cart activity
+    trackAddToCart(product.id);
+    
     toast({
       title: "Produit ajouté !",
       description: `${product.name} a été ajouté à votre coupon`,

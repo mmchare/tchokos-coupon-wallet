@@ -215,6 +215,24 @@ serve(async (req: Request) => {
       }
     }
 
+    // Track PURCHASE activity for recommendation engine
+    for (const item of items) {
+      if (!isValidUUID(item.id)) continue;
+      
+      const { error: activityError } = await supabase
+        .from('user_activity')
+        .insert({
+          user_id,
+          product_id: item.id,
+          activity_type: 'PURCHASE'
+        });
+
+      if (activityError) {
+        console.error(`Error tracking purchase activity for ${item.id}:`, activityError);
+        // Non-critical, continue
+      }
+    }
+
     // Create purchase transaction record
     const { error: txError } = await supabase
       .from('wallet_transactions')

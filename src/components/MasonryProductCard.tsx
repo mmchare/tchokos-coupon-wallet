@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Star, Gavel } from 'lucide-react';
+import { useActivityTracking } from '@/hooks/useActivityTracking';
 
 interface MasonryProductCardProps {
   id: string;
@@ -21,12 +22,18 @@ const MasonryProductCard = ({
   isAuction = false,
 }: MasonryProductCardProps) => {
   const navigate = useNavigate();
+  const { trackClick } = useActivityTracking();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
+  const handleClick = () => {
+    trackClick(id);
+    navigate(`/product/${id}`);
+  };
 
   return (
     <div 
       className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-border/50"
-      onClick={() => navigate(`/product/${id}`)}
+      onClick={handleClick}
     >
       {/* Image Container */}
       <div className="relative overflow-hidden bg-muted">
