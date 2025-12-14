@@ -206,7 +206,7 @@ const Profile = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Partage ton code JinBao et gagne <span className="text-jinbao-red font-semibold">2 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-jinbao-blue font-semibold">1 000 FCAF</span> de bienvenue pour l'essayer !
+                Partage ton code JinBao et gagne <span className="text-jinbao-red font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-jinbao-blue font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
               </p>
             </CardContent>
           </Card>
