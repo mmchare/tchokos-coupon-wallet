@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Plus, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageCircle, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageCircle, ChevronRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -11,14 +11,7 @@ import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
 import AuctionBidPanel from '@/components/AuctionBidPanel';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
-
-// Import product images
-import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
-import samsungImg from '@/assets/product-samsung-s24.jpg';
-import macbookImg from '@/assets/product-macbook-pro.jpg';
-import ipadImg from '@/assets/product-ipad-air.jpg';
-import powerbankImg from '@/assets/product-powerbank.jpg';
-import ringLightImg from '@/assets/product-ring-light.jpg';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Review {
   id: string;
@@ -67,120 +60,102 @@ const ProductDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock products data
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'iPhone 15 Pro Max',
-      price: 350000,
-      originalPrice: 850000,
-      category: 'Smartphones',
-      rating: 4.9,
-      images: [iphoneImg, samsungImg, macbookImg, ipadImg, powerbankImg],
-      videoUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4',
-      description: 'Le dernier iPhone avec puce A17 Pro, écran Super Retina XDR 6.7", appareil photo 48MP et châssis en titane. Disponible en plusieurs couleurs.',
-      reviews: [
-        { id: '1', userName: 'Yves M.', rating: 5, comment: 'Incroyable performance ! Meilleur iPhone 📱✨', date: '2024-03-20', isVerifiedClient: true },
-        { id: '2', userName: 'Claire D.', rating: 5, comment: 'Qualité exceptionnelle, je recommande ! 🔥', date: '2024-03-18', isVerifiedClient: true },
-      ],
-      isVerified: true,
-      isUniqueStock: true,
-      isAuction: true,
-      auctionEndDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      startingPrice: 280000,
-      bids: [
-        { id: 'b1', userName: 'Patrick K.', amount: 290000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-        { id: 'b2', userName: 'Marie L.', amount: 310000, timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000) },
-        { id: 'b3', userName: 'Jean B.', amount: 350000, timestamp: new Date(Date.now() - 30 * 60 * 1000) },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S24 Ultra',
-      price: 380000,
-      originalPrice: 900000,
-      category: 'Smartphones',
-      rating: 4.8,
-      images: [samsungImg, iphoneImg, macbookImg],
-      description: 'Smartphone premium avec Snapdragon 8 Gen 3, écran AMOLED 6.8", S Pen intégré et batterie 5000mAh. Performance exceptionnelle.',
-      reviews: [
-        { id: '1', userName: 'Patrick L.', rating: 5, comment: 'Le meilleur Android du marché ! 🚀', date: '2024-03-19', isVerifiedClient: true },
-      ],
-      isVerified: true,
-      isUniqueStock: true,
-      isAuction: true,
-      auctionEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      startingPrice: 300000,
-      bids: [
-        { id: 'b1', userName: 'Sophie M.', amount: 320000, timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000) },
-        { id: 'b2', userName: 'Marc T.', amount: 380000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-      ],
-    },
-    {
-      id: '3',
-      name: 'MacBook Pro M3',
-      price: 450000,
-      originalPrice: 1250000,
-      category: 'Ordinateurs',
-      rating: 4.9,
-      images: [macbookImg, ipadImg, iphoneImg, samsungImg],
-      description: 'MacBook Pro 14" avec puce M3, 16GB RAM, 512GB SSD. Performances incroyables pour les professionnels créatifs.',
-      reviews: [
-        { id: '1', userName: 'Sophie K.', rating: 5, comment: 'Puissance incroyable ! Parfait pour le montage 💻✨', date: '2024-03-17', isVerifiedClient: true },
-        { id: '2', userName: 'Marc B.', rating: 5, comment: 'Excellent rapport qualité-prix ! 👌', date: '2024-03-15', isVerifiedClient: true },
-      ],
-      isVerified: true,
-      isUniqueStock: false,
-    },
-    {
-      id: '4',
-      name: 'iPad Air M2',
-      price: 220000,
-      originalPrice: 650000,
-      category: 'Tablettes',
-      rating: 4.7,
-      images: [ipadImg, macbookImg, iphoneImg],
-      description: 'iPad Air 11" avec puce M2, écran Liquid Retina, compatible Apple Pencil. Parfait pour le travail et le divertissement.',
-      reviews: [
-        { id: '1', userName: 'Marie T.', rating: 5, comment: 'Parfait pour dessiner et travailler ! 🎨', date: '2024-03-16', isVerifiedClient: true },
-      ],
-      isVerified: true,
-      isUniqueStock: true,
-    },
-    {
-      id: '5',
-      name: 'Batterie Externe Anker 30000mAh',
-      price: 15000,
-      originalPrice: 35000,
-      category: 'Accessoires',
-      rating: 4.6,
-      images: [powerbankImg, ringLightImg],
-      description: 'Powerbank haute capacité avec charge rapide 65W, 3 ports USB. Idéal pour recharger tous vos appareils.',
-      reviews: [
-        { id: '1', userName: 'Jean P.', rating: 5, comment: 'Excellent produit, charge super rapide ! ⚡', date: '2024-03-14', isVerifiedClient: true },
-      ],
-      isVerified: false,
-      isUniqueStock: true,
-    },
-    {
-      id: '6',
-      name: 'Ring Light LED 18 pouces',
-      price: 25000,
-      originalPrice: 55000,
-      category: 'Accessoires',
-      rating: 4.5,
-      images: [ringLightImg, powerbankImg],
-      description: 'Éclairage LED professionnel avec trépied, contrôle de luminosité et température de couleur. Parfait pour photo et vidéo.',
-      reviews: [
-        { id: '1', userName: 'Laura S.', rating: 5, comment: 'Lumière parfaite pour mes vidéos ! 💡📸', date: '2024-03-13', isVerifiedClient: true },
-      ],
-      isVerified: true,
-      isUniqueStock: false,
-    },
-  ];
+  // Fetch product from Supabase
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) {
+        setIsLoading(false);
+        return;
+      }
 
-  const product = products.find(p => p.id === id) || products[0];
+      setIsLoading(true);
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching product:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger le produit",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        const transformedProduct: Product = {
+          id: data.id,
+          name: data.name,
+          price: Number(data.price),
+          originalPrice: data.original_price ? Number(data.original_price) : undefined,
+          category: data.category || 'Autres',
+          rating: 4.5 + Math.random() * 0.5, // Placeholder until reviews system
+          images: data.images && data.images.length > 0 ? data.images : ['/placeholder.svg'],
+          videoUrl: data.video_url || undefined,
+          description: data.description || 'Aucune description disponible.',
+          reviews: [], // Placeholder until reviews system
+          isVerified: data.is_verified || false,
+          isUniqueStock: data.stock_available <= 1,
+          isAuction: data.is_auction || false,
+          auctionEndDate: data.auction_end_date ? new Date(data.auction_end_date) : undefined,
+          startingPrice: Number(data.price),
+          bids: []
+        };
+
+        // Fetch bids if auction
+        if (data.is_auction) {
+          const { data: bidsData } = await supabase
+            .from('bids')
+            .select('id, amount, created_at, user_id')
+            .eq('product_id', data.id)
+            .order('created_at', { ascending: false });
+
+          if (bidsData && bidsData.length > 0) {
+            transformedProduct.bids = bidsData.map((bid, index) => ({
+              id: bid.id,
+              userName: `Enchérisseur ${index + 1}`,
+              amount: Number(bid.amount),
+              timestamp: new Date(bid.created_at)
+            }));
+          }
+        }
+
+        setProduct(transformedProduct);
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchProduct();
+  }, [id, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-vibrant-red" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <p className="text-muted-foreground mb-4">Produit non trouvé</p>
+        <Button onClick={() => navigate('/')} variant="outline">
+          Retour à l'accueil
+        </Button>
+      </div>
+    );
+  }
+
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
@@ -347,7 +322,7 @@ const ProductDetail = () => {
                   }`}
                 />
               ))}
-              <span className="text-sm font-medium text-foreground ml-1">{product.rating}</span>
+              <span className="text-sm font-medium text-foreground ml-1">{product.rating.toFixed(1)}</span>
             </div>
             <span className="text-muted-foreground text-sm">
               {product.reviews.length} avis
@@ -409,28 +384,32 @@ const ProductDetail = () => {
           </div>
 
           {/* Reviews List - Always visible */}
-          <div className="mt-4 space-y-3">
-            {product.reviews.slice(0, 3).map((review) => (
-              <div key={review.id} className="flex gap-3">
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-                    {review.userName.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-foreground">{review.userName}</span>
-                    <div className="flex items-center">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-vibrant-yellow text-vibrant-yellow" />
-                      ))}
+          {product.reviews.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {product.reviews.slice(0, 3).map((review) => (
+                <div key={review.id} className="flex gap-3">
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                      {review.userName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-foreground">{review.userName}</span>
+                      <div className="flex items-center">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="h-3 w-3 fill-vibrant-yellow text-vibrant-yellow" />
+                        ))}
+                      </div>
                     </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{review.comment}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{review.comment}</p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">Aucun avis pour ce produit</p>
+          )}
 
           {/* Review Form - Collapsible */}
           {showReviewForm && (
@@ -458,84 +437,71 @@ const ProductDetail = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="absolute bottom-2 right-2 h-7 w-7"
+                  className="absolute right-2 top-2 h-8 w-8"
                 >
                   <Smile className="h-4 w-4" />
                 </Button>
                 {showEmojiPicker && (
-                  <div className="absolute bottom-10 right-2 z-50">
+                  <div className="absolute right-0 top-12 z-50">
                     <EmojiPicker onEmojiSelect={handleEmojiSelect} />
                   </div>
                 )}
               </div>
-              <Button onClick={handleSubmitComment} size="sm" className="buy-button">
+              <Button 
+                onClick={handleSubmitComment}
+                className="w-full bg-primary hover:bg-primary/90"
+                disabled={!comment.trim() || userRating === 0}
+              >
                 <Send className="h-4 w-4 mr-2" />
-                Publier
+                Publier l'avis
               </Button>
             </div>
           )}
         </div>
 
         {/* Similar Products */}
-        <div className="mt-3">
-          <SimilarProducts 
-            currentProductId={product.id}
-            products={products.map(p => ({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              originalPrice: p.originalPrice,
-              image: p.images[0],
-              rating: p.rating,
-              isAuction: p.isAuction
-            }))}
-          />
+        <div className="mt-6">
+          <SimilarProducts currentProductId={product.id} category={product.category} />
         </div>
       </div>
 
-      {/* Fixed Bottom Action Bar - Xianyu Style */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-3 z-50">
-        <div className="flex items-center gap-2 max-w-4xl mx-auto">
+      {/* Fixed Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40">
+        <div className="flex items-center gap-3 max-w-lg mx-auto">
           {/* WhatsApp Button */}
           <Button
-            variant="ghost"
-            size="icon"
             onClick={handleWhatsAppClick}
-            className="h-12 w-12 rounded-full flex-shrink-0"
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 flex-shrink-0 border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[hsl(142_70%_45%)]" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-            </svg>
+            <MessageCircle className="h-5 w-5" />
           </Button>
 
           {/* Add to Coupon Button */}
           <Button
-            variant="outline"
             onClick={handleAddToCoupon}
-            className="flex-1 h-12 rounded-full border-primary text-primary hover:bg-primary/10"
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 flex-shrink-0 border-primary text-primary hover:bg-primary hover:text-white"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Coupon
+            <ShoppingBag className="h-5 w-5" />
           </Button>
 
-          {/* Buy Now / Bid Button */}
-          {product.isAuction ? (
-            <Button
-              onClick={() => document.querySelector('#auction-panel')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex-[2] h-12 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold"
-            >
-              <Gavel className="h-5 w-5 mr-2" />
-              Enchérir
-            </Button>
-          ) : (
-            <Button
-              onClick={() => setShowDeliveryForm(true)}
-              className="flex-[2] h-12 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold"
-            >
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              Acheter
-            </Button>
-          )}
+          {/* Buy/Bid Button */}
+          <Button
+            onClick={() => setShowDeliveryForm(true)}
+            className="flex-1 h-12 bg-vibrant-red hover:bg-vibrant-red/90 text-white font-semibold text-base"
+          >
+            {product.isAuction ? (
+              <>
+                <Gavel className="h-5 w-5 mr-2" />
+                Enchérir maintenant
+              </>
+            ) : (
+              'Acheter maintenant'
+            )}
+          </Button>
         </div>
       </div>
 
@@ -543,12 +509,18 @@ const ProductDetail = () => {
       <DeliveryFormModal
         isOpen={showDeliveryForm}
         onClose={() => setShowDeliveryForm(false)}
-        onSubmit={() => setShowDeliveryForm(false)}
-        total={product.price}
+        onSubmit={(data) => {
+          setShowDeliveryForm(false);
+          toast({
+            title: "Commande confirmée !",
+            description: `Votre commande de ${product.name} a été enregistrée.`
+          });
+        }}
+        total={product.isAuction ? currentMaxBid : product.price}
         items={[{
           id: product.id,
           name: product.name,
-          price: product.price,
+          price: product.isAuction ? currentMaxBid : product.price,
           image: product.images[0],
           quantity: 1
         }]}
