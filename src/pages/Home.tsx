@@ -3,7 +3,7 @@
  * Masonry Grid Layout (Xianyu/Pinterest style)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
@@ -14,17 +14,10 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
-
-// Import product images
-import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
-import samsungImg from '@/assets/product-samsung-s24.jpg';
-import macbookImg from '@/assets/product-macbook-pro.jpg';
-import ipadImg from '@/assets/product-ipad-air.jpg';
-import powerbankImg from '@/assets/product-powerbank.jpg';
-import ringLightImg from '@/assets/product-ring-light.jpg';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Product {
   id: string;
@@ -55,122 +48,56 @@ const Home = () => {
   const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>(['Tous', 'Enchères']);
 
-  // Tech products data
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'iPhone 15 Pro Max 256GB',
-      price: 350000,
-      originalPrice: 950000,
-      category: 'Smartphones',
-      rating: 4.9,
-      image: iphoneImg,
-      isAuction: true,
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S24 Ultra',
-      price: 280000,
-      originalPrice: 780000,
-      category: 'Smartphones',
-      rating: 4.8,
-      image: samsungImg,
-      isAuction: true,
-    },
-    {
-      id: '3',
-      name: 'MacBook Pro M3 14" 512GB',
-      price: 450000,
-      originalPrice: 1400000,
-      category: 'Ordinateurs',
-      rating: 4.9,
-      image: macbookImg,
-    },
-    {
-      id: '4',
-      name: 'iPad Air M2 11" 256GB',
-      price: 180000,
-      originalPrice: 520000,
-      category: 'Tablettes',
-      rating: 4.7,
-      image: ipadImg
-    },
-    {
-      id: '5',
-      name: 'Google Pixel 8 Pro 512GB',
-      price: 250000,
-      originalPrice: 720000,
-      category: 'Smartphones',
-      rating: 4.8,
-      image: iphoneImg
-    },
-    {
-      id: '6',
-      name: 'Dell XPS 15 Intel i9 1TB',
-      price: 380000,
-      originalPrice: 980000,
-      category: 'Ordinateurs',
-      rating: 4.7,
-      image: macbookImg
-    },
-    {
-      id: '7',
-      name: 'Samsung Galaxy Tab S9 Ultra',
-      price: 220000,
-      originalPrice: 650000,
-      category: 'Tablettes',
-      rating: 4.8,
-      image: ipadImg
-    },
-    {
-      id: '8',
-      name: 'Power Bank Anker 30000mAh',
-      price: 12000,
-      originalPrice: 35000,
-      category: 'Accessoires',
-      rating: 4.6,
-      image: powerbankImg
-    },
-    {
-      id: '9',
-      name: 'Coque iPhone Spigen Ultra Hybrid',
-      price: 2500,
-      originalPrice: 8000,
-      category: 'Accessoires',
-      rating: 4.7,
-      image: iphoneImg
-    },
-    {
-      id: '10',
-      name: 'Ring Light LED 18 pouces',
-      price: 15000,
-      originalPrice: 55000,
-      category: 'Accessoires',
-      rating: 4.8,
-      image: ringLightImg
-    },
-    {
-      id: '11',
-      name: 'OnePlus 12 Pro 16GB RAM',
-      price: 220000,
-      originalPrice: 580000,
-      category: 'Smartphones',
-      rating: 4.7,
-      image: samsungImg
-    },
-    {
-      id: '12',
-      name: 'Batterie externe Xiaomi 20000mAh',
-      price: 9000,
-      originalPrice: 35000,
-      category: 'Accessoires',
-      rating: 4.6,
-      image: powerbankImg
-    },
-  ];
+  // Fetch products from Supabase
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const categories = ['Tous', 'Enchères', 'Smartphones', 'Ordinateurs', 'Tablettes', 'Accessoires'];
+      if (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les produits",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        // Transform DB data to component format
+        const transformedProducts: Product[] = data.map(product => ({
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          originalPrice: product.original_price ? Number(product.original_price) : undefined,
+          category: product.category || 'Autres',
+          rating: 4.5 + Math.random() * 0.5, // Placeholder rating until reviews system
+          image: product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg',
+          isAuction: product.is_auction || false
+        }));
+
+        setProducts(transformedProducts);
+
+        // Extract unique categories from products
+        const uniqueCategories = ['Tous', 'Enchères', ...new Set(data.map(p => p.category).filter(Boolean))];
+        setCategories(uniqueCategories as string[]);
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchProducts();
+  }, [toast]);
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = activeCategory === 'Tous' || 
@@ -280,28 +207,37 @@ const Home = () => {
           />
         </section>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-vibrant-red" />
+          </div>
+        )}
+
         {/* Masonry Products Grid */}
-        <Masonry
-          breakpointCols={breakpointColumns}
-          className="masonry-grid"
-          columnClassName="masonry-grid-column"
-        >
-          {filteredProducts.map((product) => (
-            <MasonryProductCard
-              key={product.id}
-              id={product.id}
-              image={product.image}
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              rating={product.rating}
-              isAuction={product.isAuction}
-            />
-          ))}
-        </Masonry>
+        {!isLoading && (
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="masonry-grid"
+            columnClassName="masonry-grid-column"
+          >
+            {filteredProducts.map((product) => (
+              <MasonryProductCard
+                key={product.id}
+                id={product.id}
+                image={product.image}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                rating={product.rating}
+                isAuction={product.isAuction}
+              />
+            ))}
+          </Masonry>
+        )}
 
         {/* Empty State */}
-        {filteredProducts.length === 0 && (
+        {!isLoading && filteredProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               Aucun produit trouvé
