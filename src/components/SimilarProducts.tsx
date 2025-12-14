@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Masonry from 'react-masonry-css';
 import MasonryProductCard from './MasonryProductCard';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SimilarProduct {
   id: string;
@@ -13,14 +14,58 @@ interface SimilarProduct {
 }
 
 interface SimilarProductsProps {
-  products: SimilarProduct[];
   currentProductId: string;
+  category?: string;
 }
 
-const SimilarProducts = ({ products, currentProductId }: SimilarProductsProps) => {
-  const filteredProducts = products.filter(p => p.id !== currentProductId);
+const SimilarProducts = ({ currentProductId, category }: SimilarProductsProps) => {
+  const [products, setProducts] = useState<SimilarProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (filteredProducts.length === 0) return null;
+  useEffect(() => {
+    const fetchSimilarProducts = async () => {
+      setIsLoading(true);
+
+      let query = supabase
+        .from('products')
+        .select('*')
+        .neq('id', currentProductId)
+        .limit(6);
+
+      // If category is provided, prioritize same category
+      if (category) {
+        query = query.eq('category', category);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching similar products:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        const transformedProducts: SimilarProduct[] = data.map(product => ({
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          originalPrice: product.original_price ? Number(product.original_price) : undefined,
+          image: product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg',
+          rating: 4.5 + Math.random() * 0.5,
+          isAuction: product.is_auction || false
+        }));
+
+        setProducts(transformedProducts);
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchSimilarProducts();
+  }, [currentProductId, category]);
+
+  if (isLoading || products.length === 0) return null;
 
   const breakpointColumnsObj = {
     default: 2,
@@ -38,7 +83,7 @@ const SimilarProducts = ({ products, currentProductId }: SimilarProductsProps) =
           className="flex -ml-3 w-auto"
           columnClassName="pl-3 bg-clip-padding"
         >
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <MasonryProductCard
               key={product.id}
               id={product.id}
