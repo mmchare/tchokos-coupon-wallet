@@ -74,7 +74,8 @@ const CouponPanel = ({
     }
 
     setIsGenerating(true);
-    const code = `JINBAO${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    // Code court de 6 caractères alphanumériques
+    const code = Math.random().toString(36).substr(2, 6).toUpperCase();
     
     try {
       const { error } = await supabase
