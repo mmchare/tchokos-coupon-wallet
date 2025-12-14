@@ -44,20 +44,13 @@ const SimilarProducts = ({ currentProductId, products }: SimilarProductsProps) =
               onClick={() => navigate(`/product/${product.id}`)}
               className="bg-muted/30 rounded-xl overflow-hidden cursor-pointer group transition-all hover:shadow-md"
             >
-              {/* Image */}
+              {/* Image - No discount badge */}
               <div className="relative aspect-square overflow-hidden">
                 <img 
                   src={product.image} 
                   alt={product.name}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                
-                {/* Discount Badge */}
-                {discount > 0 && (
-                  <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
-                    -{discount}%
-                  </span>
-                )}
               </div>
 
               {/* Info */}

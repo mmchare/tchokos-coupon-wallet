@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Package, ShoppingBag, Loader2 } from 'lucide-react';
+import { ArrowLeft, Package, ShoppingBag, Loader2, Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import OrderTrackingCard from '@/components/OrderTrackingCard';
+import NotificationsList from '@/components/NotificationsList';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface Order {
   id: string;
@@ -32,6 +34,7 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -108,24 +111,42 @@ const Orders = () => {
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white relative">
+              <Bell className="h-4 w-4 mr-1" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="all" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
               Toutes ({orders.length})
             </TabsTrigger>
             <TabsTrigger value="active" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
-              En cours ({orders.filter(o => o.logistics_step < 4 && o.status !== 'cancelled').length})
+              En cours
             </TabsTrigger>
             <TabsTrigger value="delivered" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
-              Livrées ({orders.filter(o => o.logistics_step === 4 || o.status === 'delivered').length})
+              Livrées
             </TabsTrigger>
           </TabsList>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="mt-0">
+            <NotificationsList
+              notifications={notifications}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
+              unreadCount={unreadCount}
+            />
+          </TabsContent>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-jinbao-red mb-4" />
               <p className="text-muted-foreground">Chargement de vos commandes...</p>
             </div>
-          ) : filteredOrders.length === 0 ? (
+          ) : activeTab === 'notifications' ? null : filteredOrders.length === 0 ? (
             <Card className="bg-card border-border">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
