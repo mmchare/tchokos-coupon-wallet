@@ -11,6 +11,7 @@ import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import { useToast } from '@/hooks/use-toast';
 import { formatBalance } from '@/lib/formatBalance';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -26,6 +27,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const { couponItems: items, removeFromCoupon, updateQuantity, clearCoupon } = useCoupon();
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const { unreadCount } = useNotifications();
 
   const walletBalance = profile?.wallet_balance ?? 0;
 
@@ -142,10 +144,15 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => navigate('/orders')}
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
+                  className="relative text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
                   title="Mes commandes"
                 >
                   <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-vibrant-red text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </Button>
               )}
 
