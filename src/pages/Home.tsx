@@ -120,13 +120,13 @@ const Home = () => {
 
         {/* Category Filter & Actions */}
         <section className="mb-4">
-          {/* Buttons - Centered on mobile */}
-          <div className="flex items-center justify-center sm:justify-end mb-3 space-x-2 px-1">
+          {/* Buttons - Full width on mobile, right-aligned on desktop */}
+          <div className="flex items-center justify-center gap-3 mb-3 px-1 sm:justify-end">
             <Button 
               onClick={() => setIsLoadCouponOpen(true)}
               variant="outline"
               size="sm"
-              className="text-xs"
+              className="flex-1 sm:flex-none text-xs max-w-[160px]"
             >
               <Download className="h-3 w-3 mr-1" />
               Code
@@ -135,7 +135,7 @@ const Home = () => {
               onClick={() => setIsCouponOpen(true)}
               variant="outline"
               size="sm"
-              className="border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs"
+              className="flex-1 sm:flex-none border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs max-w-[160px]"
             >
               Coupon ({couponItems.length})
             </Button>
