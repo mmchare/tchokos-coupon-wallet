@@ -190,11 +190,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             referred_id: userId
           });
 
-          // Add welcome bonus
+          // Bonus filleul: 2000 FCAF
           await supabase
             .from('profiles')
-            .update({ wallet_balance: (profile?.wallet_balance || 0) + 1000 })
+            .update({ wallet_balance: (profile?.wallet_balance || 0) + 2000 })
             .eq('id', userId);
+
+          // Bonus parrain: 5000 FCAF
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('wallet_balance')
+            .eq('id', referralCodeData.user_id)
+            .single();
+
+          if (referrerProfile) {
+            await supabase
+              .from('profiles')
+              .update({ wallet_balance: referrerProfile.wallet_balance + 5000 })
+              .eq('id', referralCodeData.user_id);
+          }
 
           // Refresh profile to show new balance
           await refreshProfile();
