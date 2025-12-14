@@ -3,7 +3,7 @@
  * Clean, unified product grid with invisible AI-powered personalization
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
@@ -12,6 +12,7 @@ import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
+import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Search, Download, Loader2 } from 'lucide-react';
@@ -37,6 +38,10 @@ const Home = () => {
   const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Infinite scroll state
+  const [displayCount, setDisplayCount] = useState(10);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Extract categories from products
   const categories = ['Tous', 'Enchères', ...new Set(products.map(p => p.category).filter(Boolean))];
@@ -49,6 +54,32 @@ const Home = () => {
       product.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Paginated products for infinite scroll
+  const visibleProducts = filteredProducts.slice(0, displayCount);
+  const hasMore = displayCount < filteredProducts.length;
+
+  // Reset display count when filter changes
+  useEffect(() => {
+    setDisplayCount(10);
+  }, [activeCategory, searchQuery]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setDisplayCount(prev => Math.min(prev + 8, filteredProducts.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, filteredProducts.length]);
 
   // Masonry breakpoints
   const breakpointColumns = {
@@ -148,33 +179,46 @@ const Home = () => {
           />
         </section>
 
-        {/* Loading State */}
+        {/* Loading State - Skeleton Grid */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-vibrant-red" />
-          </div>
-        )}
-
-        {/* Unified Product Grid - Smart ordering invisible to user */}
-        {!isLoading && filteredProducts.length > 0 && (
           <Masonry
             breakpointCols={breakpointColumns}
             className="masonry-grid"
             columnClassName="masonry-grid-column"
           >
-            {filteredProducts.map((product) => (
-              <MasonryProductCard
-                key={product.id}
-                id={product.id}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                rating={product.rating}
-                isAuction={product.isAuction}
-              />
-            ))}
+            <ProductSkeletonGrid count={8} />
           </Masonry>
+        )}
+
+        {/* Unified Product Grid - Smart ordering invisible to user */}
+        {!isLoading && visibleProducts.length > 0 && (
+          <>
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="masonry-grid"
+              columnClassName="masonry-grid-column"
+            >
+              {visibleProducts.map((product) => (
+                <MasonryProductCard
+                  key={product.id}
+                  id={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  rating={product.rating}
+                  isAuction={product.isAuction}
+                />
+              ))}
+            </Masonry>
+
+            {/* Load more trigger for infinite scroll */}
+            {hasMore && (
+              <div ref={loadMoreRef} className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}

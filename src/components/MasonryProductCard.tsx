@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Gavel } from 'lucide-react';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
+import { getCardImageUrl } from '@/lib/imageUtils';
 
 interface MasonryProductCardProps {
   id: string;
@@ -24,6 +26,10 @@ const MasonryProductCard = ({
   const navigate = useNavigate();
   const { trackClick } = useActivityTracking();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Optimized image URL for thumbnails
+  const optimizedImage = getCardImageUrl(image);
 
   const handleClick = () => {
     trackClick(id);
@@ -37,13 +43,19 @@ const MasonryProductCard = ({
     >
       {/* Image Container - Optimized loading */}
       <div className="relative overflow-hidden bg-muted aspect-square">
+        {/* Placeholder while loading */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-muted animate-pulse" />
+        )}
         <img 
-          src={image} 
+          src={optimizedImage} 
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
           loading="lazy"
           decoding="async"
-          fetchPriority="low"
+          onLoad={() => setImageLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
