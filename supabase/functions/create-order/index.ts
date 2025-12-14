@@ -6,15 +6,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface OrderRequest {
   user_id: string;
   product_id?: string;
-  items: {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
+  items: OrderItem[];
   total_amount: number;
   city: string;
   delivery_address: string;
@@ -60,6 +62,60 @@ serve(async (req: Request) => {
       );
     }
 
+    // CRITICAL: Validate stock availability for all items BEFORE processing
+    const stockValidationErrors: string[] = [];
+    const productStocks: Map<string, { stock_available: number; name: string }> = new Map();
+
+    // Helper function to validate UUID format
+    const isValidUUID = (str: string | null | undefined): boolean => {
+      if (!str) return false;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+
+    // Check stock for each item
+    for (const item of items) {
+      if (!isValidUUID(item.id)) {
+        stockValidationErrors.push(`ID invalide pour ${item.name}`);
+        continue;
+      }
+
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('id, name, stock_available')
+        .eq('id', item.id)
+        .single();
+
+      if (productError || !product) {
+        stockValidationErrors.push(`Produit non trouvé: ${item.name}`);
+        continue;
+      }
+
+      productStocks.set(item.id, { 
+        stock_available: product.stock_available, 
+        name: product.name 
+      });
+
+      if (product.stock_available < item.quantity) {
+        stockValidationErrors.push(
+          `Stock insuffisant pour "${product.name}". Disponible: ${product.stock_available}, Demandé: ${item.quantity}`
+        );
+      }
+    }
+
+    // If any stock validation errors, reject the order
+    if (stockValidationErrors.length > 0) {
+      console.error('Stock validation errors:', stockValidationErrors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Stock insuffisant',
+          details: stockValidationErrors,
+          items_with_issues: stockValidationErrors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get user's wallet balance
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -86,13 +142,6 @@ serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    // Helper function to validate UUID format
-    const isValidUUID = (str: string | null | undefined): boolean => {
-      if (!str) return false;
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      return uuidRegex.test(str);
-    };
 
     // Only use product_id if it's a valid UUID
     const validProductId = isValidUUID(product_id) ? product_id : 
@@ -143,6 +192,27 @@ serve(async (req: Request) => {
         JSON.stringify({ error: 'Erreur lors du débit du solde' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // CRITICAL: Decrement stock for each product after successful payment
+    for (const item of items) {
+      if (!isValidUUID(item.id)) continue;
+      
+      const productStock = productStocks.get(item.id);
+      if (productStock) {
+        const newStock = productStock.stock_available - item.quantity;
+        const { error: stockError } = await supabase
+          .from('products')
+          .update({ stock_available: Math.max(0, newStock) })
+          .eq('id', item.id);
+
+        if (stockError) {
+          console.error(`Error updating stock for product ${item.id}:`, stockError);
+          // Non-critical, continue - order is already created
+        } else {
+          console.log(`Stock updated for ${item.name}: ${productStock.stock_available} -> ${newStock}`);
+        }
+      }
     }
 
     // Create purchase transaction record
