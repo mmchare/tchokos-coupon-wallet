@@ -1,6 +1,6 @@
 /**
  * Home page - JinBao Smart Market
- * Masonry Grid Layout (Xianyu/Pinterest style)
+ * Masonry Grid Layout with Personalized Recommendations
  */
 
 import { useState, useEffect } from 'react';
@@ -14,21 +14,10 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2 } from 'lucide-react';
+import { Search, Download, Loader2, Sparkles, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
-import { supabase } from '@/integrations/supabase/client';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  category: string;
-  rating: number;
-  image: string;
-  isAuction?: boolean;
-}
+import { usePersonalizedProducts } from '@/hooks/usePersonalizedProducts';
 
 interface CouponItem {
   id: string;
@@ -40,7 +29,9 @@ interface CouponItem {
 
 const Home = () => {
   const { toast } = useToast();
-  const { couponItems, addToCoupon, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
+  const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
+  const { personalizedProducts, trendingProducts, isLoading, hasPersonalization } = usePersonalizedProducts();
+  
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
@@ -48,64 +39,24 @@ const Home = () => {
   const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [categories, setCategories] = useState<string[]>(['Tous', 'Enchères']);
 
-  // Fetch products from Supabase
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Extract categories from all products
+  const allProducts = [...personalizedProducts, ...trendingProducts];
+  const categories = ['Tous', 'Enchères', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
 
-      if (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les produits",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
+  // Filter products based on category and search
+  const filterProducts = (products: typeof personalizedProducts) => {
+    return products.filter(product => {
+      const matchesCategory = activeCategory === 'Tous' || 
+        (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
+      const matchesSearch = searchQuery === '' || 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  };
 
-      if (data) {
-        // Transform DB data to component format
-        const transformedProducts: Product[] = data.map(product => ({
-          id: product.id,
-          name: product.name,
-          price: Number(product.price),
-          originalPrice: product.original_price ? Number(product.original_price) : undefined,
-          category: product.category || 'Autres',
-          rating: 4.5 + Math.random() * 0.5, // Placeholder rating until reviews system
-          image: product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg',
-          isAuction: product.is_auction || false
-        }));
-
-        setProducts(transformedProducts);
-
-        // Extract unique categories from products
-        const uniqueCategories = ['Tous', 'Enchères', ...new Set(data.map(p => p.category).filter(Boolean))];
-        setCategories(uniqueCategories as string[]);
-      }
-
-      setIsLoading(false);
-    };
-
-    fetchProducts();
-  }, [toast]);
-
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = activeCategory === 'Tous' || 
-      (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
-    const matchesSearch = searchQuery === '' || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredPersonalized = filterProducts(personalizedProducts);
+  const filteredTrending = filterProducts(trendingProducts);
 
   // Masonry breakpoints
   const breakpointColumns = {
@@ -214,30 +165,66 @@ const Home = () => {
           </div>
         )}
 
-        {/* Masonry Products Grid */}
-        {!isLoading && (
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="masonry-grid"
-            columnClassName="masonry-grid-column"
-          >
-            {filteredProducts.map((product) => (
-              <MasonryProductCard
-                key={product.id}
-                id={product.id}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                rating={product.rating}
-                isAuction={product.isAuction}
-              />
-            ))}
-          </Masonry>
+        {/* Personalized Section */}
+        {!isLoading && hasPersonalization && filteredPersonalized.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4 px-1">
+              <Sparkles className="h-5 w-5 text-vibrant-yellow" />
+              <h2 className="text-lg font-bold text-foreground">Sélection Personnalisée pour Vous</h2>
+            </div>
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="masonry-grid"
+              columnClassName="masonry-grid-column"
+            >
+              {filteredPersonalized.map((product) => (
+                <MasonryProductCard
+                  key={product.id}
+                  id={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  rating={product.rating}
+                  isAuction={product.isAuction}
+                />
+              ))}
+            </Masonry>
+          </section>
+        )}
+
+        {/* Trending/All Products Section */}
+        {!isLoading && filteredTrending.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4 px-1">
+              <TrendingUp className="h-5 w-5 text-vibrant-red" />
+              <h2 className="text-lg font-bold text-foreground">
+                {hasPersonalization ? "Les Incontournables de JinBao" : "Catalogue"}
+              </h2>
+            </div>
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="masonry-grid"
+              columnClassName="masonry-grid-column"
+            >
+              {filteredTrending.map((product) => (
+                <MasonryProductCard
+                  key={product.id}
+                  id={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  rating={product.rating}
+                  isAuction={product.isAuction}
+                />
+              ))}
+            </Masonry>
+          </section>
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredProducts.length === 0 && (
+        {!isLoading && filteredPersonalized.length === 0 && filteredTrending.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               Aucun produit trouvé
