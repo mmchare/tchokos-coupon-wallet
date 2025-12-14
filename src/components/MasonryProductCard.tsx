@@ -35,13 +35,15 @@ const MasonryProductCard = ({
       className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-border/50"
       onClick={handleClick}
     >
-      {/* Image Container */}
-      <div className="relative overflow-hidden bg-muted">
+      {/* Image Container - Optimized loading */}
+      <div className="relative overflow-hidden bg-muted aspect-square">
         <img 
           src={image} 
           alt={name}
-          className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
+          decoding="async"
+          fetchPriority="low"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
