@@ -438,6 +438,41 @@ export type Database = {
           },
         ]
       }
+      shared_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          creator_id: string | null
+          expires_at: string
+          id: string
+          items: Json
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          creator_id?: string | null
+          expires_at?: string
+          id?: string
+          items: Json
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          creator_id?: string | null
+          expires_at?: string
+          id?: string
+          items?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_coupons_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_transactions: {
         Row: {
           amount: number
