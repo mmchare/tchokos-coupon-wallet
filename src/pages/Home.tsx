@@ -1,6 +1,6 @@
 /**
  * Home page - JinBao Smart Market
- * Masonry Grid Layout with AI-Powered Personalized Recommendations
+ * Clean, unified product grid with invisible AI-powered personalization
  */
 
 import { useState } from 'react';
@@ -14,12 +14,9 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2, Sparkles, TrendingUp, Brain, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Search, Download, Loader2 } from 'lucide-react';
 import { useCoupon } from '@/contexts/CouponContext';
-import { usePersonalizedProducts } from '@/hooks/usePersonalizedProducts';
-import { useAIRecommendations } from '@/hooks/useAIRecommendations';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSmartProducts } from '@/hooks/useSmartProducts';
 
 interface CouponItem {
   id: string;
@@ -30,16 +27,8 @@ interface CouponItem {
 }
 
 const Home = () => {
-  const { toast } = useToast();
-  const { user } = useAuth();
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
-  const { personalizedProducts, trendingProducts, isLoading, hasPersonalization } = usePersonalizedProducts();
-  const { 
-    aiRecommendedProducts, 
-    personalizationMessage, 
-    isLoading: isAILoading, 
-    refetch: refetchAI 
-  } = useAIRecommendations();
+  const { products, isLoading } = useSmartProducts();
   
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -49,24 +38,17 @@ const Home = () => {
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Extract categories from all products
-  const allProducts = [...personalizedProducts, ...trendingProducts];
-  const categories = ['Tous', 'Enchères', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  // Extract categories from products
+  const categories = ['Tous', 'Enchères', ...new Set(products.map(p => p.category).filter(Boolean))];
 
   // Filter products based on category and search
-  const filterProducts = <T extends { category: string; isAuction?: boolean; name: string }>(products: T[]): T[] => {
-    return products.filter(product => {
-      const matchesCategory = activeCategory === 'Tous' || 
-        (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
-      const matchesSearch = searchQuery === '' || 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  };
-
-  const filteredPersonalized = filterProducts(personalizedProducts);
-  const filteredTrending = filterProducts(trendingProducts);
-  const filteredAIRecommendations = filterProducts(aiRecommendedProducts);
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = activeCategory === 'Tous' || 
+      (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
+    const matchesSearch = searchQuery === '' || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   // Masonry breakpoints
   const breakpointColumns = {
@@ -138,27 +120,24 @@ const Home = () => {
 
         {/* Category Filter & Actions */}
         <section className="mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
-            <h2 className="text-lg font-bold text-foreground px-1">Catalogue</h2>
-            <div className="flex space-x-2 px-1">
-              <Button 
-                onClick={() => setIsLoadCouponOpen(true)}
-                variant="outline"
-                size="sm"
-                className="text-xs flex-1 sm:flex-none"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                Code
-              </Button>
-              <Button 
-                onClick={() => setIsCouponOpen(true)}
-                variant="outline"
-                size="sm"
-                className="border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs flex-1 sm:flex-none"
-              >
-                Coupon ({couponItems.length})
-              </Button>
-            </div>
+          <div className="flex items-center justify-end mb-3 space-x-2 px-1">
+            <Button 
+              onClick={() => setIsLoadCouponOpen(true)}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              Code
+            </Button>
+            <Button 
+              onClick={() => setIsCouponOpen(true)}
+              variant="outline"
+              size="sm"
+              className="border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs"
+            >
+              Coupon ({couponItems.length})
+            </Button>
           </div>
           
           <CategoryFilter 
@@ -175,125 +154,30 @@ const Home = () => {
           </div>
         )}
 
-        {/* AI Recommendations Section - Only for logged in users */}
-        {!isLoading && user && filteredAIRecommendations.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">IA Recommande</h2>
-                  {personalizationMessage && (
-                    <p className="text-xs text-muted-foreground">{personalizationMessage}</p>
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refetchAI}
-                disabled={isAILoading}
-                className="text-xs"
-              >
-                <RefreshCw className={`h-3 w-3 mr-1 ${isAILoading ? 'animate-spin' : ''}`} />
-                Actualiser
-              </Button>
-            </div>
-            
-            {isAILoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="ml-2 text-sm text-muted-foreground">L'IA analyse vos préférences...</span>
-              </div>
-            ) : (
-              <Masonry
-                breakpointCols={breakpointColumns}
-                className="masonry-grid"
-                columnClassName="masonry-grid-column"
-              >
-                {filteredAIRecommendations.map((product) => (
-                  <div key={`ai-${product.id}`} className="relative">
-                    {product.aiReason && (
-                      <div className="absolute top-2 left-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-1 rounded-full max-w-[80%] truncate">
-                        {product.aiReason}
-                      </div>
-                    )}
-                    <MasonryProductCard
-                      id={product.id}
-                      image={product.image}
-                      name={product.name}
-                      price={product.price}
-                      originalPrice={product.originalPrice}
-                      rating={product.rating}
-                      isAuction={product.isAuction}
-                    />
-                  </div>
-                ))}
-              </Masonry>
-            )}
-          </section>
-        )}
-
-        {/* Rule-Based Personalized Section */}
-        {!isLoading && hasPersonalization && filteredPersonalized.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center gap-2 mb-4 px-1">
-              <Sparkles className="h-5 w-5 text-vibrant-yellow" />
-              <h2 className="text-lg font-bold text-foreground">Basé sur vos visites</h2>
-            </div>
-            <Masonry
-              breakpointCols={breakpointColumns}
-              className="masonry-grid"
-              columnClassName="masonry-grid-column"
-            >
-              {filteredPersonalized.map((product) => (
-                <MasonryProductCard
-                  key={product.id}
-                  id={product.id}
-                  image={product.image}
-                  name={product.name}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  rating={product.rating}
-                  isAuction={product.isAuction}
-                />
-              ))}
-            </Masonry>
-          </section>
-        )}
-
-        {/* Trending/All Products Section */}
-        {!isLoading && filteredTrending.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4 px-1">
-              <TrendingUp className="h-5 w-5 text-vibrant-red" />
-              <h2 className="text-lg font-bold text-foreground">
-                {hasPersonalization || aiRecommendedProducts.length > 0 ? "Les Incontournables" : "Catalogue"}
-              </h2>
-            </div>
-            <Masonry
-              breakpointCols={breakpointColumns}
-              className="masonry-grid"
-              columnClassName="masonry-grid-column"
-            >
-              {filteredTrending.map((product) => (
-                <MasonryProductCard
-                  key={product.id}
-                  id={product.id}
-                  image={product.image}
-                  name={product.name}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  rating={product.rating}
-                  isAuction={product.isAuction}
-                />
-              ))}
-            </Masonry>
-          </section>
+        {/* Unified Product Grid - Smart ordering invisible to user */}
+        {!isLoading && filteredProducts.length > 0 && (
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="masonry-grid"
+            columnClassName="masonry-grid-column"
+          >
+            {filteredProducts.map((product) => (
+              <MasonryProductCard
+                key={product.id}
+                id={product.id}
+                image={product.image}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                rating={product.rating}
+                isAuction={product.isAuction}
+              />
+            ))}
+          </Masonry>
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredPersonalized.length === 0 && filteredTrending.length === 0 && (
+        {!isLoading && filteredProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               Aucun produit trouvé
