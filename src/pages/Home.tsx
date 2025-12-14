@@ -1,9 +1,9 @@
 /**
  * Home page - JinBao Smart Market
- * Masonry Grid Layout with Personalized Recommendations
+ * Masonry Grid Layout with AI-Powered Personalized Recommendations
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
@@ -14,10 +14,12 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2, Sparkles, TrendingUp } from 'lucide-react';
+import { Search, Download, Loader2, Sparkles, TrendingUp, Brain, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import { usePersonalizedProducts } from '@/hooks/usePersonalizedProducts';
+import { useAIRecommendations } from '@/hooks/useAIRecommendations';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CouponItem {
   id: string;
@@ -29,8 +31,15 @@ interface CouponItem {
 
 const Home = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const { personalizedProducts, trendingProducts, isLoading, hasPersonalization } = usePersonalizedProducts();
+  const { 
+    aiRecommendedProducts, 
+    personalizationMessage, 
+    isLoading: isAILoading, 
+    refetch: refetchAI 
+  } = useAIRecommendations();
   
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -45,7 +54,7 @@ const Home = () => {
   const categories = ['Tous', 'Enchères', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
 
   // Filter products based on category and search
-  const filterProducts = (products: typeof personalizedProducts) => {
+  const filterProducts = <T extends { category: string; isAuction?: boolean; name: string }>(products: T[]): T[] => {
     return products.filter(product => {
       const matchesCategory = activeCategory === 'Tous' || 
         (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
@@ -57,6 +66,7 @@ const Home = () => {
 
   const filteredPersonalized = filterProducts(personalizedProducts);
   const filteredTrending = filterProducts(trendingProducts);
+  const filteredAIRecommendations = filterProducts(aiRecommendedProducts);
 
   // Masonry breakpoints
   const breakpointColumns = {
@@ -165,12 +175,71 @@ const Home = () => {
           </div>
         )}
 
-        {/* Personalized Section */}
+        {/* AI Recommendations Section - Only for logged in users */}
+        {!isLoading && user && filteredAIRecommendations.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-primary" />
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">IA Recommande</h2>
+                  {personalizationMessage && (
+                    <p className="text-xs text-muted-foreground">{personalizationMessage}</p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refetchAI}
+                disabled={isAILoading}
+                className="text-xs"
+              >
+                <RefreshCw className={`h-3 w-3 mr-1 ${isAILoading ? 'animate-spin' : ''}`} />
+                Actualiser
+              </Button>
+            </div>
+            
+            {isAILoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-sm text-muted-foreground">L'IA analyse vos préférences...</span>
+              </div>
+            ) : (
+              <Masonry
+                breakpointCols={breakpointColumns}
+                className="masonry-grid"
+                columnClassName="masonry-grid-column"
+              >
+                {filteredAIRecommendations.map((product) => (
+                  <div key={`ai-${product.id}`} className="relative">
+                    {product.aiReason && (
+                      <div className="absolute top-2 left-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-1 rounded-full max-w-[80%] truncate">
+                        {product.aiReason}
+                      </div>
+                    )}
+                    <MasonryProductCard
+                      id={product.id}
+                      image={product.image}
+                      name={product.name}
+                      price={product.price}
+                      originalPrice={product.originalPrice}
+                      rating={product.rating}
+                      isAuction={product.isAuction}
+                    />
+                  </div>
+                ))}
+              </Masonry>
+            )}
+          </section>
+        )}
+
+        {/* Rule-Based Personalized Section */}
         {!isLoading && hasPersonalization && filteredPersonalized.length > 0 && (
           <section className="mb-8">
             <div className="flex items-center gap-2 mb-4 px-1">
               <Sparkles className="h-5 w-5 text-vibrant-yellow" />
-              <h2 className="text-lg font-bold text-foreground">Sélection Personnalisée pour Vous</h2>
+              <h2 className="text-lg font-bold text-foreground">Basé sur vos visites</h2>
             </div>
             <Masonry
               breakpointCols={breakpointColumns}
@@ -199,7 +268,7 @@ const Home = () => {
             <div className="flex items-center gap-2 mb-4 px-1">
               <TrendingUp className="h-5 w-5 text-vibrant-red" />
               <h2 className="text-lg font-bold text-foreground">
-                {hasPersonalization ? "Les Incontournables de JinBao" : "Catalogue"}
+                {hasPersonalization || aiRecommendedProducts.length > 0 ? "Les Incontournables" : "Catalogue"}
               </h2>
             </div>
             <Masonry
