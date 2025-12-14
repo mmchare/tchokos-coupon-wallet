@@ -10,6 +10,7 @@ import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
 import AuctionBidPanel from '@/components/AuctionBidPanel';
+import DeliveryFormModal from '@/components/DeliveryFormModal';
 
 // Import product images
 import iphoneImg from '@/assets/product-iphone-15-pro.jpg';
@@ -65,6 +66,7 @@ const ProductDetail = () => {
   const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showDeliveryForm, setShowDeliveryForm] = useState(false);
 
   // Mock products data
   const products: Product[] = [
@@ -527,7 +529,7 @@ const ProductDetail = () => {
             </Button>
           ) : (
             <Button
-              onClick={() => toast({ title: "Acheter maintenant", description: "Redirection..." })}
+              onClick={() => setShowDeliveryForm(true)}
               className="flex-[2] h-12 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold"
             >
               <ShoppingBag className="h-5 w-5 mr-2" />
@@ -536,6 +538,21 @@ const ProductDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Delivery Form Modal */}
+      <DeliveryFormModal
+        isOpen={showDeliveryForm}
+        onClose={() => setShowDeliveryForm(false)}
+        onSubmit={() => setShowDeliveryForm(false)}
+        total={product.price}
+        items={[{
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.images[0],
+          quantity: 1
+        }]}
+      />
     </div>
   );
 };
