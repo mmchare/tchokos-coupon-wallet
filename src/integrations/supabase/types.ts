@@ -425,6 +425,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_otps: { Args: never; Returns: undefined }
+      create_otp_code: {
+        Args: { p_code: string; p_phone: string }
+        Returns: string
+      }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       log_admin_action: {
@@ -438,6 +443,10 @@ export type Database = {
       }
       verify_admin_password: {
         Args: { input_password: string }
+        Returns: boolean
+      }
+      verify_otp_code: {
+        Args: { p_code: string; p_phone: string }
         Returns: boolean
       }
     }
