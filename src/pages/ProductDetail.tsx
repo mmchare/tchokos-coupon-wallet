@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageCircle, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageSquare, ChevronRight, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -63,7 +64,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch product from Supabase
+  // Fetch product and reviews from Supabase
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) {
@@ -91,17 +92,38 @@ const ProductDetail = () => {
       }
 
       if (data) {
+        // Fetch reviews for this product
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('product_id', data.id)
+          .order('created_at', { ascending: false });
+
+        const reviews: Review[] = reviewsData ? reviewsData.map(r => ({
+          id: r.id,
+          userName: r.user_name,
+          rating: r.rating,
+          comment: r.comment,
+          date: new Date(r.created_at).toLocaleDateString('fr-FR'),
+          isVerifiedClient: r.is_verified_client
+        })) : [];
+
+        // Calculate average rating from reviews
+        const avgRating = reviews.length > 0 
+          ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+          : 4.5;
+
         const transformedProduct: Product = {
           id: data.id,
           name: data.name,
           price: Number(data.price),
           originalPrice: data.original_price ? Number(data.original_price) : undefined,
           category: data.category || 'Autres',
-          rating: 4.5 + Math.random() * 0.5, // Placeholder until reviews system
+          rating: avgRating,
           images: data.images && data.images.length > 0 ? data.images : ['/placeholder.svg'],
           videoUrl: data.video_url || undefined,
           description: data.description || 'Aucune description disponible.',
-          reviews: [], // Placeholder until reviews system
+          reviews: reviews,
           isVerified: data.is_verified || false,
           isUniqueStock: data.stock_available <= 1,
           isAuction: data.is_auction || false,
@@ -192,7 +214,9 @@ const ProductDetail = () => {
     ? Math.max(...currentBids.map(b => b.amount)) 
     : (product.startingPrice || product.price);
 
-  const handleSubmitComment = () => {
+  const { user, profile } = useAuth();
+
+  const handleSubmitComment = async () => {
     if (!comment.trim() || userRating === 0) {
       toast({
         title: "Erreur",
@@ -201,6 +225,50 @@ const ProductDetail = () => {
       });
       return;
     }
+
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour laisser un avis",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const { error } = await supabase.from('reviews').insert({
+      product_id: product?.id,
+      user_id: user.id,
+      user_name: profile?.full_name || 'Utilisateur',
+      rating: userRating,
+      comment: comment.trim(),
+      is_verified_client: false
+    });
+
+    if (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de publier l'avis",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Add review to local state
+    const newReview: Review = {
+      id: crypto.randomUUID(),
+      userName: profile?.full_name || 'Utilisateur',
+      rating: userRating,
+      comment: comment.trim(),
+      date: new Date().toLocaleDateString('fr-FR'),
+      isVerifiedClient: false
+    };
+
+    setProduct(prev => prev ? {
+      ...prev,
+      reviews: [newReview, ...prev.reviews]
+    } : null);
+
     toast({ title: "Avis publié !", description: "Merci pour votre retour" });
     setComment('');
     setUserRating(0);
@@ -375,7 +443,7 @@ const ProductDetail = () => {
             onClick={() => setShowReviewForm(!showReviewForm)}
           >
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-muted-foreground" />
+              <MessageSquare className="h-5 w-5 text-muted-foreground" />
               <h3 className="font-semibold text-foreground">
                 Avis ({product.reviews.length})
               </h3>
@@ -475,7 +543,9 @@ const ProductDetail = () => {
             size="icon"
             className="h-12 w-12 flex-shrink-0 border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
           >
-            <MessageCircle className="h-5 w-5" />
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
           </Button>
 
           {/* Add to Coupon Button */}
