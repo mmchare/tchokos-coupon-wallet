@@ -120,7 +120,8 @@ const Home = () => {
 
         {/* Category Filter & Actions */}
         <section className="mb-4">
-          <div className="flex items-center justify-end mb-3 space-x-2 px-1">
+          {/* Buttons - Centered on mobile */}
+          <div className="flex items-center justify-center sm:justify-end mb-3 space-x-2 px-1">
             <Button 
               onClick={() => setIsLoadCouponOpen(true)}
               variant="outline"

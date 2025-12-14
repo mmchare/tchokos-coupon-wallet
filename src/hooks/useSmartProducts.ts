@@ -4,7 +4,7 @@
  * Users should feel "JinBao understands me" without knowing AI is involved
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -25,19 +25,37 @@ interface SmartProductsResult {
   refresh: () => void;
 }
 
+// Cache for products (stale-while-revalidate pattern)
+const productCache = {
+  data: null as Product[] | null,
+  timestamp: 0,
+  maxAge: 5 * 60 * 1000, // 5 minutes
+};
+
 export const useSmartProducts = (): SmartProductsResult => {
   const { user } = useAuth();
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>(productCache.data || []);
   const [aiScores, setAiScores] = useState<Map<string, number>>(new Map());
   const [activityScores, setActivityScores] = useState<Map<string, number>>(new Map());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!productCache.data);
   const [refreshKey, setRefreshKey] = useState(0);
+  const isFetchingRef = useRef(false);
 
-  // Fetch all products from database
-  const fetchProducts = useCallback(async () => {
+  // Fetch only required fields for home page (optimized query)
+  const fetchProducts = useCallback(async (forceRefresh = false) => {
+    // Use cache if available and fresh
+    const now = Date.now();
+    if (!forceRefresh && productCache.data && (now - productCache.timestamp) < productCache.maxAge) {
+      setAllProducts(productCache.data);
+      return;
+    }
+
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('id, name, price, original_price, category, images, is_auction')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -51,8 +69,14 @@ export const useSmartProducts = (): SmartProductsResult => {
         image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
         isAuction: p.is_auction || false,
       }));
+      
+      // Update cache
+      productCache.data = products;
+      productCache.timestamp = Date.now();
+      
       setAllProducts(products);
     }
+    isFetchingRef.current = false;
   }, []);
 
   // Fetch user activity scores (rule-based personalization)
@@ -118,20 +142,28 @@ export const useSmartProducts = (): SmartProductsResult => {
     }
   }, [user?.id]);
 
-  // Load all data
+  // Load all data with stale-while-revalidate pattern
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
+      // Show cached data immediately (no loading state if cache exists)
+      if (productCache.data && !refreshKey) {
+        setAllProducts(productCache.data);
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
+      }
       
-      // Fetch products first (always needed)
-      await fetchProducts();
+      // Fetch fresh products
+      await fetchProducts(refreshKey > 0);
       
-      // Then fetch personalization data in parallel
+      // Then fetch personalization data in parallel (non-blocking)
       if (user?.id) {
-        await Promise.all([
+        Promise.all([
           fetchActivityScores(),
           fetchAIRecommendations()
-        ]);
+        ]).then(() => {
+          // Silent update - no loading state change
+        });
       }
       
       setIsLoading(false);
