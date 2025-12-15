@@ -515,10 +515,13 @@ const AdminProducts = () => {
                   <p className="text-sm text-muted-foreground">
                     {uploadingImages ? 'Upload en cours...' : 'Glissez-déposez ou cliquez pour ajouter des images'}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Formats acceptés: JPG, PNG, WebP, AVIF, GIF
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/*"
                     multiple
                     onChange={(e) => handleImageUpload(e.target.files)}
                     className="hidden"
