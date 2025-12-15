@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { CouponProvider } from "@/contexts/CouponContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ScrollToTop from "@/components/ScrollToTop";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Recharge from "./pages/Recharge";
@@ -39,6 +40,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <PWAInstallPrompt />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
