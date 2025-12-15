@@ -15,9 +15,10 @@ import CouponPanel from '@/components/CouponPanel';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2 } from 'lucide-react';
+import { Search, Download, Loader2, Sparkles, X } from 'lucide-react';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
+import { useAISearch } from '@/hooks/useAISearch';
 
 interface CouponItem {
   id: string;
@@ -30,6 +31,7 @@ interface CouponItem {
 const Home = () => {
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const { products, isLoading } = useSmartProducts();
+  const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
   
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -38,31 +40,69 @@ const Home = () => {
   const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [useAIMode, setUseAIMode] = useState(false);
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(10);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Extract categories from products
   const categories = ['Tous', 'Enchères', ...new Set(products.map(p => p.category).filter(Boolean))];
 
-  // Filter products based on category and search
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = activeCategory === 'Tous' || 
-      (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
-    const matchesSearch = searchQuery === '' || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Handle AI search with debounce
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // If AI mode is enabled and query is long enough, trigger AI search
+    if (useAIMode && value.length >= 3) {
+      searchTimeoutRef.current = setTimeout(() => {
+        aiSearch(value);
+      }, 500);
+    } else if (value.length < 3) {
+      clearSearch();
+    }
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    clearSearch();
+  };
+
+  // Products to display - AI results or filtered products
+  const displayProducts = hasResults && useAIMode 
+    ? searchResults!.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        originalPrice: p.original_price,
+        category: p.category || 'Autres',
+        rating: 4.5,
+        image: p.images?.[0] || '/placeholder.svg',
+        isAuction: p.is_auction || false,
+      }))
+    : products.filter(product => {
+        const matchesCategory = activeCategory === 'Tous' || 
+          (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
+        const matchesSearch = searchQuery === '' || 
+          product.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
 
   // Paginated products for infinite scroll
-  const visibleProducts = filteredProducts.slice(0, displayCount);
-  const hasMore = displayCount < filteredProducts.length;
+  const visibleProducts = displayProducts.slice(0, displayCount);
+  const hasMore = displayCount < displayProducts.length;
 
   // Reset display count when filter changes
   useEffect(() => {
     setDisplayCount(10);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, hasResults]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -71,7 +111,7 @@ const Home = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore) {
-          setDisplayCount(prev => Math.min(prev + 8, filteredProducts.length));
+          setDisplayCount(prev => Math.min(prev + 8, displayProducts.length));
         }
       },
       { threshold: 0.1 }
@@ -79,7 +119,7 @@ const Home = () => {
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [hasMore, filteredProducts.length]);
+  }, [hasMore, displayProducts.length]);
 
   // Masonry breakpoints
   const breakpointColumns = {
@@ -136,17 +176,51 @@ const Home = () => {
             Gadgets tech premium à prix imbattables
           </p>
           
-          {/* Search Bar */}
+          {/* Search Bar with AI Toggle */}
           <div className="max-w-md mx-auto relative mb-4">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
               type="text"
-              placeholder="Rechercher..."
+              placeholder={useAIMode ? "Ex: téléphone pas cher avec bonne batterie..." : "Rechercher..."}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-20 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
             />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="p-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                onClick={() => setUseAIMode(!useAIMode)}
+                className={`p-1.5 rounded-full transition-colors ${
+                  useAIMode 
+                    ? 'bg-vibrant-red/20 text-vibrant-red' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={useAIMode ? "Désactiver recherche IA" : "Activer recherche IA"}
+              >
+                <Sparkles className="h-4 w-4" />
+              </button>
+            </div>
+            {isSearching && (
+              <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
+              </div>
+            )}
           </div>
+
+          {/* AI Interpretation */}
+          {interpretation && useAIMode && (
+            <p className="text-xs text-muted-foreground text-center mb-2">
+              <Sparkles className="h-3 w-3 inline mr-1" />
+              {interpretation}
+            </p>
+          )}
         </section>
 
         {/* Category Filter & Actions */}
@@ -222,10 +296,10 @@ const Home = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredProducts.length === 0 && (
+        {!isLoading && displayProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              Aucun produit trouvé
+              {useAIMode && searchQuery ? "Aucun produit ne correspond à votre recherche" : "Aucun produit trouvé"}
             </p>
           </div>
         )}

@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.ai-recommendations]
 verify_jwt = false
+
+[functions.ai-search]
+verify_jwt = false

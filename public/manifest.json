@@ -1,0 +1,27 @@
+{
+  "name": "JinBao Smart Market",
+  "short_name": "JinBao",
+  "description": "Gadgets tech premium à prix imbattables - Marketplace intelligente",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#E2231A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "lang": "fr",
+  "dir": "ltr"
+}
