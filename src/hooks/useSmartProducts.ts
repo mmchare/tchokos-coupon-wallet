@@ -55,11 +55,20 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, original_price, category, images, is_auction')
+      .select('id, name, price, original_price, category, images, is_auction, auction_end_date')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      const products: Product[] = data.map(p => ({
+      const currentTime = new Date();
+      
+      // Filter out expired auctions (auction products with end_date in the past)
+      const filteredData = data.filter(p => {
+        if (!p.is_auction) return true; // Non-auction products always visible
+        if (!p.auction_end_date) return true; // Auction without end date = visible
+        return new Date(p.auction_end_date) > currentTime; // Only active auctions
+      });
+      
+      const products: Product[] = filteredData.map(p => ({
         id: p.id,
         name: p.name,
         price: Number(p.price),
