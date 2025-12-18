@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Search, Wrench, CheckCircle, XCircle, Loader2, CalendarIcon, X } from 'lucide-react';
-import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
+import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Search, Wrench, CheckCircle, XCircle, Loader2, CalendarIcon, X, BarChart3 } from 'lucide-react';
+import { format, startOfDay, endOfDay, isWithinInterval, subDays, eachDayOfInterval, startOfWeek, eachWeekOfInterval, subWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Transaction {
   id: string;
@@ -41,6 +42,9 @@ const AdminFinance = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  
+  // Chart state
+  const [chartPeriod, setChartPeriod] = useState<'daily' | 'weekly'>('daily');
   
   // Date filter state
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -203,6 +207,62 @@ const AdminFinance = () => {
     setDateFrom(undefined);
     setDateTo(undefined);
   };
+
+  // Chart data calculation
+  const chartData = useMemo(() => {
+    const completedTx = transactions.filter(t => t.status === 'completed');
+    
+    if (chartPeriod === 'daily') {
+      // Last 14 days
+      const days = eachDayOfInterval({
+        start: subDays(new Date(), 13),
+        end: new Date()
+      });
+      
+      return days.map(day => {
+        const dayStart = startOfDay(day);
+        const dayEnd = endOfDay(day);
+        
+        const dayCredits = completedTx
+          .filter(t => t.type === 'credit' && isWithinInterval(new Date(t.created_at), { start: dayStart, end: dayEnd }))
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+        const dayDebits = completedTx
+          .filter(t => t.type === 'debit' && isWithinInterval(new Date(t.created_at), { start: dayStart, end: dayEnd }))
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+        return {
+          date: format(day, 'dd/MM', { locale: fr }),
+          recharges: dayCredits,
+          depenses: dayDebits
+        };
+      });
+    } else {
+      // Last 8 weeks
+      const weeks = eachWeekOfInterval({
+        start: subWeeks(new Date(), 7),
+        end: new Date()
+      }, { locale: fr });
+      
+      return weeks.map((weekStart, idx) => {
+        const weekEnd = idx < weeks.length - 1 ? weeks[idx + 1] : endOfDay(new Date());
+        
+        const weekCredits = completedTx
+          .filter(t => t.type === 'credit' && isWithinInterval(new Date(t.created_at), { start: weekStart, end: weekEnd }))
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+        const weekDebits = completedTx
+          .filter(t => t.type === 'debit' && isWithinInterval(new Date(t.created_at), { start: weekStart, end: weekEnd }))
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+        return {
+          date: `Sem ${format(weekStart, 'dd/MM', { locale: fr })}`,
+          recharges: weekCredits,
+          depenses: weekDebits
+        };
+      });
+    }
+  }, [transactions, chartPeriod]);
 
   const totalRecharges = transactions
     .filter(t => t.type === 'credit' && t.status === 'completed')
@@ -436,6 +496,74 @@ const AdminFinance = () => {
           </Card>
         )}
       </div>
+
+      {/* Chart */}
+      <Card className="bg-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Évolution des transactions
+          </CardTitle>
+          <Select value={chartPeriod} onValueChange={(v: 'daily' | 'weekly') => setChartPeriod(v)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Par jour</SelectItem>
+              <SelectItem value="weekly">Par semaine</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRecharges" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorDepenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} className="text-muted-foreground" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value: number) => [`${value.toLocaleString()} F`, '']}
+                  labelFormatter={(label) => `${label}`}
+                />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="recharges" 
+                  stroke="#22c55e" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorRecharges)" 
+                  name="Recharges"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="depenses" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorDepenses)" 
+                  name="Dépenses"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
