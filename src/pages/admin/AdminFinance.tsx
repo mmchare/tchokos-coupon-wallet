@@ -409,11 +409,11 @@ const AdminFinance = () => {
               )}
 
               {/* Pending Transactions Quick List */}
-              {pendingTransactions.length > 0 && !searchResult && (
+              {pendingTransactions.filter(tx => tx.id !== searchResult?.id).length > 0 && !searchResult && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Transactions en attente ({pendingTransactions.length})</p>
                   <div className="max-h-48 overflow-y-auto space-y-1">
-                    {pendingTransactions.slice(0, 5).map((tx) => (
+                    {pendingTransactions.filter(tx => tx.id !== searchResult?.id).slice(0, 5).map((tx) => (
                       <button
                         key={tx.id}
                         onClick={() => {
