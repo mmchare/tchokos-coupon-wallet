@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Search, Wrench, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { toast } from '@/hooks/use-toast';
 
 interface Transaction {
   id: string;
@@ -18,6 +23,7 @@ interface Transaction {
   created_at: string;
   profiles?: {
     full_name: string;
+    wallet_balance: number;
   } | null;
 }
 
@@ -32,40 +38,150 @@ const AdminFinance = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  
+  // Reconciliation state
+  const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [searchRef, setSearchRef] = useState('');
+  const [searchResult, setSearchResult] = useState<Transaction | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isReconciling, setIsReconciling] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-
-      // Fetch wallet transactions
-      const { data: txData } = await supabase
-        .from('wallet_transactions')
-        .select(`
-          *,
-          profiles:user_id (full_name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (txData) {
-        setTransactions(txData as Transaction[]);
-      }
-
-      // Fetch orders for revenue calculation
-      const { data: ordersData } = await supabase
-        .from('orders')
-        .select('id, total_amount, created_at')
-        .order('created_at', { ascending: false });
-
-      if (ordersData) {
-        setOrders(ordersData);
-      }
-
-      setIsLoading(false);
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+
+    // Fetch wallet transactions
+    const { data: txData } = await supabase
+      .from('wallet_transactions')
+      .select(`
+        *,
+        profiles:user_id (full_name, wallet_balance)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (txData) {
+      setTransactions(txData as Transaction[]);
+    }
+
+    // Fetch orders for revenue calculation
+    const { data: ordersData } = await supabase
+      .from('orders')
+      .select('id, total_amount, created_at')
+      .order('created_at', { ascending: false });
+
+    if (ordersData) {
+      setOrders(ordersData);
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleSearchTransaction = async () => {
+    if (!searchRef.trim()) return;
+    
+    setIsSearching(true);
+    setSearchResult(null);
+
+    // Search by transaction ID (UUID) or by description containing the reference
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .select(`
+        *,
+        profiles:user_id (full_name, wallet_balance)
+      `)
+      .or(`id.eq.${searchRef.trim()},description.ilike.%${searchRef.trim()}%`)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      toast({
+        title: "Erreur de recherche",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else if (data) {
+      setSearchResult(data as Transaction);
+    } else {
+      toast({
+        title: "Transaction non trouvée",
+        description: "Aucune transaction ne correspond à cette référence",
+        variant: "destructive",
+      });
+    }
+
+    setIsSearching(false);
+  };
+
+  const handleReconcile = async () => {
+    if (!searchResult) return;
+    
+    setIsReconciling(true);
+
+    try {
+      // 1. Update transaction status to completed
+      const { error: txError } = await supabase
+        .from('wallet_transactions')
+        .update({ status: 'completed' })
+        .eq('id', searchResult.id);
+
+      if (txError) throw txError;
+
+      // 2. Get current wallet balance
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('wallet_balance')
+        .eq('id', searchResult.user_id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // 3. Credit the wallet
+      const newBalance = Number(profile.wallet_balance) + Number(searchResult.amount);
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ wallet_balance: newBalance })
+        .eq('id', searchResult.user_id);
+
+      if (updateError) throw updateError;
+
+      // 4. Log admin action
+      await supabase.rpc('log_admin_action', {
+        p_action: 'RECONCILE_TRANSACTION',
+        p_target_type: 'wallet_transaction',
+        p_target_id: searchResult.id,
+        p_details: {
+          amount: searchResult.amount,
+          user_id: searchResult.user_id,
+          previous_balance: profile.wallet_balance,
+          new_balance: newBalance
+        }
+      });
+
+      toast({
+        title: "Transaction réconciliée",
+        description: `${Number(searchResult.amount).toLocaleString()} F crédités avec succès`,
+      });
+
+      // Refresh data
+      setSearchResult(null);
+      setSearchRef('');
+      setReconcileOpen(false);
+      fetchData();
+
+    } catch (error: any) {
+      toast({
+        title: "Erreur de réconciliation",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
+    setIsReconciling(false);
+  };
 
   const totalRecharges = transactions
     .filter(t => t.type === 'credit' && t.status === 'completed')
@@ -75,22 +191,163 @@ const AdminFinance = () => {
     .filter(t => t.type === 'debit' && t.status === 'completed')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
+  const pendingTransactions = transactions.filter(t => t.status === 'pending');
+
   const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   const filteredTransactions = transactions.filter(t => {
     if (filter === 'all') return true;
+    if (filter === 'pending') return t.status === 'pending';
     return t.type === filter;
   });
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Finance</h1>
-        <p className="text-muted-foreground">Suivi des transactions et revenus</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Finance</h1>
+          <p className="text-muted-foreground">Suivi des transactions et revenus</p>
+        </div>
+        
+        {/* Reconciliation Button */}
+        <Dialog open={reconcileOpen} onOpenChange={setReconcileOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Wrench className="h-4 w-4" />
+              Réconcilier une transaction
+              {pendingTransactions.length > 0 && (
+                <Badge variant="destructive" className="ml-1">
+                  {pendingTransactions.length}
+                </Badge>
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Réconcilier une transaction</DialogTitle>
+              <DialogDescription>
+                Recherchez une transaction par ID ou référence Notchpay pour la débloquer manuellement
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Search Input */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="ID transaction ou référence Notchpay..."
+                  value={searchRef}
+                  onChange={(e) => setSearchRef(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchTransaction()}
+                />
+                <Button onClick={handleSearchTransaction} disabled={isSearching || !searchRef.trim()}>
+                  {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              {/* Search Result */}
+              {searchResult && (
+                <Card className="bg-muted/50">
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold">{searchResult.profiles?.full_name || 'Utilisateur'}</p>
+                        <p className="text-sm text-muted-foreground">ID: {searchResult.id.slice(0, 8)}...</p>
+                      </div>
+                      <Badge variant={searchResult.status === 'pending' ? 'secondary' : searchResult.status === 'completed' ? 'default' : 'destructive'}>
+                        {searchResult.status === 'pending' ? 'En attente' : searchResult.status === 'completed' ? 'Complété' : 'Échoué'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Montant</p>
+                        <p className="font-bold text-green-500">+{Number(searchResult.amount).toLocaleString()} F</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Méthode</p>
+                        <p>{searchResult.payment_method || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Solde actuel</p>
+                        <p>{Number(searchResult.profiles?.wallet_balance || 0).toLocaleString()} F</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Date</p>
+                        <p>{format(new Date(searchResult.created_at), 'dd/MM/yy HH:mm')}</p>
+                      </div>
+                    </div>
+
+                    {searchResult.description && (
+                      <div className="text-sm">
+                        <p className="text-muted-foreground">Description</p>
+                        <p className="text-xs break-all">{searchResult.description}</p>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    {searchResult.status === 'pending' ? (
+                      <div className="flex gap-2 pt-2">
+                        <Button 
+                          className="flex-1 gap-2" 
+                          onClick={handleReconcile}
+                          disabled={isReconciling}
+                        >
+                          {isReconciling ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4" />
+                          )}
+                          Valider et créditer
+                        </Button>
+                      </div>
+                    ) : searchResult.status === 'completed' ? (
+                      <p className="text-sm text-green-500 flex items-center gap-1">
+                        <CheckCircle className="h-4 w-4" />
+                        Cette transaction est déjà complétée
+                      </p>
+                    ) : (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <XCircle className="h-4 w-4" />
+                        Cette transaction a échoué
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pending Transactions Quick List */}
+              {pendingTransactions.length > 0 && !searchResult && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Transactions en attente ({pendingTransactions.length})</p>
+                  <div className="max-h-48 overflow-y-auto space-y-1">
+                    {pendingTransactions.slice(0, 5).map((tx) => (
+                      <button
+                        key={tx.id}
+                        onClick={() => {
+                          setSearchRef(tx.id);
+                          setSearchResult(tx);
+                        }}
+                        className="w-full text-left p-2 rounded-md hover:bg-muted transition-colors text-sm"
+                      >
+                        <div className="flex justify-between">
+                          <span>{tx.profiles?.full_name || 'Utilisateur'}</span>
+                          <span className="text-green-500 font-medium">+{Number(tx.amount).toLocaleString()} F</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(tx.created_at), 'dd/MM HH:mm')} • {tx.id.slice(0, 8)}...
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-500/20 to-green-600/20 border-green-500/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -99,7 +356,7 @@ const AdminFinance = () => {
                 <p className="text-2xl font-bold text-green-500">
                   {totalRecharges.toLocaleString()} F
                 </p>
-                <p className="text-sm text-muted-foreground">Total recharges (Feexpay)</p>
+                <p className="text-sm text-muted-foreground">Total recharges</p>
               </div>
             </div>
           </CardContent>
@@ -112,7 +369,7 @@ const AdminFinance = () => {
                 <p className="text-2xl font-bold text-jinbao-red">
                   {totalDebits.toLocaleString()} F
                 </p>
-                <p className="text-sm text-muted-foreground">Total débits (Achats)</p>
+                <p className="text-sm text-muted-foreground">Total débits</p>
               </div>
             </div>
           </CardContent>
@@ -130,6 +387,21 @@ const AdminFinance = () => {
             </div>
           </CardContent>
         </Card>
+        {pendingTransactions.length > 0 && (
+          <Card className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <Loader2 className="h-10 w-10 text-yellow-500" />
+                <div>
+                  <p className="text-2xl font-bold text-yellow-500">
+                    {pendingTransactions.length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">En attente</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Filter */}
@@ -143,6 +415,7 @@ const AdminFinance = () => {
             <SelectItem value="all">Toutes</SelectItem>
             <SelectItem value="credit">Recharges</SelectItem>
             <SelectItem value="debit">Débits</SelectItem>
+            <SelectItem value="pending">En attente</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -156,6 +429,7 @@ const AdminFinance = () => {
                 <TableHead>Type</TableHead>
                 <TableHead>Utilisateur</TableHead>
                 <TableHead>Montant</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Méthode</TableHead>
                 <TableHead>Date</TableHead>
@@ -164,19 +438,19 @@ const AdminFinance = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Chargement...
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Aucune transaction trouvée
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTransactions.map((tx) => (
-                  <TableRow key={tx.id}>
+                  <TableRow key={tx.id} className={tx.status === 'pending' ? 'bg-yellow-500/5' : ''}>
                     <TableCell>
                       {tx.type === 'credit' ? (
                         <span className="flex items-center gap-1 text-green-500">
@@ -196,7 +470,12 @@ const AdminFinance = () => {
                     <TableCell className={tx.type === 'credit' ? 'text-green-500' : 'text-jinbao-red'}>
                       {tx.type === 'credit' ? '+' : '-'}{Number(tx.amount).toLocaleString()} F
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell>
+                      <Badge variant={tx.status === 'pending' ? 'secondary' : tx.status === 'completed' ? 'default' : 'destructive'}>
+                        {tx.status === 'pending' ? 'En attente' : tx.status === 'completed' ? 'OK' : 'Échoué'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[200px] truncate">
                       {tx.description || '-'}
                     </TableCell>
                     <TableCell>
