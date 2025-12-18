@@ -29,6 +29,7 @@ const Recharge = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle');
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
   const presetAmounts = [1000, 5000, 10000, 25000, 50000, 100000];
 
@@ -177,6 +178,7 @@ const Recharge = () => {
 
     setIsProcessing(true);
     setPaymentStatus('pending');
+    setPaymentUrl(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('notchpay-payment', {
@@ -210,6 +212,19 @@ const Recharge = () => {
         });
         setIsProcessing(false);
         return;
+      }
+
+      // If Notchpay provides an authorization URL, open it (required for many MoMo/OM flows)
+      if (data.authorization_url) {
+        setPaymentUrl(data.authorization_url);
+        const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          // Popup blocked, user can click the button in the UI
+          toast({
+            title: "Action requise",
+            description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
+          });
+        }
       }
 
       toast({
@@ -340,14 +355,27 @@ const Recharge = () => {
                 'border-destructive bg-destructive/5'
               }`}>
                 <CardContent className="pt-6">
-                  <div className="flex items-center justify-center gap-3">
+                  <div className="flex flex-col items-center justify-center gap-3 text-center">
                     {paymentStatus === 'pending' && (
                       <>
-                        <Loader2 className="h-6 w-6 text-jinbao-blue animate-spin" />
-                        <div>
-                          <p className="font-semibold text-foreground">Paiement en cours...</p>
-                          <p className="text-sm text-muted-foreground">Confirmez sur votre téléphone</p>
+                        <div className="flex items-center justify-center gap-3">
+                          <Loader2 className="h-6 w-6 text-jinbao-blue animate-spin" />
+                          <div>
+                            <p className="font-semibold text-foreground">Paiement en cours...</p>
+                            <p className="text-sm text-muted-foreground">Confirmez sur votre téléphone</p>
+                          </div>
                         </div>
+
+                        {paymentUrl && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => window.open(paymentUrl, '_blank', 'noopener,noreferrer')}
+                            className="mt-2"
+                          >
+                            Ouvrir la page de paiement
+                          </Button>
+                        )}
                       </>
                     )}
                     {paymentStatus === 'success' && (
