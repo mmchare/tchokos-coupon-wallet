@@ -147,7 +147,8 @@ serve(async (req) => {
         success: true,
         message: 'Paiement initié avec succès',
         transaction_id: transaction.id,
-        notchpay_reference: notchpayData.transaction?.reference
+        notchpay_reference: notchpayData.transaction?.reference,
+        authorization_url: notchpayData.authorization_url,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
