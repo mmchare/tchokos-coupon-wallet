@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Search, Wrench, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Search, Wrench, CheckCircle, XCircle, Loader2, CalendarIcon, X } from 'lucide-react';
+import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Transaction {
   id: string;
@@ -38,6 +41,10 @@ const AdminFinance = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  
+  // Date filter state
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   
   // Reconciliation state
   const [reconcileOpen, setReconcileOpen] = useState(false);
@@ -161,9 +168,18 @@ const AdminFinance = () => {
         }
       });
 
+      // 5. Send notification to user
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: searchResult.user_id,
+          message_type: 'CAMPAGNE',
+          message_body: `Votre recharge de ${Number(searchResult.amount).toLocaleString()} F a été validée manuellement. Votre nouveau solde est de ${newBalance.toLocaleString()} F.`
+        });
+
       toast({
         title: "Transaction réconciliée",
-        description: `${Number(searchResult.amount).toLocaleString()} F crédités avec succès`,
+        description: `${Number(searchResult.amount).toLocaleString()} F crédités avec succès. L'utilisateur a été notifié.`,
       });
 
       // Refresh data
@@ -183,6 +199,11 @@ const AdminFinance = () => {
     setIsReconciling(false);
   };
 
+  const clearDateFilter = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
+
   const totalRecharges = transactions
     .filter(t => t.type === 'credit' && t.status === 'completed')
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -196,9 +217,21 @@ const AdminFinance = () => {
   const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   const filteredTransactions = transactions.filter(t => {
-    if (filter === 'all') return true;
-    if (filter === 'pending') return t.status === 'pending';
-    return t.type === filter;
+    // Type/status filter
+    let passesTypeFilter = true;
+    if (filter === 'pending') passesTypeFilter = t.status === 'pending';
+    else if (filter !== 'all') passesTypeFilter = t.type === filter;
+    
+    // Date filter
+    let passesDateFilter = true;
+    if (dateFrom || dateTo) {
+      const txDate = new Date(t.created_at);
+      const from = dateFrom ? startOfDay(dateFrom) : new Date(0);
+      const to = dateTo ? endOfDay(dateTo) : new Date();
+      passesDateFilter = isWithinInterval(txDate, { start: from, end: to });
+    }
+    
+    return passesTypeFilter && passesDateFilter;
   });
 
   return (
@@ -404,20 +437,68 @@ const AdminFinance = () => {
         )}
       </div>
 
-      {/* Filter */}
-      <div className="flex justify-between items-center">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-lg font-bold">Historique des transactions</h2>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filtrer" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes</SelectItem>
-            <SelectItem value="credit">Recharges</SelectItem>
-            <SelectItem value="debit">Débits</SelectItem>
-            <SelectItem value="pending">En attente</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Date From */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateFrom ? format(dateFrom, 'dd/MM/yyyy') : 'Du'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Date To */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateTo ? format(dateTo, 'dd/MM/yyyy') : 'Au'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Clear date filter */}
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" onClick={clearDateFilter}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+
+          {/* Type filter */}
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Filtrer" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes</SelectItem>
+              <SelectItem value="credit">Recharges</SelectItem>
+              <SelectItem value="debit">Débits</SelectItem>
+              <SelectItem value="pending">En attente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Transactions Table */}
