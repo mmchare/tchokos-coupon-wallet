@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CreditCard, Smartphone, Wallet, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, CheckCircle, XCircle, Loader2, AlertTriangle, ShieldOff } from 'lucide-react';
+import { ArrowLeft, CreditCard, Smartphone, Wallet, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, CheckCircle, XCircle, Loader2, ShieldOff } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -181,6 +181,10 @@ const Recharge = () => {
     setPaymentStatus('pending');
     setPaymentUrl(null);
 
+    // IMPORTANT: many browsers block window.open if it's not done immediately on a user gesture.
+    // So we open a blank tab synchronously, then redirect it once we receive the authorization_url.
+    const paymentWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
+
     try {
       const { data, error } = await supabase.functions.invoke('notchpay-payment', {
         body: {
@@ -200,32 +204,50 @@ const Recharge = () => {
           description: "Impossible d'initier le paiement. Veuillez réessayer.",
           variant: "destructive"
         });
+        if (paymentWindow) paymentWindow.close();
         setIsProcessing(false);
         return;
       }
 
-      if (data.error) {
+      if (data?.error) {
         setPaymentStatus('failed');
         toast({
           title: "Erreur",
           description: data.error,
           variant: "destructive"
         });
+        if (paymentWindow) paymentWindow.close();
         setIsProcessing(false);
         return;
       }
 
-      // If Notchpay provides an authorization URL, open it (required for many MoMo/OM flows)
-      if (data.authorization_url) {
+      // If Notchpay provides an authorization URL, load it in the pre-opened tab.
+      if (data?.authorization_url) {
         setPaymentUrl(data.authorization_url);
-        const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
-        if (!opened) {
-          // Popup blocked, user can click the button in the UI
+
+        if (paymentWindow) {
+          try {
+            paymentWindow.location.href = data.authorization_url;
+          } catch (e) {
+            console.warn('Could not redirect pre-opened payment window, falling back to window.open', e);
+            const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
+            if (!opened) {
+              toast({
+                title: "Action requise",
+                description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
+              });
+            }
+          }
+        } else {
+          // Popup blocked even on user click (rare, but possible)
           toast({
             title: "Action requise",
-            description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
+            description: "Autorisez l'ouverture des popups puis appuyez sur 'Ouvrir la page de paiement'.",
           });
         }
+      } else {
+        // Some flows may not return an URL; in this case we don't need the tab.
+        if (paymentWindow) paymentWindow.close();
       }
 
       toast({
@@ -234,7 +256,7 @@ const Recharge = () => {
       });
 
       // Start polling for transaction status
-      if (data.transaction_id) {
+      if (data?.transaction_id) {
         pollTransactionStatus(data.transaction_id);
       }
 
@@ -246,6 +268,7 @@ const Recharge = () => {
         description: "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive"
       });
+      if (paymentWindow) paymentWindow.close();
       setIsProcessing(false);
     }
   };
