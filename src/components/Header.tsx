@@ -64,12 +64,12 @@ const Header = () => {
             </h1>
 
             {/* Center Actions - Wallet + Coupon */}
-            <div className="flex items-center gap-2 flex-1 justify-center">
+            <div className="flex items-center gap-3 flex-1 justify-center">
               {/* Wallet Balance or Login */}
               {user ? (
                 <button 
                   onClick={() => navigate('/recharge')}
-                  className="flex items-center gap-1.5 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30 h-8 sm:h-9"
+                  className="flex items-center gap-1.5 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30 h-8 sm:h-9"
                 >
                   <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
                   <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
@@ -89,20 +89,18 @@ const Header = () => {
               )}
 
               {/* Coupon Button */}
-              <Button 
-                variant="outline"
-                size="sm"
+              <button 
                 onClick={() => setIsCouponOpen(true)}
-                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+                className="relative flex items-center gap-1.5 bg-jinbao-red/10 hover:bg-jinbao-red/20 text-jinbao-red px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-jinbao-red/30 h-8 sm:h-9"
               >
-                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Mon Coupon</span>
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline text-xs sm:text-sm font-medium">Coupon</span>
                 {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-jinbao-blue text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-jinbao-blue text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {items.length}
                   </span>
                 )}
-              </Button>
+              </button>
             </div>
 
             {/* Right Actions */}
