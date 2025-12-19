@@ -63,24 +63,8 @@ const Header = () => {
               JinBao
             </h1>
 
-            {/* Center Actions - Coupon + Wallet */}
+            {/* Center Actions - Wallet + Coupon */}
             <div className="flex items-center gap-2 flex-1 justify-center">
-              {/* Coupon Button */}
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCouponOpen(true)}
-                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
-              >
-                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Mon Coupon</span>
-                {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-jinbao-blue text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                    {items.length}
-                  </span>
-                )}
-              </Button>
-
               {/* Wallet Balance or Login */}
               {user ? (
                 <button 
@@ -103,6 +87,22 @@ const Header = () => {
                   <span className="hidden xs:inline">Connexion</span>
                 </Button>
               )}
+
+              {/* Coupon Button */}
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCouponOpen(true)}
+                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+              >
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Mon Coupon</span>
+                {items.length > 0 && (
+                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-jinbao-blue text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                    {items.length}
+                  </span>
+                )}
+              </Button>
             </div>
 
             {/* Right Actions */}
