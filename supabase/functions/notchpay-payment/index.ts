@@ -22,12 +22,11 @@ serve(async (req) => {
 
   try {
     const NOTCHPAY_PUBLIC_KEY = Deno.env.get('NOTCHPAY_PUBLIC_KEY');
-    const NOTCHPAY_PRIVATE_KEY = Deno.env.get('NOTCHPAY_PRIVATE_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!NOTCHPAY_PUBLIC_KEY || !NOTCHPAY_PRIVATE_KEY) {
-      console.error('Missing Notchpay API keys');
+    if (!NOTCHPAY_PUBLIC_KEY) {
+      console.error('Missing Notchpay API key');
       return new Response(
         JSON.stringify({ error: 'Configuration Notchpay manquante' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -67,7 +66,9 @@ serve(async (req) => {
     // Format phone number for Cameroon
     let formattedPhone = phone_number.replace(/\s/g, '').replace(/^\+/, '');
     if (!formattedPhone.startsWith('237')) {
-      formattedPhone = '237' + formattedPhone;
+      formattedPhone = '+237' + formattedPhone;
+    } else {
+      formattedPhone = '+' + formattedPhone;
     }
 
     // Create pending transaction in database
@@ -94,15 +95,13 @@ serve(async (req) => {
 
     console.log('Transaction created:', transaction.id);
 
-    // Determine channel based on payment method
-    const channel = payment_method === 'momo' ? 'cm.mtn' : 'cm.orange';
-
-    // Build Notchpay payment request - Sandbox API
+    // Build Notchpay payment request - Updated API format
     const notchpayPayload = {
       amount: amount,
       currency: 'XAF',
-      phone: formattedPhone,
-      channel: channel,
+      customer: {
+        phone: formattedPhone
+      },
       reference: transaction.id,
       description: description || `Recharge JinBao - ${transaction.id}`,
       callback: `https://xzilbjhrqbpedekuwghu.supabase.co/functions/v1/notchpay-webhook`
@@ -110,13 +109,12 @@ serve(async (req) => {
 
     console.log('Notchpay payload:', JSON.stringify(notchpayPayload));
 
-    // Call Notchpay API - Sandbox endpoint
-    const notchpayResponse = await fetch('https://api.notchpay.co/payments/initialize', {
+    // Call Notchpay API - Updated endpoint
+    const notchpayResponse = await fetch('https://api.notchpay.co/payments', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': NOTCHPAY_PUBLIC_KEY,
-        'X-Grant': 'public'
+        'Authorization': NOTCHPAY_PUBLIC_KEY
       },
       body: JSON.stringify(notchpayPayload)
     });
@@ -124,7 +122,7 @@ serve(async (req) => {
     const notchpayData = await notchpayResponse.json();
     console.log('Notchpay response:', JSON.stringify(notchpayData));
 
-    if (!notchpayResponse.ok || notchpayData.code !== 201) {
+    if (!notchpayResponse.ok) {
       console.error('Notchpay API error:', notchpayData);
       
       // Update transaction as failed
