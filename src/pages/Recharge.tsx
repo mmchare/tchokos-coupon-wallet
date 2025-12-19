@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CreditCard, Smartphone, Wallet, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Smartphone, Wallet, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, CheckCircle, XCircle, Loader2, AlertTriangle, ShieldOff } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -400,6 +401,16 @@ const Recharge = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* VPN Warning */}
+            <Alert className="border-amber-500 bg-amber-500/10">
+              <ShieldOff className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-amber-600 dark:text-amber-400">Important - VPN & Localisation</AlertTitle>
+              <AlertDescription className="text-muted-foreground text-sm">
+                Les paiements NotchPay ne fonctionnent que depuis l'Afrique Centrale et de l'Ouest. 
+                <strong className="block mt-1">Désactivez votre VPN</strong> avant d'effectuer un paiement pour éviter tout blocage.
+              </AlertDescription>
+            </Alert>
 
             {/* Payment method */}
             <Card className="bg-card border-border">
