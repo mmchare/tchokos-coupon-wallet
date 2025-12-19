@@ -14,6 +14,71 @@ interface PaymentRequest {
   description?: string;
 }
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_TIMEOUT = 30000; // 30 seconds
+const RETRY_DELAY_BASE = 2000; // 2 seconds base delay
+
+// Helper function to fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// Helper function to sleep
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Retry fetch with exponential backoff
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  maxRetries: number = MAX_RETRIES
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      console.log(`Notchpay API attempt ${attempt + 1}/${maxRetries}`);
+      
+      // Increase timeout with each retry
+      const timeout = INITIAL_TIMEOUT + (attempt * 10000);
+      const response = await fetchWithTimeout(url, options, timeout);
+      
+      // If we get a response (even error), return it
+      return response;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`Attempt ${attempt + 1} failed:`, lastError.message);
+      
+      // Check if it's an abort error (timeout)
+      if (lastError.name === 'AbortError') {
+        console.log(`Request timed out on attempt ${attempt + 1}`);
+      }
+      
+      // Don't wait after the last attempt
+      if (attempt < maxRetries - 1) {
+        const delay = RETRY_DELAY_BASE * Math.pow(2, attempt);
+        console.log(`Waiting ${delay}ms before retry...`);
+        await sleep(delay);
+      }
+    }
+  }
+  
+  throw lastError || new Error('All retry attempts failed');
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -95,7 +160,7 @@ serve(async (req) => {
 
     console.log('Transaction created:', transaction.id);
 
-    // Build Notchpay payment request - Updated API format
+    // Build Notchpay payment request
     const notchpayPayload = {
       amount: amount,
       currency: 'XAF',
@@ -104,26 +169,55 @@ serve(async (req) => {
       },
       reference: transaction.id,
       description: description || `Recharge JinBao - ${transaction.id}`,
-      callback: `https://xzilbjhrqbpedekuwghu.supabase.co/functions/v1/notchpay-webhook`
+      callback: `${SUPABASE_URL}/functions/v1/notchpay-webhook`
     };
 
     console.log('Notchpay payload:', JSON.stringify(notchpayPayload));
 
-    // Call Notchpay API - Updated endpoint
-    const notchpayResponse = await fetch('https://api.notchpay.co/payments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': NOTCHPAY_PUBLIC_KEY
-      },
-      body: JSON.stringify(notchpayPayload)
-    });
+    try {
+      // Call Notchpay API with retry logic
+      const notchpayResponse = await fetchWithRetry('https://api.notchpay.co/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': NOTCHPAY_PUBLIC_KEY
+        },
+        body: JSON.stringify(notchpayPayload)
+      });
 
-    const notchpayData = await notchpayResponse.json();
-    console.log('Notchpay response:', JSON.stringify(notchpayData));
+      const notchpayData = await notchpayResponse.json();
+      console.log('Notchpay response:', JSON.stringify(notchpayData));
 
-    if (!notchpayResponse.ok) {
-      console.error('Notchpay API error:', notchpayData);
+      if (!notchpayResponse.ok) {
+        console.error('Notchpay API error:', notchpayData);
+        
+        // Update transaction as failed
+        await supabase
+          .from('wallet_transactions')
+          .update({ status: 'failed' })
+          .eq('id', transaction.id);
+
+        return new Response(
+          JSON.stringify({ 
+            error: notchpayData.message || 'Erreur lors de l\'initialisation du paiement',
+            details: notchpayData
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Paiement initié avec succès',
+          transaction_id: transaction.id,
+          notchpay_reference: notchpayData.transaction?.reference,
+          authorization_url: notchpayData.authorization_url,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (apiError) {
+      console.error('Notchpay API connection error after retries:', apiError);
       
       // Update transaction as failed
       await supabase
@@ -133,23 +227,12 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ 
-          error: notchpayData.message || 'Erreur lors de l\'initialisation du paiement',
-          details: notchpayData
+          error: 'Le service de paiement est temporairement indisponible. Veuillez réessayer dans quelques instants.',
+          retry: true
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Paiement initié avec succès',
-        transaction_id: transaction.id,
-        notchpay_reference: notchpayData.transaction?.reference,
-        authorization_url: notchpayData.authorization_url,
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
 
   } catch (error) {
     console.error('Payment error:', error);
