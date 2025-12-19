@@ -54,50 +54,25 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             {/* Logo */}
-            <div className="flex items-center">
-              <h1 
-                className="text-lg sm:text-2xl font-bold text-jinbao-red tracking-wider cursor-pointer"
-                onClick={() => navigate('/')}
-              >
-                JinBao
-              </h1>
-            </div>
+            <h1 
+              className="text-lg sm:text-2xl font-bold text-jinbao-red tracking-wider cursor-pointer shrink-0"
+              onClick={() => navigate('/')}
+            >
+              JinBao
+            </h1>
 
-            {/* Wallet Balance */}
-            {user ? (
-              <button 
-                onClick={() => navigate('/recharge')}
-                className="flex items-center gap-1 sm:gap-2 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30 animate-fade-in"
-              >
-                <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
-                <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
-                  {formatBalance(walletBalance)}
-                </span>
-              </button>
-            ) : (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="text-xs sm:text-sm border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white"
-              >
-                <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Connexion</span>
-              </Button>
-            )}
-
-            {/* Actions */}
-            <div className="flex items-center space-x-1 sm:space-x-4">
-              {/* Coupon - Mobile Optimized */}
+            {/* Center Actions - Coupon + Wallet */}
+            <div className="flex items-center gap-2 flex-1 justify-center">
+              {/* Coupon Button */}
               <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => setIsCouponOpen(true)}
-                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3"
+                className="relative bg-transparent border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
               >
-                <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Mon Coupon</span>
                 {items.length > 0 && (
                   <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-jinbao-blue text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
@@ -106,15 +81,41 @@ const Header = () => {
                 )}
               </Button>
 
+              {/* Wallet Balance or Login */}
+              {user ? (
+                <button 
+                  onClick={() => navigate('/recharge')}
+                  className="flex items-center gap-1.5 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30 h-8 sm:h-9"
+                >
+                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
+                  <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
+                    {formatBalance(walletBalance)}
+                  </span>
+                </button>
+              ) : (
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="text-xs sm:text-sm border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white h-8 sm:h-9"
+                >
+                  <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden xs:inline">Connexion</span>
+                </Button>
+              )}
+            </div>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-1 shrink-0">
               {/* Theme Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
               >
-                <Sun className="h-4 w-4 sm:h-5 sm:w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 sm:h-5 sm:w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
               {/* Orders - Only visible when logged in */}
@@ -123,12 +124,12 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => navigate('/orders')}
-                  className="relative text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
+                  className="relative text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
                   title="Mes commandes"
                 >
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Package className="h-4 w-4" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-vibrant-red text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
+                    <span className="absolute -top-1 -right-1 bg-vibrant-red text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -140,9 +141,9 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate(user ? '/profile' : '/auth')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 sm:h-10 sm:w-10"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
               >
-                <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                <User className="h-4 w-4" />
               </Button>
             </div>
           </div>
