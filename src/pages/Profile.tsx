@@ -40,7 +40,7 @@ const Profile = () => {
       setFormData({
         full_name: profile.full_name || '',
         phone: profile.phone || '',
-        address: ''
+        address: (profile as any).delivery_address || ''
       });
     }
   }, [profile]);
@@ -92,7 +92,8 @@ const Profile = () => {
       .from('profiles')
       .update({
         full_name: formData.full_name,
-        phone: formData.phone
+        phone: formData.phone,
+        delivery_address: formData.address
       })
       .eq('id', user.id);
 
