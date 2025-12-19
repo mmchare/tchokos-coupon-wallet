@@ -181,10 +181,6 @@ const Recharge = () => {
     setPaymentStatus('pending');
     setPaymentUrl(null);
 
-    // IMPORTANT: many browsers block window.open if it's not done immediately on a user gesture.
-    // So we open a blank tab synchronously, then redirect it once we receive the authorization_url.
-    const paymentWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
-
     try {
       const { data, error } = await supabase.functions.invoke('notchpay-payment', {
         body: {
@@ -204,7 +200,6 @@ const Recharge = () => {
           description: "Impossible d'initier le paiement. Veuillez réessayer.",
           variant: "destructive"
         });
-        if (paymentWindow) paymentWindow.close();
         setIsProcessing(false);
         return;
       }
@@ -216,38 +211,20 @@ const Recharge = () => {
           description: data.error,
           variant: "destructive"
         });
-        if (paymentWindow) paymentWindow.close();
         setIsProcessing(false);
         return;
       }
 
-      // If Notchpay provides an authorization URL, load it in the pre-opened tab.
+      // If Notchpay provides an authorization URL, open it
       if (data?.authorization_url) {
         setPaymentUrl(data.authorization_url);
-
-        if (paymentWindow) {
-          try {
-            paymentWindow.location.href = data.authorization_url;
-          } catch (e) {
-            console.warn('Could not redirect pre-opened payment window, falling back to window.open', e);
-            const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
-            if (!opened) {
-              toast({
-                title: "Action requise",
-                description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
-              });
-            }
-          }
-        } else {
-          // Popup blocked even on user click (rare, but possible)
+        const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
           toast({
             title: "Action requise",
-            description: "Autorisez l'ouverture des popups puis appuyez sur 'Ouvrir la page de paiement'.",
+            description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
           });
         }
-      } else {
-        // Some flows may not return an URL; in this case we don't need the tab.
-        if (paymentWindow) paymentWindow.close();
       }
 
       toast({
@@ -268,7 +245,6 @@ const Recharge = () => {
         description: "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive"
       });
-      if (paymentWindow) paymentWindow.close();
       setIsProcessing(false);
     }
   };

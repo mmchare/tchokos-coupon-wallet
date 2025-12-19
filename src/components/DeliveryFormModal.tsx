@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -72,9 +72,16 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
     defaultValues: {
       city: '',
       address: '',
-      phone: profile?.phone || '',
+      phone: '',
     },
   });
+
+  // Reset form with profile phone when modal opens or profile changes
+  React.useEffect(() => {
+    if (isOpen && profile?.phone) {
+      form.setValue('phone', profile.phone);
+    }
+  }, [isOpen, profile?.phone, form]);
 
   const selectedCity = form.watch('city');
   const isFreeDelivery = FREE_DELIVERY_CITIES.includes(selectedCity);

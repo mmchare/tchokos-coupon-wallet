@@ -1,4 +1,4 @@
-import { ShoppingBag, User, Menu, Sun, Moon, LogIn, Wallet, Plus, Package } from 'lucide-react';
+import { ShoppingBag, User, Sun, Moon, LogIn, Wallet, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
@@ -13,11 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatBalance } from '@/lib/formatBalance';
 import { useNotifications } from '@/hooks/useNotifications';
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-}
-
-const Header = ({ onMenuClick }: HeaderProps) => {
+const Header = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -60,15 +56,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onMenuClick}
-                className="md:hidden text-foreground hover:bg-muted h-8 w-8"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center">
               <h1 
                 className="text-lg sm:text-2xl font-bold text-jinbao-red tracking-wider cursor-pointer"
                 onClick={() => navigate('/')}
@@ -77,26 +65,17 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               </h1>
             </div>
 
-            {/* Wallet Balance - Jaune/Orange Vif style */}
+            {/* Wallet Balance */}
             {user ? (
-              <div className="flex items-center gap-1 sm:gap-2 animate-fade-in">
-                <button 
-                  onClick={() => navigate('/recharge')}
-                  className="flex items-center gap-1 sm:gap-2 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30"
-                >
-                  <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
-                  <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
-                    {formatBalance(walletBalance)}
-                  </span>
-                </button>
-                <button
-                  onClick={() => navigate('/recharge')}
-                  className="flex items-center justify-center bg-vibrant-red hover:bg-vibrant-red/90 text-white p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105 shadow-lg"
-                  title="Recharger"
-                >
-                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
-                </button>
-              </div>
+              <button 
+                onClick={() => navigate('/recharge')}
+                className="flex items-center gap-1 sm:gap-2 bg-vibrant-yellow/15 hover:bg-vibrant-yellow/25 text-foreground px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-vibrant-yellow/30 animate-fade-in"
+              >
+                <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-vibrant-yellow" />
+                <span className="font-bold text-xs sm:text-sm text-vibrant-yellow">
+                  {formatBalance(walletBalance)}
+                </span>
+              </button>
             ) : (
               <Button 
                 variant="outline"
