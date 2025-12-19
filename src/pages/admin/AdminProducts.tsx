@@ -6,9 +6,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2 } from 'lucide-react';
+
+const DEFAULT_CATEGORIES = [
+  'Électronique',
+  'Mode & Vêtements',
+  'Maison & Jardin',
+  'Beauté & Santé',
+  'Sport & Loisirs',
+  'Jouets & Enfants',
+  'Accessoires',
+  'Sacs & Bagages',
+  'Montres & Bijoux',
+  'Auto & Moto',
+];
 
 interface Product {
   id: string;
@@ -39,6 +53,10 @@ const AdminProducts = () => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -63,6 +81,12 @@ const AdminProducts = () => {
 
     if (!error && data) {
       setProducts(data as Product[]);
+      // Collect unique categories from existing products
+      const existingCategories = data
+        .map(p => p.category)
+        .filter((cat): cat is string => !!cat && cat.trim() !== '');
+      const uniqueCategories = [...new Set([...DEFAULT_CATEGORIES, ...existingCategories])];
+      setCategories(uniqueCategories);
     }
     setIsLoading(false);
   };
@@ -73,6 +97,8 @@ const AdminProducts = () => {
 
   const openCreateDialog = () => {
     setEditingProduct(null);
+    setShowNewCategoryInput(false);
+    setNewCategoryName('');
     setFormData({
       name: '',
       price: '',
@@ -88,6 +114,18 @@ const AdminProducts = () => {
       source_link: ''
     });
     setIsDialogOpen(true);
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategoryName.trim()) {
+      const trimmedCategory = newCategoryName.trim();
+      if (!categories.includes(trimmedCategory)) {
+        setCategories(prev => [...prev, trimmedCategory]);
+      }
+      setFormData(prev => ({ ...prev, category: trimmedCategory }));
+      setNewCategoryName('');
+      setShowNewCategoryInput(false);
+    }
   };
 
   const openEditDialog = (product: Product) => {
@@ -468,10 +506,60 @@ const AdminProducts = () => {
 
               <div>
                 <label className="text-sm font-medium">Catégorie</label>
-                <Input
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                />
+                {showNewCategoryInput ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Nouvelle catégorie..."
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={handleAddNewCategory}
+                      className="bg-jinbao-red hover:bg-jinbao-red/90"
+                    >
+                      Ajouter
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        setShowNewCategoryInput(false);
+                        setNewCategoryName('');
+                      }}
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                ) : (
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => {
+                      if (value === '__new__') {
+                        setShowNewCategoryInput(true);
+                      } else {
+                        setFormData({ ...formData, category: value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full bg-background">
+                      <SelectValue placeholder="Sélectionner une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border border-border z-50">
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__new__" className="text-jinbao-red font-medium">
+                        + Ajouter une nouvelle catégorie
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div>
