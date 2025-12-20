@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import AdminPasswordModal from '@/components/AdminPasswordModal';
+import AddressManager from '@/components/AddressManager';
 
 const Profile = () => {
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -265,6 +266,35 @@ const Profile = () => {
                   placeholder="Entrez votre adresse"
                   className="bg-input border-border text-foreground"
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Adresses de livraison */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground flex items-center">
+                <MapPin className="h-5 w-5 mr-2 text-jinbao-blue" />
+                Mes adresses de livraison
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AddressManager />
+            </CardContent>
+          </Card>
+
+          {/* Lien vers favoris */}
+          <Card 
+            className="bg-card border-border cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => navigate('/favorites')}
+          >
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Heart className="h-5 w-5 text-vibrant-red" />
+                  <span className="font-medium text-foreground">Mes favoris</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>

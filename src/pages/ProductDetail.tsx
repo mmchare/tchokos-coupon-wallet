@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
+import { useFavorites } from '@/hooks/useFavorites';
 import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
@@ -56,15 +57,17 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const { addToCoupon } = useCoupon();
   const { trackView, trackAddToCart } = useActivityTracking();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [comment, setComment] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const isProductFavorite = product ? isFavorite(product.id) : false;
 
   // Fetch product and reviews from Supabase
   useEffect(() => {
@@ -341,10 +344,10 @@ Pouvez-vous me donner plus d'informations?`;
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsFavorite(!isFavorite)}
+            onClick={() => product && toggleFavorite(product.id)}
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
-            <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+            <Heart className={`h-5 w-5 ${isProductFavorite ? 'fill-vibrant-red text-vibrant-red' : ''}`} />
           </Button>
         </div>
       </header>

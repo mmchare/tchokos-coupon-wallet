@@ -12,6 +12,7 @@ import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
+import SearchSuggestions from '@/components/SearchSuggestions';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -19,6 +20,7 @@ import { Search, Download, Loader2, Sparkles, X } from 'lucide-react';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
+import { useSearchHistory } from '@/hooks/useSearchHistory';
 
 interface CouponItem {
   id: string;
@@ -32,6 +34,7 @@ const Home = () => {
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const { products, isLoading } = useSmartProducts();
   const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
+  const { history, addSearch, deleteSearch, clearHistory } = useSearchHistory();
   
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -41,11 +44,13 @@ const Home = () => {
   const [purchasedProductName, setPurchasedProductName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [useAIMode, setUseAIMode] = useState(false);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(10);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Extract categories from products
   const categories = ['Tous', 'Enchères', ...new Set(products.map(p => p.category).filter(Boolean))];
@@ -53,6 +58,7 @@ const Home = () => {
   // Handle AI search with debounce
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
+    setShowSearchSuggestions(value.length === 0 && history.length > 0);
     
     // Clear previous timeout
     if (searchTimeoutRef.current) {
@@ -69,10 +75,28 @@ const Home = () => {
     }
   };
 
+  // Handle search submission
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim().length >= 2) {
+      addSearch(searchQuery.trim());
+      setShowSearchSuggestions(false);
+    }
+  };
+
+  // Handle search suggestion selection
+  const handleSelectSuggestion = (query: string) => {
+    setSearchQuery(query);
+    setShowSearchSuggestions(false);
+    if (useAIMode && query.length >= 3) {
+      aiSearch(query);
+    }
+  };
+
   // Clear search
   const handleClearSearch = () => {
     setSearchQuery('');
     clearSearch();
+    setShowSearchSuggestions(false);
   };
 
   // Products to display - AI results or filtered products
@@ -180,10 +204,14 @@ const Home = () => {
           <div className="max-w-md mx-auto relative mb-4">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
+              ref={searchInputRef}
               type="text"
               placeholder={useAIMode ? "Ex: téléphone pas cher avec bonne batterie..." : "Rechercher..."}
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
+              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
               className="w-full pl-10 pr-20 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
@@ -212,6 +240,15 @@ const Home = () => {
                 <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
               </div>
             )}
+            
+            {/* Search History Suggestions */}
+            <SearchSuggestions
+              history={history}
+              onSelect={handleSelectSuggestion}
+              onDelete={deleteSearch}
+              onClearAll={clearHistory}
+              isVisible={showSearchSuggestions}
+            />
           </div>
 
           {/* AI Interpretation */}
