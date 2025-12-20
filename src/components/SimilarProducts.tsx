@@ -33,22 +33,16 @@ const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
           columnClassName="pl-3 bg-clip-padding"
         >
           {products.map((product) => (
-            <div key={product.id} className="relative">
-              <MasonryProductCard
-                id={product.id}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                rating={product.rating}
-                isAuction={product.isAuction}
-              />
-              {product.aiReason && (
-                <div className="absolute bottom-14 left-0 right-0 mx-2 bg-primary/90 text-primary-foreground text-xs px-2 py-1 rounded-md text-center truncate">
-                  {product.aiReason}
-                </div>
-              )}
-            </div>
+            <MasonryProductCard
+              key={product.id}
+              id={product.id}
+              image={product.image}
+              name={product.name}
+              price={product.price}
+              originalPrice={product.originalPrice}
+              rating={product.rating}
+              isAuction={product.isAuction}
+            />
           ))}
         </Masonry>
       </div>
