@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import AdminPasswordModal from '@/components/AdminPasswordModal';
 import AddressManager from '@/components/AddressManager';
 
 const Profile = () => {
+  const { t } = useTranslation();
   const [showAdminModal, setShowAdminModal] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -100,8 +102,8 @@ const Profile = () => {
 
     if (error) {
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le profil",
+        title: t('common.error'),
+        description: t('profile.updateError'),
         variant: "destructive"
       });
       return;
@@ -110,16 +112,16 @@ const Profile = () => {
     setIsEditing(false);
     await refreshProfile();
     toast({
-      title: "Profil mis à jour !",
-      description: "Vos informations ont été enregistrées",
+      title: t('profile.profileUpdated'),
+      description: t('profile.infoSaved'),
     });
   };
 
   const handleLogout = async () => {
     await signOut();
     toast({
-      title: "Déconnexion",
-      description: "À bientôt sur JinBao Smart Market !",
+      title: t('auth.logout'),
+      description: t('profile.seeYouSoon'),
     });
     navigate('/auth');
   };
@@ -129,8 +131,8 @@ const Profile = () => {
       navigator.clipboard.writeText(referralCode);
       setCopied(true);
       toast({
-        title: "Code copié !",
-        description: "Partagez-le avec vos amis",
+        title: t('profile.codeCopied'),
+        description: t('profile.shareWithFriends'),
       });
       setTimeout(() => setCopied(false), 2000);
     }
@@ -164,7 +166,7 @@ const Profile = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-2xl font-bold text-foreground">Mon Profil</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
             </div>
             <Button
               variant="ghost"
@@ -172,7 +174,7 @@ const Profile = () => {
               className="text-destructive hover:bg-destructive/10"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Déconnexion
+              {t('auth.logout')}
             </Button>
           </div>
         </div>
@@ -185,17 +187,17 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="text-foreground flex items-center">
                 <Gift className="h-5 w-5 mr-2 text-jinbao-red" />
-                Mon Code de Parrainage
+                {t('profile.myReferralCode')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-jinbao-red tracking-widest">
-                    {referralCode || 'Chargement...'}
+                    {referralCode || t('common.loading')}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {referralCount} personne(s) ont utilisé votre code
+                    {referralCount} {t('profile.referralCount')}
                   </p>
                 </div>
                 <Button
@@ -204,11 +206,11 @@ const Profile = () => {
                   className="border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white"
                 >
                   {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                  {copied ? 'Copié !' : 'Copier'}
+                  {copied ? t('common.copied') : t('common.copy')}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Partage ton code JinBao et gagne <span className="text-jinbao-red font-semibold">5 000 FCAF</span> pour chaque ami qui valide sa première commande. Ton ami, lui, reçoit <span className="text-jinbao-blue font-semibold">2 000 FCAF</span> de bienvenue pour l'essayer !
+                {t('profile.referralBonus')} <span className="text-jinbao-red font-semibold">{t('profile.referralBonusAmount')}</span> {t('profile.referralBonusDesc')} <span className="text-jinbao-blue font-semibold">{t('profile.friendBonusAmount')}</span> {t('profile.friendBonusDesc')}
               </p>
             </CardContent>
           </Card>
@@ -216,7 +218,7 @@ const Profile = () => {
           {/* Informations personnelles */}
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-foreground">Informations personnelles</CardTitle>
+              <CardTitle className="text-foreground">{t('profile.personalInfo')}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -224,14 +226,14 @@ const Profile = () => {
                 className="text-jinbao-red hover:bg-jinbao-red/10"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
-                {isEditing ? 'Enregistrer' : 'Modifier'}
+                {isEditing ? t('common.save') : t('common.edit')}
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center">
                   <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Nom complet
+                  {t('auth.fullName')}
                 </label>
                 <Input
                   value={formData.full_name}
@@ -244,7 +246,7 @@ const Profile = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center">
                   <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Téléphone
+                  {t('auth.phone')}
                 </label>
                 <Input
                   value={formData.phone}
@@ -257,13 +259,13 @@ const Profile = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center">
                   <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Adresse de livraison
+                  {t('profile.deliveryAddress')}
                 </label>
                 <Input
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
                   disabled={!isEditing}
-                  placeholder="Entrez votre adresse"
+                  placeholder={t('profile.enterAddress')}
                   className="bg-input border-border text-foreground"
                 />
               </div>
@@ -275,7 +277,7 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="text-foreground flex items-center">
                 <MapPin className="h-5 w-5 mr-2 text-jinbao-blue" />
-                Mes adresses de livraison
+                {t('profile.myAddresses')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -292,7 +294,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Heart className="h-5 w-5 text-vibrant-red" />
-                  <span className="font-medium text-foreground">Mes favoris</span>
+                  <span className="font-medium text-foreground">{t('profile.myFavorites')}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
@@ -305,7 +307,7 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white/80 text-sm">Solde du portefeuille</p>
+                    <p className="text-white/80 text-sm">{t('profile.walletBalance')}</p>
                     <p className="text-2xl font-bold">{profile.wallet_balance.toLocaleString()} F</p>
                   </div>
                   <CreditCard className="h-8 w-8 opacity-80" />
@@ -315,7 +317,7 @@ const Profile = () => {
                   variant="secondary"
                   className="w-full mt-4 bg-white/20 hover:bg-white/30 text-white border-0"
                 >
-                  Recharger
+                  {t('profile.recharge')}
                 </Button>
               </CardContent>
             </Card>
@@ -327,7 +329,7 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm">Commandes</p>
+                    <p className="text-muted-foreground text-sm">{t('profile.ordersCount')}</p>
                     <p className="text-2xl font-bold text-foreground">{orderCount}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -342,7 +344,7 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm">Filleuls</p>
+                    <p className="text-muted-foreground text-sm">{t('profile.referralsCount')}</p>
                     <p className="text-2xl font-bold text-foreground">{referralCount}</p>
                   </div>
                   <Gift className="h-8 w-8 text-jinbao-red" />
@@ -354,7 +356,7 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm">Membre depuis</p>
+                    <p className="text-muted-foreground text-sm">{t('profile.memberSince')}</p>
                     <p className="text-xl font-bold text-foreground capitalize">{memberSince}</p>
                   </div>
                   <User className="h-8 w-8 text-jinbao-blue" />
@@ -371,7 +373,7 @@ const Profile = () => {
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 <Lock className="h-4 w-4" />
-                <span>Accès Admin</span>
+                <span>{t('profile.adminAccess')}</span>
               </button>
             </div>
           )}

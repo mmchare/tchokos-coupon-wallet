@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
@@ -22,6 +23,7 @@ import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 
+
 interface CouponItem {
   id: string;
   name: string;
@@ -31,6 +33,7 @@ interface CouponItem {
 }
 
 const Home = () => {
+  const { t } = useTranslation();
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const { products, isLoading } = useSmartProducts();
   const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
@@ -53,7 +56,7 @@ const Home = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Extract categories from products
-  const categories = ['Tous', 'Enchères', ...new Set(products.map(p => p.category).filter(Boolean))];
+  const categories = [t('home.all'), t('home.auctions'), ...new Set(products.map(p => p.category).filter(Boolean))];
 
   // Handle AI search with debounce
   const handleSearchChange = (value: string) => {
@@ -112,8 +115,8 @@ const Home = () => {
         isAuction: p.is_auction || false,
       }))
     : products.filter(product => {
-        const matchesCategory = activeCategory === 'Tous' || 
-          (activeCategory === 'Enchères' ? product.isAuction === true : product.category === activeCategory);
+        const matchesCategory = activeCategory === t('home.all') || 
+          (activeCategory === t('home.auctions') ? product.isAuction === true : product.category === activeCategory);
         const matchesSearch = searchQuery === '' || 
           product.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
@@ -197,7 +200,7 @@ const Home = () => {
             <span className="text-vibrant-red">JinBao</span> Smart Market
           </h1>
           <p className="text-sm text-muted-foreground mb-4 max-w-xl mx-auto">
-            Gadgets tech premium à prix imbattables
+            {t('home.tagline')}
           </p>
           
           {/* Search Bar with AI Toggle */}
@@ -206,7 +209,7 @@ const Home = () => {
             <input 
               ref={searchInputRef}
               type="text"
-              placeholder={useAIMode ? "Ex: téléphone pas cher avec bonne batterie..." : "Rechercher..."}
+              placeholder={useAIMode ? t('common.searchAI') : t('common.search')}
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
@@ -230,7 +233,7 @@ const Home = () => {
                     ? 'bg-vibrant-red/20 text-vibrant-red' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title={useAIMode ? "Désactiver recherche IA" : "Activer recherche IA"}
+                title={useAIMode ? t('home.disableAI') : t('home.enableAI')}
               >
                 <Sparkles className="h-4 w-4" />
               </button>
@@ -271,7 +274,7 @@ const Home = () => {
               className="flex-1 sm:flex-none text-xs max-w-[160px]"
             >
               <Download className="h-3 w-3 mr-1" />
-              Code
+              {t('home.code')}
             </Button>
             <Button 
               onClick={() => setIsCouponOpen(true)}
@@ -279,7 +282,7 @@ const Home = () => {
               size="sm"
               className="flex-1 sm:flex-none border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs max-w-[160px]"
             >
-              Coupon ({couponItems.length})
+              {t('home.coupon')} ({couponItems.length})
             </Button>
           </div>
           
@@ -337,7 +340,7 @@ const Home = () => {
         {!isLoading && displayProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {useAIMode && searchQuery ? "Aucun produit ne correspond à votre recherche" : "Aucun produit trouvé"}
+              {useAIMode && searchQuery ? t('home.noProductsAI') : t('home.noProducts')}
             </p>
           </div>
         )}
@@ -347,7 +350,7 @@ const Home = () => {
       <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
         <SheetContent className="w-full sm:max-w-md bg-background border-border">
           <SheetHeader>
-            <SheetTitle className="text-foreground">Mon Coupon</SheetTitle>
+            <SheetTitle className="text-foreground">{t('home.myCoupon')}</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
             <CouponPanel
