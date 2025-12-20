@@ -3,17 +3,19 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageSquare, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, Send, Smile, ShoppingBag, CheckCircle2, Gavel, Share2, Heart, MessageSquare, ChevronRight, Loader2, Bell, BellOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
 import { useFavorites } from '@/hooks/useFavorites';
+import { usePriceAlerts } from '@/hooks/usePriceAlerts';
 import EmojiPicker from '@/components/EmojiPicker';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
 import AuctionBidPanel from '@/components/AuctionBidPanel';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
+import ReviewPhotoUpload from '@/components/ReviewPhotoUpload';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Review {
@@ -23,6 +25,7 @@ interface Review {
   comment: string;
   date: string;
   isVerifiedClient?: boolean;
+  photos?: string[];
 }
 
 interface Bid {
@@ -58,7 +61,9 @@ const ProductDetail = () => {
   const { addToCoupon } = useCoupon();
   const { trackView, trackAddToCart } = useActivityTracking();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { hasAlert, toggleAlert } = usePriceAlerts();
   const [comment, setComment] = useState('');
+  const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
@@ -68,6 +73,7 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   const isProductFavorite = product ? isFavorite(product.id) : false;
+  const hasPriceAlert = product ? hasAlert(product.id) : false;
 
   // Fetch product and reviews from Supabase
   useEffect(() => {
@@ -110,7 +116,8 @@ const ProductDetail = () => {
           rating: r.rating,
           comment: r.comment,
           date: new Date(r.created_at).toLocaleDateString('fr-FR'),
-          isVerifiedClient: r.is_verified_client
+          isVerifiedClient: r.is_verified_client,
+          photos: (r as any).photos || []
         })) : [];
 
         // Calculate average rating from reviews
@@ -253,7 +260,8 @@ const ProductDetail = () => {
       user_name: profile?.full_name || 'Utilisateur',
       rating: userRating,
       comment: comment.trim(),
-      is_verified_client: false
+      is_verified_client: false,
+      photos: reviewPhotos
     });
 
     if (error) {
@@ -273,7 +281,8 @@ const ProductDetail = () => {
       rating: userRating,
       comment: comment.trim(),
       date: new Date().toLocaleDateString('fr-FR'),
-      isVerifiedClient: false
+      isVerifiedClient: false,
+      photos: reviewPhotos
     };
 
     setProduct(prev => prev ? {
@@ -284,6 +293,7 @@ const ProductDetail = () => {
     toast({ title: "Avis publié !", description: "Merci pour votre retour" });
     setComment('');
     setUserRating(0);
+    setReviewPhotos([]);
     setShowReviewForm(false);
   };
 
@@ -333,6 +343,19 @@ Pouvez-vous me donner plus d'informations?`;
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => product && toggleAlert(product.id, product.price)}
+            className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
+            title={hasPriceAlert ? "Désactiver l'alerte prix" : "Activer l'alerte prix"}
+          >
+            {hasPriceAlert ? (
+              <BellOff className="h-5 w-5 text-primary" />
+            ) : (
+              <Bell className="h-5 w-5" />
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -479,7 +502,7 @@ Pouvez-vous me donner plus d'informations?`;
 
           {/* Reviews List - Always visible */}
           {product.reviews.length > 0 ? (
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-4">
               {product.reviews.slice(0, 3).map((review) => (
                 <div key={review.id} className="flex gap-3">
                   <Avatar className="h-8 w-8 flex-shrink-0">
@@ -496,7 +519,21 @@ Pouvez-vous me donner plus d'informations?`;
                         ))}
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{review.comment}</p>
+                    <p className="text-sm text-muted-foreground">{review.comment}</p>
+                    {/* Review Photos */}
+                    {review.photos && review.photos.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {review.photos.map((photo, idx) => (
+                          <img
+                            key={idx}
+                            src={photo}
+                            alt={`Avis photo ${idx + 1}`}
+                            className="w-16 h-16 rounded-lg object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => window.open(photo, '_blank')}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -541,6 +578,14 @@ Pouvez-vous me donner plus d'informations?`;
                   </div>
                 )}
               </div>
+              
+              {/* Photo Upload */}
+              <ReviewPhotoUpload
+                photos={reviewPhotos}
+                onPhotosChange={setReviewPhotos}
+                maxPhotos={3}
+              />
+              
               <Button 
                 onClick={handleSubmitComment}
                 className="w-full bg-primary hover:bg-primary/90"

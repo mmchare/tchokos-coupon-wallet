@@ -309,6 +309,47 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          initial_price: number
+          is_active: boolean
+          notified_at: string | null
+          product_id: string
+          target_price: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initial_price: number
+          is_active?: boolean
+          notified_at?: string | null
+          product_id: string
+          target_price?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initial_price?: number
+          is_active?: boolean
+          notified_at?: string | null
+          product_id?: string
+          target_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           auction_end_date: string | null
@@ -461,6 +502,7 @@ export type Database = {
           created_at: string
           id: string
           is_verified_client: boolean
+          photos: string[] | null
           product_id: string
           rating: number
           user_id: string
@@ -471,6 +513,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_verified_client?: boolean
+          photos?: string[] | null
           product_id: string
           rating: number
           user_id: string
@@ -481,6 +524,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_verified_client?: boolean
+          photos?: string[] | null
           product_id?: string
           rating?: number
           user_id?: string
