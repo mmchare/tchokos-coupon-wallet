@@ -39,7 +39,7 @@ const Home = () => {
   const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
   const { history, addSearch, deleteSearch, clearHistory } = useSearchHistory();
   
-  const [activeCategory, setActiveCategory] = useState('Tous');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [isDeliveryFormOpen, setIsDeliveryFormOpen] = useState(false);
@@ -55,8 +55,9 @@ const Home = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Extract categories from products
-  const categories = [t('home.all'), t('home.auctions'), ...new Set(products.map(p => p.category).filter(Boolean))];
+  // Extract categories from products - use keys, not translated values
+  const categoryKeys = ['all', 'auctions', ...new Set(products.map(p => p.category).filter(Boolean))];
+  const categories = categoryKeys;
 
   // Handle AI search with debounce
   const handleSearchChange = (value: string) => {
@@ -115,8 +116,8 @@ const Home = () => {
         isAuction: p.is_auction || false,
       }))
     : products.filter(product => {
-        const matchesCategory = activeCategory === t('home.all') || 
-          (activeCategory === t('home.auctions') ? product.isAuction === true : product.category === activeCategory);
+        const matchesCategory = activeCategory === 'all' || 
+          (activeCategory === 'auctions' ? product.isAuction === true : product.category === activeCategory);
         const matchesSearch = searchQuery === '' || 
           product.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
