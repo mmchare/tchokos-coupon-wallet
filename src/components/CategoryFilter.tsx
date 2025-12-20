@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 interface CategoryFilterProps {
@@ -7,6 +8,15 @@ interface CategoryFilterProps {
 }
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
+  const { t } = useTranslation();
+
+  // Translate category keys to display names
+  const getCategoryLabel = (category: string) => {
+    if (category === 'all') return t('home.all');
+    if (category === 'auctions') return t('home.auctions');
+    return category; // For DB categories, keep as-is
+  };
+
   return (
     <div className="flex space-x-1 sm:space-x-2 overflow-x-auto pb-2 scrollbar-hide px-2 sm:px-0">
       {categories.map((category) => (
@@ -21,7 +31,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
               : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          {category}
+          {getCategoryLabel(category)}
         </Button>
       ))}
     </div>
