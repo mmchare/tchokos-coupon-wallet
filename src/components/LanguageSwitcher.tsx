@@ -10,7 +10,8 @@ import {
 
 const languages = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'en', label: 'English', flag: '🇬🇧' }
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' }
 ];
 
 const LanguageSwitcher = () => {

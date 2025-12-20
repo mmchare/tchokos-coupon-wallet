@@ -1,0 +1,180 @@
+{
+  "common": {
+    "search": "搜索产品...",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "close": "关闭",
+    "add": "添加",
+    "remove": "移除",
+    "yes": "是",
+    "no": "否",
+    "or": "或",
+    "and": "和"
+  },
+  "nav": {
+    "home": "首页",
+    "favorites": "收藏",
+    "orders": "订单",
+    "profile": "个人中心",
+    "recharge": "充值",
+    "admin": "管理"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "signup": "注册",
+    "phone": "手机号码",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "fullName": "姓名",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账户？",
+    "hasAccount": "已有账户？",
+    "enterOtp": "输入验证码",
+    "otpSent": "验证码已发送至",
+    "resendOtp": "重新发送",
+    "verifyOtp": "验证"
+  },
+  "home": {
+    "welcome": "欢迎",
+    "categories": "分类",
+    "allProducts": "全部商品",
+    "featured": "精选",
+    "newArrivals": "新品上市",
+    "bestSellers": "热销商品",
+    "flashSale": "限时抢购",
+    "endingSoon": "即将结束",
+    "viewAll": "查看全部",
+    "noProducts": "未找到商品",
+    "loadMore": "加载更多"
+  },
+  "product": {
+    "addToCart": "加入购物车",
+    "buyNow": "立即购买",
+    "outOfStock": "缺货",
+    "inStock": "有货",
+    "stockLeft": "剩余 {{count}} 件",
+    "description": "商品描述",
+    "reviews": "评价",
+    "noReviews": "暂无评价",
+    "writeReview": "写评价",
+    "similarProducts": "相似商品",
+    "verified": "已验证",
+    "originalPrice": "原价",
+    "discount": "折扣",
+    "priceAlert": "降价提醒",
+    "priceAlertSet": "已设置提醒",
+    "notifyWhenPriceDrops": "降价时通知我"
+  },
+  "cart": {
+    "title": "购物车",
+    "empty": "购物车是空的",
+    "subtotal": "小计",
+    "total": "合计",
+    "checkout": "结算",
+    "continueShopping": "继续购物",
+    "quantity": "数量",
+    "remove": "移除"
+  },
+  "checkout": {
+    "title": "配送信息",
+    "deliveryAddress": "收货地址",
+    "city": "城市",
+    "phone": "WhatsApp 电话",
+    "savedAddresses": "已保存地址",
+    "newAddress": "新地址",
+    "useNewAddress": "使用新地址",
+    "backToSaved": "返回已保存地址",
+    "noSavedAddresses": "暂无已保存地址",
+    "selectAddress": "选择地址",
+    "confirmOrder": "确认订单",
+    "processing": "处理中...",
+    "orderSuccess": "订单已确认！",
+    "orderError": "订单出错"
+  },
+  "orders": {
+    "title": "我的订单",
+    "empty": "暂无订单",
+    "status": {
+      "pending": "待处理",
+      "confirmed": "已确认",
+      "shipped": "已发货",
+      "delivered": "已送达",
+      "cancelled": "已取消"
+    },
+    "orderNumber": "订单 #{{id}}",
+    "orderDate": "日期",
+    "trackOrder": "追踪订单",
+    "viewDetails": "查看详情"
+  },
+  "profile": {
+    "title": "我的资料",
+    "editProfile": "编辑资料",
+    "wallet": "钱包",
+    "balance": "余额",
+    "addresses": "收货地址",
+    "addAddress": "添加地址",
+    "defaultAddress": "默认地址",
+    "setAsDefault": "设为默认",
+    "notifications": "通知",
+    "language": "语言",
+    "theme": "主题",
+    "darkMode": "深色模式",
+    "lightMode": "浅色模式",
+    "referral": "推荐",
+    "referralCode": "推荐码",
+    "copyCode": "复制",
+    "codeCopied": "已复制！",
+    "shareCode": "分享"
+  },
+  "favorites": {
+    "title": "我的收藏",
+    "empty": "暂无收藏",
+    "addedToFavorites": "已添加到收藏",
+    "removedFromFavorites": "已从收藏移除"
+  },
+  "recharge": {
+    "title": "充值",
+    "amount": "金额",
+    "customAmount": "自定义金额",
+    "paymentMethod": "支付方式",
+    "rechargeNow": "立即充值",
+    "success": "充值成功！",
+    "error": "充值失败"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "markAllRead": "全部标为已读",
+    "new": "新"
+  },
+  "categories": {
+    "all": "全部",
+    "electronics": "电子产品",
+    "fashion": "时尚",
+    "home": "家居",
+    "beauty": "美妆",
+    "sports": "运动",
+    "books": "图书",
+    "toys": "玩具",
+    "other": "其他"
+  },
+  "footer": {
+    "about": "关于我们",
+    "contact": "联系我们",
+    "terms": "条款",
+    "privacy": "隐私",
+    "help": "帮助"
+  },
+  "splash": {
+    "tagline": "智能市场",
+    "subtitle": "优质科技 • 信任 • 高效"
+  }
+}
