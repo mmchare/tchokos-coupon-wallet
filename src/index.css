@@ -417,3 +417,9 @@ All colors MUST be HSL.
   70% { transform: scale(0.9); }
   100% { opacity: 1; transform: scale(1); }
 }
+
+/* Shimmer effect for image loading placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

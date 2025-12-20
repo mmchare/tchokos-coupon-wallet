@@ -29,7 +29,19 @@ import AdminModeration from "./pages/admin/AdminModeration";
 import AdminCampaigns from "./pages/admin/AdminCampaigns";
 import AdminLogs from "./pages/admin/AdminLogs";
 
-const queryClient = new QueryClient();
+// Optimized React Query configuration for better caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
+      gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache
+      refetchOnWindowFocus: false, // Don't refetch on tab focus
+      refetchOnReconnect: true, // Refetch on network reconnect
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
