@@ -309,7 +309,7 @@ const Home = () => {
               className="masonry-grid"
               columnClassName="masonry-grid-column"
             >
-              {visibleProducts.map((product) => (
+              {visibleProducts.map((product, index) => (
                 <MasonryProductCard
                   key={product.id}
                   id={product.id}
@@ -319,6 +319,7 @@ const Home = () => {
                   originalPrice={product.originalPrice}
                   rating={product.rating}
                   isAuction={product.isAuction}
+                  priority={index < 6} // First 6 images load immediately
                 />
               ))}
             </Masonry>
