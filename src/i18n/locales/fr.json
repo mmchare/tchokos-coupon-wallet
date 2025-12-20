@@ -1,0 +1,180 @@
+{
+  "common": {
+    "search": "Rechercher des produits...",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "add": "Ajouter",
+    "remove": "Supprimer",
+    "yes": "Oui",
+    "no": "Non",
+    "or": "ou",
+    "and": "et"
+  },
+  "nav": {
+    "home": "Accueil",
+    "favorites": "Favoris",
+    "orders": "Commandes",
+    "profile": "Profil",
+    "recharge": "Recharger",
+    "admin": "Admin"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "signup": "Inscription",
+    "phone": "Numéro de téléphone",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "fullName": "Nom complet",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "enterOtp": "Entrez le code OTP",
+    "otpSent": "Code envoyé au",
+    "resendOtp": "Renvoyer le code",
+    "verifyOtp": "Vérifier le code"
+  },
+  "home": {
+    "welcome": "Bienvenue",
+    "categories": "Catégories",
+    "allProducts": "Tous les produits",
+    "featured": "En vedette",
+    "newArrivals": "Nouveautés",
+    "bestSellers": "Meilleures ventes",
+    "flashSale": "Vente Flash",
+    "endingSoon": "Se termine bientôt",
+    "viewAll": "Voir tout",
+    "noProducts": "Aucun produit trouvé",
+    "loadMore": "Charger plus"
+  },
+  "product": {
+    "addToCart": "Ajouter au panier",
+    "buyNow": "Acheter maintenant",
+    "outOfStock": "Rupture de stock",
+    "inStock": "En stock",
+    "stockLeft": "{{count}} restant(s)",
+    "description": "Description",
+    "reviews": "Avis",
+    "noReviews": "Aucun avis pour ce produit",
+    "writeReview": "Écrire un avis",
+    "similarProducts": "Produits similaires",
+    "verified": "Vérifié",
+    "originalPrice": "Prix original",
+    "discount": "Réduction",
+    "priceAlert": "Alerte prix",
+    "priceAlertSet": "Alerte configurée",
+    "notifyWhenPriceDrops": "Me notifier quand le prix baisse"
+  },
+  "cart": {
+    "title": "Panier",
+    "empty": "Votre panier est vide",
+    "subtotal": "Sous-total",
+    "total": "Total",
+    "checkout": "Passer la commande",
+    "continueShopping": "Continuer les achats",
+    "quantity": "Quantité",
+    "remove": "Retirer"
+  },
+  "checkout": {
+    "title": "Livraison",
+    "deliveryAddress": "Adresse de livraison",
+    "city": "Ville",
+    "phone": "Téléphone WhatsApp",
+    "savedAddresses": "Adresses enregistrées",
+    "newAddress": "Nouvelle adresse",
+    "useNewAddress": "Utiliser une nouvelle adresse",
+    "backToSaved": "Retour aux adresses sauvegardées",
+    "noSavedAddresses": "Aucune adresse enregistrée",
+    "selectAddress": "Sélectionnez une adresse",
+    "confirmOrder": "Confirmer la commande",
+    "processing": "Traitement...",
+    "orderSuccess": "Commande confirmée !",
+    "orderError": "Erreur lors de la commande"
+  },
+  "orders": {
+    "title": "Mes commandes",
+    "empty": "Aucune commande",
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmée",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "cancelled": "Annulée"
+    },
+    "orderNumber": "Commande #{{id}}",
+    "orderDate": "Date",
+    "trackOrder": "Suivre la commande",
+    "viewDetails": "Voir les détails"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "editProfile": "Modifier le profil",
+    "wallet": "Portefeuille",
+    "balance": "Solde",
+    "addresses": "Adresses de livraison",
+    "addAddress": "Ajouter une adresse",
+    "defaultAddress": "Adresse par défaut",
+    "setAsDefault": "Définir par défaut",
+    "notifications": "Notifications",
+    "language": "Langue",
+    "theme": "Thème",
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair",
+    "referral": "Parrainage",
+    "referralCode": "Code de parrainage",
+    "copyCode": "Copier le code",
+    "codeCopied": "Code copié !",
+    "shareCode": "Partager"
+  },
+  "favorites": {
+    "title": "Mes favoris",
+    "empty": "Aucun favori",
+    "addedToFavorites": "Ajouté aux favoris",
+    "removedFromFavorites": "Retiré des favoris"
+  },
+  "recharge": {
+    "title": "Recharger",
+    "amount": "Montant",
+    "customAmount": "Montant personnalisé",
+    "paymentMethod": "Méthode de paiement",
+    "rechargeNow": "Recharger maintenant",
+    "success": "Recharge réussie !",
+    "error": "Erreur de recharge"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markAllRead": "Tout marquer comme lu",
+    "new": "Nouveau"
+  },
+  "categories": {
+    "all": "Tout",
+    "electronics": "Électronique",
+    "fashion": "Mode",
+    "home": "Maison",
+    "beauty": "Beauté",
+    "sports": "Sports",
+    "books": "Livres",
+    "toys": "Jouets",
+    "other": "Autre"
+  },
+  "footer": {
+    "about": "À propos",
+    "contact": "Contact",
+    "terms": "Conditions",
+    "privacy": "Confidentialité",
+    "help": "Aide"
+  },
+  "splash": {
+    "tagline": "Smart Market",
+    "subtitle": "Premium Tech • Confiance • Efficacité"
+  }
+}
