@@ -1,69 +1,15 @@
-import { useState, useEffect } from 'react';
 import Masonry from 'react-masonry-css';
 import MasonryProductCard from './MasonryProductCard';
-import { supabase } from '@/integrations/supabase/client';
-
-interface SimilarProduct {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  isAuction?: boolean;
-}
+import { useAISimilarProducts } from '@/hooks/useAISimilarProducts';
+import { Sparkles } from 'lucide-react';
 
 interface SimilarProductsProps {
   currentProductId: string;
   category?: string;
 }
 
-const SimilarProducts = ({ currentProductId, category }: SimilarProductsProps) => {
-  const [products, setProducts] = useState<SimilarProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSimilarProducts = async () => {
-      setIsLoading(true);
-
-      let query = supabase
-        .from('products')
-        .select('*')
-        .neq('id', currentProductId)
-        .limit(6);
-
-      // If category is provided, prioritize same category
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching similar products:', error);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data) {
-        const transformedProducts: SimilarProduct[] = data.map(product => ({
-          id: product.id,
-          name: product.name,
-          price: Number(product.price),
-          originalPrice: product.original_price ? Number(product.original_price) : undefined,
-          image: product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg',
-          rating: 4.5 + Math.random() * 0.5,
-          isAuction: product.is_auction || false
-        }));
-
-        setProducts(transformedProducts);
-      }
-
-      setIsLoading(false);
-    };
-
-    fetchSimilarProducts();
-  }, [currentProductId, category]);
+const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
+  const { products, isLoading } = useAISimilarProducts(currentProductId);
 
   if (isLoading || products.length === 0) return null;
 
@@ -74,9 +20,12 @@ const SimilarProducts = ({ currentProductId, category }: SimilarProductsProps) =
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-bold text-foreground mb-4 px-4">
-        Produits similaires
-      </h3>
+      <div className="flex items-center gap-2 mb-4 px-4">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-bold text-foreground">
+          Suggestions pour vous
+        </h3>
+      </div>
       <div className="px-4">
         <Masonry
           breakpointCols={breakpointColumnsObj}
@@ -84,16 +33,22 @@ const SimilarProducts = ({ currentProductId, category }: SimilarProductsProps) =
           columnClassName="pl-3 bg-clip-padding"
         >
           {products.map((product) => (
-            <MasonryProductCard
-              key={product.id}
-              id={product.id}
-              image={product.image}
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              rating={product.rating}
-              isAuction={product.isAuction}
-            />
+            <div key={product.id} className="relative">
+              <MasonryProductCard
+                id={product.id}
+                image={product.image}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                rating={product.rating}
+                isAuction={product.isAuction}
+              />
+              {product.aiReason && (
+                <div className="absolute bottom-14 left-0 right-0 mx-2 bg-primary/90 text-primary-foreground text-xs px-2 py-1 rounded-md text-center truncate">
+                  {product.aiReason}
+                </div>
+              )}
+            </div>
           ))}
         </Masonry>
       </div>

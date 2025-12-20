@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Gavel, Heart } from 'lucide-react';
+import { Star, Gavel } from 'lucide-react';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
-import { useFavorites } from '@/hooks/useFavorites';
 import { getCardImageUrl } from '@/lib/imageUtils';
 
 interface MasonryProductCardProps {
@@ -26,10 +25,8 @@ const MasonryProductCard = ({
 }: MasonryProductCardProps) => {
   const navigate = useNavigate();
   const { trackClick } = useActivityTracking();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const [imageLoaded, setImageLoaded] = useState(false);
-  const isProductFavorite = isFavorite(id);
   
   // Optimized image URL for thumbnails
   const optimizedImage = getCardImageUrl(image);
@@ -37,11 +34,6 @@ const MasonryProductCard = ({
   const handleClick = () => {
     trackClick(id);
     navigate(`/product/${id}`);
-  };
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleFavorite(id);
   };
 
   return (
@@ -66,14 +58,6 @@ const MasonryProductCard = ({
           onLoad={() => setImageLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Favorite Button */}
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors z-10"
-        >
-          <Heart className={`h-4 w-4 ${isProductFavorite ? 'fill-vibrant-red text-vibrant-red' : 'text-foreground'}`} />
-        </button>
       </div>
 
       {/* Product Info */}
