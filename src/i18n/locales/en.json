@@ -1,0 +1,180 @@
+{
+  "common": {
+    "search": "Search products...",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and"
+  },
+  "nav": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "orders": "Orders",
+    "profile": "Profile",
+    "recharge": "Recharge",
+    "admin": "Admin"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "phone": "Phone number",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "fullName": "Full name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "enterOtp": "Enter OTP code",
+    "otpSent": "Code sent to",
+    "resendOtp": "Resend code",
+    "verifyOtp": "Verify code"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "categories": "Categories",
+    "allProducts": "All Products",
+    "featured": "Featured",
+    "newArrivals": "New Arrivals",
+    "bestSellers": "Best Sellers",
+    "flashSale": "Flash Sale",
+    "endingSoon": "Ending Soon",
+    "viewAll": "View All",
+    "noProducts": "No products found",
+    "loadMore": "Load More"
+  },
+  "product": {
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "stockLeft": "{{count}} left",
+    "description": "Description",
+    "reviews": "Reviews",
+    "noReviews": "No reviews for this product",
+    "writeReview": "Write a Review",
+    "similarProducts": "Similar Products",
+    "verified": "Verified",
+    "originalPrice": "Original price",
+    "discount": "Discount",
+    "priceAlert": "Price Alert",
+    "priceAlertSet": "Alert set",
+    "notifyWhenPriceDrops": "Notify me when price drops"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "checkout": "Checkout",
+    "continueShopping": "Continue Shopping",
+    "quantity": "Quantity",
+    "remove": "Remove"
+  },
+  "checkout": {
+    "title": "Delivery",
+    "deliveryAddress": "Delivery Address",
+    "city": "City",
+    "phone": "WhatsApp Phone",
+    "savedAddresses": "Saved Addresses",
+    "newAddress": "New Address",
+    "useNewAddress": "Use a new address",
+    "backToSaved": "Back to saved addresses",
+    "noSavedAddresses": "No saved addresses",
+    "selectAddress": "Select an address",
+    "confirmOrder": "Confirm Order",
+    "processing": "Processing...",
+    "orderSuccess": "Order confirmed!",
+    "orderError": "Order error"
+  },
+  "orders": {
+    "title": "My Orders",
+    "empty": "No orders",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "orderNumber": "Order #{{id}}",
+    "orderDate": "Date",
+    "trackOrder": "Track Order",
+    "viewDetails": "View Details"
+  },
+  "profile": {
+    "title": "My Profile",
+    "editProfile": "Edit Profile",
+    "wallet": "Wallet",
+    "balance": "Balance",
+    "addresses": "Delivery Addresses",
+    "addAddress": "Add Address",
+    "defaultAddress": "Default Address",
+    "setAsDefault": "Set as Default",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "referral": "Referral",
+    "referralCode": "Referral Code",
+    "copyCode": "Copy Code",
+    "codeCopied": "Code copied!",
+    "shareCode": "Share"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "empty": "No favorites",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites"
+  },
+  "recharge": {
+    "title": "Recharge",
+    "amount": "Amount",
+    "customAmount": "Custom amount",
+    "paymentMethod": "Payment Method",
+    "rechargeNow": "Recharge Now",
+    "success": "Recharge successful!",
+    "error": "Recharge error"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read",
+    "new": "New"
+  },
+  "categories": {
+    "all": "All",
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home": "Home",
+    "beauty": "Beauty",
+    "sports": "Sports",
+    "books": "Books",
+    "toys": "Toys",
+    "other": "Other"
+  },
+  "footer": {
+    "about": "About",
+    "contact": "Contact",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "help": "Help"
+  },
+  "splash": {
+    "tagline": "Smart Market",
+    "subtitle": "Premium Tech • Trust • Efficiency"
+  }
+}

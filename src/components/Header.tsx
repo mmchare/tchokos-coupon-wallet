@@ -12,10 +12,13 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import { useToast } from '@/hooks/use-toast';
 import { formatBalance } from '@/lib/formatBalance';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Header = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isDeliveryFormOpen, setIsDeliveryFormOpen] = useState(false);
   const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
@@ -84,7 +87,7 @@ const Header = () => {
                   className="text-xs sm:text-sm border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white h-8 sm:h-9"
                 >
                   <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden xs:inline">Connexion</span>
+                  <span className="hidden xs:inline">{t('auth.login')}</span>
                 </Button>
               )}
 
@@ -105,6 +108,9 @@ const Header = () => {
 
             {/* Right Actions */}
             <div className="flex items-center gap-1 shrink-0">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+
               {/* Theme Toggle */}
               <Button
                 variant="ghost"
@@ -123,7 +129,7 @@ const Header = () => {
                   size="icon"
                   onClick={() => navigate('/orders')}
                   className="relative text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
-                  title="Mes commandes"
+                  title={t('nav.orders')}
                 >
                   <Package className="h-4 w-4" />
                   {unreadCount > 0 && (
