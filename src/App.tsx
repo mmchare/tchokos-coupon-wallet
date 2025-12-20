@@ -14,6 +14,7 @@ import Recharge from "./pages/Recharge";
 import Profile from "./pages/Profile";
 import ProductDetail from "./pages/ProductDetail";
 import Orders from "./pages/Orders";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/recharge" element={<Recharge />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/orders" element={<Orders />} />
+                <Route path="/favorites" element={<Favorites />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 
                 {/* Admin Routes */}
