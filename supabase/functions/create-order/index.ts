@@ -249,6 +249,66 @@ serve(async (req: Request) => {
       // Non-critical, continue
     }
 
+    // REFERRAL BONUS: Check if this is the user's FIRST order and give bonus to referrer
+    const { data: userOrders } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('user_id', user_id);
+
+    // If this is the first order (only 1 order exists - the one we just created)
+    if (userOrders && userOrders.length === 1) {
+      console.log('First order detected for user:', user_id);
+      
+      // Check if user was referred by someone
+      const { data: referralData } = await supabase
+        .from('referrals')
+        .select('referrer_id')
+        .eq('referred_id', user_id)
+        .maybeSingle();
+
+      if (referralData && referralData.referrer_id) {
+        console.log('User was referred by:', referralData.referrer_id);
+        
+        // Get referrer's current balance
+        const { data: referrerProfile } = await supabase
+          .from('profiles')
+          .select('wallet_balance')
+          .eq('id', referralData.referrer_id)
+          .single();
+
+        if (referrerProfile) {
+          // Add 5000 FCFA bonus to referrer
+          const newReferrerBalance = (referrerProfile.wallet_balance || 0) + 5000;
+          const { error: referrerUpdateError } = await supabase
+            .from('profiles')
+            .update({ wallet_balance: newReferrerBalance })
+            .eq('id', referralData.referrer_id);
+
+          if (referrerUpdateError) {
+            console.error('Error updating referrer balance:', referrerUpdateError);
+          } else {
+            console.log(`Referrer bonus: 5000 FCFA added to ${referralData.referrer_id}. New balance: ${newReferrerBalance}`);
+            
+            // Create transaction record for referrer bonus
+            await supabase.from('wallet_transactions').insert({
+              user_id: referralData.referrer_id,
+              type: 'referral_bonus',
+              amount: 5000,
+              description: `Bonus parrainage: premier achat de votre filleul`,
+              status: 'completed'
+            });
+
+            // Create notification for referrer
+            await supabase.from('notifications').insert({
+              user_id: referralData.referrer_id,
+              message_type: 'BONUS_PARRAINAGE',
+              message_body: `Félicitations! Votre filleul a effectué son premier achat. Vous avez reçu 5000 FCFA de bonus!`
+            });
+          }
+        }
+      }
+    }
+
     console.log('Order completed successfully:', { order_id: order.id, new_balance: newBalance });
 
     return new Response(
