@@ -14,10 +14,10 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -93,7 +93,7 @@ ${viewedProducts.slice(0, 5).map(p => `- ${p.name} (${p.category})`).join('\n')}
     })) || [];
 
     // Build the AI prompt
-    const systemPrompt = `Tu es un expert en recommandation de produits pour JinBao Smart Market.
+    const prompt = `Tu es un expert en recommandation de produits pour JinBao Smart Market.
 
 Ton rôle est de suggérer des produits SIMILAIRES et COMPLÉMENTAIRES à un produit donné.
 
@@ -114,9 +114,9 @@ FORMAT DE RÉPONSE (JSON strict):
       "relevance_score": 0.95
     }
   ]
-}`;
+}
 
-    const userPrompt = `PRODUIT ACTUEL:
+PRODUIT ACTUEL:
 - Nom: ${currentProduct.name}
 - Catégorie: ${currentProduct.category || 'Non catégorisé'}
 - Prix: ${currentProduct.price} F
@@ -127,53 +127,57 @@ ${JSON.stringify(productCatalog)}
 
 Suggère des produits similaires ou complémentaires pertinents.`;
 
-    console.log('Calling Lovable AI for similar products...');
+    console.log('Calling Gemini AI for similar products...');
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Call Google Gemini API directly
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
         ],
-        temperature: 0.5,
-        max_tokens: 1500
+        generationConfig: {
+          temperature: 0.5,
+          maxOutputTokens: 1500,
+        }
       })
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
+      console.error('Gemini API error:', aiResponse.status, errorText);
       
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits exhausted' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // Fallback: return products from same category
+      const sameCategoryProducts = productCatalog
+        .filter(p => p.category === currentProduct.category)
+        .slice(0, 6);
       
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          similar_products: sameCategoryProducts.map(p => ({
+            product_id: p.id,
+            reason: 'Même catégorie',
+            relevance_score: 0.7
+          }))
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiData = await aiResponse.json();
-    const aiContent = aiData.choices?.[0]?.message?.content;
+    const aiContent = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiContent) {
       throw new Error('No content in AI response');
     }
 
-    console.log('AI response received:', aiContent.substring(0, 200));
+    console.log('Gemini response received:', aiContent.substring(0, 200));
 
     // Parse AI response
     let recommendations;
