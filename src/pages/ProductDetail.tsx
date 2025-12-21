@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -57,6 +58,7 @@ interface Product {
 const ProductDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { addToCoupon } = useCoupon();
   const { trackView, trackAddToCart } = useActivityTracking();
@@ -94,8 +96,8 @@ const ProductDetail = () => {
       if (error) {
         console.error('Error fetching product:', error);
         toast({
-          title: "Erreur",
-          description: "Impossible de charger le produit",
+          title: t('common.error'),
+          description: t('product.errorLoading'),
           variant: "destructive"
         });
         setIsLoading(false);
@@ -185,9 +187,9 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <p className="text-muted-foreground mb-4">Produit non trouvé</p>
+        <p className="text-muted-foreground mb-4">{t('product.notFound')}</p>
         <Button onClick={() => navigate('/')} variant="outline">
-          Retour à l'accueil
+          {t('product.backToHome')}
         </Button>
       </div>
     );
@@ -209,8 +211,8 @@ const ProductDetail = () => {
     trackAddToCart(product.id);
     
     toast({
-      title: "Produit ajouté !",
-      description: `${product.name} a été ajouté à votre coupon`,
+      title: t('product.addedToCoupon'),
+      description: `${product.name} ${t('product.addedToCouponDesc')}`,
     });
   };
 
@@ -238,8 +240,8 @@ const ProductDetail = () => {
   const handleSubmitComment = async () => {
     if (!comment.trim() || userRating === 0) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer un commentaire et une note",
+        title: t('common.error'),
+        description: t('product.enterCommentAndRating'),
         variant: "destructive"
       });
       return;
@@ -247,8 +249,8 @@ const ProductDetail = () => {
 
     if (!user) {
       toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour laisser un avis",
+        title: t('auth.loginRequired'),
+        description: t('auth.pleaseLogin'),
         variant: "destructive"
       });
       return;
@@ -267,8 +269,8 @@ const ProductDetail = () => {
     if (error) {
       console.error('Error submitting review:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de publier l'avis",
+        title: t('common.error'),
+        description: t('product.errorSubmitReview'),
         variant: "destructive"
       });
       return;
@@ -290,7 +292,7 @@ const ProductDetail = () => {
       reviews: [newReview, ...prev.reviews]
     } : null);
 
-    toast({ title: "Avis publié !", description: "Merci pour votre retour" });
+    toast({ title: t('product.reviewPublished'), description: t('product.thankYouReview') });
     setComment('');
     setUserRating(0);
     setReviewPhotos([]);
@@ -305,18 +307,18 @@ const ProductDetail = () => {
   const handleWhatsAppClick = () => {
     const productUrl = `${window.location.origin}/product/${id}`;
     const imageUrl = product?.images?.[0] || '';
-    const message = `Bonjour JinBao! 👋
+    const message = `${t('product.whatsappHello')}
 
-Je suis intéressé(e) par ce produit:
+${t('product.whatsappInterested')}
 
 🛍️ *${product.name}*
-💰 Prix: ${product.price.toLocaleString()} FCFA
+💰 ${t('product.whatsappPrice')}: ${product.price.toLocaleString()} FCFA
 
-📷 Photo: ${imageUrl}
+📷 ${t('product.whatsappPhoto')}: ${imageUrl}
 
-🔗 Lien du produit: ${productUrl}
+🔗 ${t('product.whatsappLink')}: ${productUrl}
 
-Pouvez-vous me donner plus d'informations?`;
+${t('product.moreInfo')}`;
     
     window.open(`https://wa.me/237655852010?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -326,7 +328,7 @@ Pouvez-vous me donner plus d'informations?`;
       navigator.share({ title: product.name, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast({ title: "Lien copié !" });
+      toast({ title: t('common.linkCopied') });
     }
   };
 
@@ -416,8 +418,8 @@ Pouvez-vous me donner plus d'informations?`;
           {product.isAuction && (
             <div className="flex items-center gap-2 text-sm">
               <Gavel className="h-4 w-4 text-primary" />
-              <span className="text-primary font-medium">Enchère en cours</span>
-              <span className="text-muted-foreground">• Offre actuelle</span>
+              <span className="text-primary font-medium">{t('product.auctionInProgress')}</span>
+              <span className="text-muted-foreground">• {t('product.currentBid')}</span>
             </div>
           )}
 
@@ -442,7 +444,7 @@ Pouvez-vous me donner plus d'informations?`;
               <span className="text-sm font-medium text-foreground ml-1">{product.rating.toFixed(1)}</span>
             </div>
             <span className="text-muted-foreground text-sm">
-              {product.reviews.length} avis
+              {t('product.reviewsCount', { count: product.reviews.length })}
             </span>
           </div>
 
@@ -451,12 +453,12 @@ Pouvez-vous me donner plus d'informations?`;
             {product.isVerified && (
               <div className="verified-badge">
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Vérifié JinBao</span>
+                <span>{t('product.verified')}</span>
               </div>
             )}
             {product.isUniqueStock && (
               <div className="stock-warning">
-                <span>Stock limité</span>
+                <span>{t('product.limitedStock')}</span>
               </div>
             )}
           </div>
@@ -464,7 +466,7 @@ Pouvez-vous me donner plus d'informations?`;
 
         {/* Description Card */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3">
-          <h3 className="font-semibold text-foreground mb-2">Description</h3>
+          <h3 className="font-semibold text-foreground mb-2">{t('product.description')}</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
             {product.description}
           </p>
@@ -494,7 +496,7 @@ Pouvez-vous me donner plus d'informations?`;
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-muted-foreground" />
               <h3 className="font-semibold text-foreground">
-                Avis ({product.reviews.length})
+                {t('product.reviews')} ({product.reviews.length})
               </h3>
             </div>
             <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${showReviewForm ? 'rotate-90' : ''}`} />
@@ -527,7 +529,7 @@ Pouvez-vous me donner plus d'informations?`;
                           <img
                             key={idx}
                             src={photo}
-                            alt={`Avis photo ${idx + 1}`}
+                            alt={`${t('product.reviewPhotoAlt')} ${idx + 1}`}
                             className="w-16 h-16 rounded-lg object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => window.open(photo, '_blank')}
                           />
@@ -539,7 +541,7 @@ Pouvez-vous me donner plus d'informations?`;
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-muted-foreground">Aucun avis pour ce produit</p>
+            <p className="mt-4 text-sm text-muted-foreground">{t('product.noReviews')}</p>
           )}
 
           {/* Review Form - Collapsible */}
@@ -558,7 +560,7 @@ Pouvez-vous me donner plus d'informations?`;
               </div>
               <div className="relative">
                 <Textarea
-                  placeholder="Votre avis..."
+                  placeholder={t('product.yourComment')}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="bg-muted/50 border-border min-h-[80px] pr-10"
@@ -592,7 +594,7 @@ Pouvez-vous me donner plus d'informations?`;
                 disabled={!comment.trim() || userRating === 0}
               >
                 <Send className="h-4 w-4 mr-2" />
-                Publier l'avis
+                {t('product.submitReview')}
               </Button>
             </div>
           )}
@@ -637,10 +639,10 @@ Pouvez-vous me donner plus d'informations?`;
             {product.isAuction ? (
               <>
                 <Gavel className="h-5 w-5 mr-2" />
-                Enchérir maintenant
+                {t('product.bidNow')}
               </>
             ) : (
-              'Acheter maintenant'
+              t('product.buyNow')
             )}
           </Button>
         </div>
@@ -653,8 +655,8 @@ Pouvez-vous me donner plus d'informations?`;
         onSubmit={(data) => {
           setShowDeliveryForm(false);
           toast({
-            title: "Commande confirmée !",
-            description: `Votre commande de ${product.name} a été enregistrée.`
+            title: t('product.orderConfirmed'),
+            description: t('product.orderRegistered', { name: product.name })
           });
         }}
         total={product.isAuction ? currentMaxBid : product.price}

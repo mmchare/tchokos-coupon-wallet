@@ -1,4 +1,5 @@
 import Masonry from 'react-masonry-css';
+import { useTranslation } from 'react-i18next';
 import MasonryProductCard from './MasonryProductCard';
 import { useAISimilarProducts } from '@/hooks/useAISimilarProducts';
 import { Sparkles } from 'lucide-react';
@@ -9,6 +10,7 @@ interface SimilarProductsProps {
 }
 
 const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
+  const { t } = useTranslation();
   const { products, isLoading } = useAISimilarProducts(currentProductId);
 
   if (isLoading || products.length === 0) return null;
@@ -23,7 +25,7 @@ const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
       <div className="flex items-center gap-2 mb-4 px-4">
         <Sparkles className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-bold text-foreground">
-          Suggestions pour vous
+          {t('product.similarProducts')}
         </h3>
       </div>
       <div className="px-4">
