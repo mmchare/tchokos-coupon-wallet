@@ -29,10 +29,10 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
 
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    if (!MISTRAL_API_KEY) {
+      throw new Error('MISTRAL_API_KEY is not configured');
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -145,30 +145,28 @@ ${JSON.stringify(productCatalog)}
 
 Génère des recommandations personnalisées basées sur ce comportement.`;
 
-    console.log('Calling Gemini AI for recommendations...');
+    console.log('Calling Mistral AI for recommendations...');
 
-    // Call Google Gemini API directly
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Call Mistral API
+    const aiResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
+        model: 'mistral-small-latest',
+        messages: [
+          { role: 'user', content: prompt }
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2000,
-        }
-      })
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('Gemini API error:', aiResponse.status, errorText);
+      console.error('Mistral API error:', aiResponse.status, errorText);
       
       // Fallback: return top products from catalog
       const fallbackRecommendations = productCatalog.slice(0, 6).map(p => ({
@@ -190,13 +188,13 @@ Génère des recommandations personnalisées basées sur ce comportement.`;
     }
 
     const aiData = await aiResponse.json();
-    const aiContent = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const aiContent = aiData.choices?.[0]?.message?.content;
 
     if (!aiContent) {
       throw new Error('No content in AI response');
     }
 
-    console.log('Gemini response received:', aiContent.substring(0, 200));
+    console.log('Mistral response received:', aiContent.substring(0, 200));
 
     // Parse AI response
     let recommendations;

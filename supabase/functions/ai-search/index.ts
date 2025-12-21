@@ -46,10 +46,10 @@ serve(async (req) => {
       );
     }
 
-    // Check for Gemini API key
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    if (!GEMINI_API_KEY) {
-      console.error('GEMINI_API_KEY not configured');
+    // Check for Mistral API key
+    const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
+    if (!MISTRAL_API_KEY) {
+      console.error('MISTRAL_API_KEY not configured');
       // Fallback to simple text search
       const simpleResults = products.filter(p => 
         p.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -87,28 +87,27 @@ Retourne UNIQUEMENT un JSON valide avec ce format:
 
 Maximum 10 produits. Si aucun produit ne correspond, retourne un tableau vide.`;
 
-    // Call Google Gemini API directly
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Call Mistral API
+    console.log('Calling Mistral API...');
+    const aiResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
+        model: 'mistral-small-latest',
+        messages: [
+          { role: 'user', content: prompt }
         ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1000,
-        }
+        temperature: 0.3,
+        max_tokens: 1000,
       }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('Gemini API error:', aiResponse.status, errorText);
+      console.error('Mistral API error:', aiResponse.status, errorText);
       // Fallback to simple search
       const simpleResults = products.filter(p => 
         p.name.toLowerCase().includes(query.toLowerCase())
@@ -120,8 +119,8 @@ Maximum 10 produits. Si aucun produit ne correspond, retourne un tableau vide.`;
     }
 
     const aiData = await aiResponse.json();
-    const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log('Gemini search response:', content.substring(0, 200));
+    const content = aiData.choices?.[0]?.message?.content || '';
+    console.log('Mistral search response:', content.substring(0, 200));
 
     // Parse AI response
     let matchingIds: string[] = [];
