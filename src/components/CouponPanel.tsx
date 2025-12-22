@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,7 @@ const CouponPanel = ({
   onPurchase, 
   onGenerateCode 
 }: CouponPanelProps) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -44,17 +46,17 @@ const CouponPanel = ({
   const handleWhatsAppShare = () => {
     if (!couponCode) {
       toast({
-        title: "Code requis",
-        description: "Générez d'abord un code de partage",
+        title: t('coupon.codeRequired'),
+        description: t('coupon.generateCodeFirst'),
         variant: "destructive",
       });
       return;
     }
     
     const message = encodeURIComponent(
-      `🛒 Découvrez ma sélection JinBao !\n\n` +
-      `📋 Code coupon : ${couponCode}\n\n` +
-      `Chargez ce code sur JinBao Smart Market pour voir les produits !\n` +
+      `🛒 ${t('coupon.whatsappMessage')}\n\n` +
+      `📋 ${t('coupon.couponCode')} : ${couponCode}\n\n` +
+      `${t('coupon.loadCodeOnJinbao')}\n` +
       `👉 Premium Tech • Confiance • Efficacité`
     );
     
@@ -66,8 +68,8 @@ const CouponPanel = ({
   const handleGenerateCode = async () => {
     if (!user) {
       toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour générer un code",
+        title: t('coupon.loginRequired'),
+        description: t('coupon.loginToGenerate'),
         variant: "destructive",
       });
       return;
@@ -91,14 +93,14 @@ const CouponPanel = ({
       setCouponCode(code);
       onGenerateCode();
       toast({
-        title: "Code généré !",
-        description: `Votre code coupon: ${code}`,
+        title: t('coupon.codeGenerated'),
+        description: `${t('coupon.yourCode')}: ${code}`,
       });
     } catch (error) {
       console.error('Error generating coupon code:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de générer le code",
+        title: t('coupon.error'),
+        description: t('coupon.cannotGenerateCode'),
         variant: "destructive",
       });
     } finally {
@@ -112,7 +114,7 @@ const CouponPanel = ({
       <Card className="p-6 text-center">
         <div className="text-muted-foreground mb-4">
           <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p>Votre coupon est vide</p>
+          <p>{t('coupon.empty')}</p>
         </div>
       </Card>
     );
@@ -121,9 +123,9 @@ const CouponPanel = ({
   return (
     <Card className="p-3 sm:p-6 animate-slide-up">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold text-foreground">Mon Coupon</h2>
+        <h2 className="text-lg sm:text-xl font-bold text-foreground">{t('coupon.title')}</h2>
         <Badge variant="secondary" className="bg-jinbao-red text-white text-xs sm:text-sm">
-          {items.length} article{items.length > 1 ? 's' : ''}
+          {items.length} {t('coupon.items')}
         </Badge>
       </div>
 
@@ -181,7 +183,7 @@ const CouponPanel = ({
 
       {/* Total */}
       <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <span className="text-base sm:text-lg font-semibold text-foreground">Total:</span>
+        <span className="text-base sm:text-lg font-semibold text-foreground">{t('cart.total')}:</span>
         <span className="text-lg sm:text-2xl font-bold text-jinbao-red">
           {total.toLocaleString()} F
         </span>
@@ -192,7 +194,7 @@ const CouponPanel = ({
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg border border-jinbao-red/20">
           <div className="flex flex-col gap-3">
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Code Coupon:</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1">{t('coupon.couponCode')}:</p>
               <p className="font-mono text-jinbao-red font-bold text-sm sm:text-base">{couponCode}</p>
             </div>
             <Button
@@ -200,7 +202,7 @@ const CouponPanel = ({
               className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Partager sur WhatsApp
+              {t('coupon.shareOnWhatsapp')}
             </Button>
           </div>
         </div>
@@ -213,7 +215,7 @@ const CouponPanel = ({
           className="buy-button w-full text-sm sm:text-base"
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
-          Acheter Maintenant
+          {t('coupon.buyNow')}
         </Button>
         
         <Button 
@@ -223,7 +225,7 @@ const CouponPanel = ({
           className="w-full border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white text-sm sm:text-base"
         >
           <Code className="h-4 w-4 mr-2" />
-          {isGenerating ? 'Génération...' : 'Générer Code de Partage'}
+          {isGenerating ? t('coupon.generating') : t('coupon.generateCode')}
         </Button>
       </div>
     </Card>

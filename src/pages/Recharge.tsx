@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ interface Transaction {
 
 const Recharge = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user, profile, loading, refreshProfile } = useAuth();
   const [amount, setAmount] = useState('');
@@ -80,8 +82,8 @@ const Recharge = () => {
       if (attempts >= maxAttempts) {
         setPaymentStatus('failed');
         toast({
-          title: "Délai d'attente dépassé",
-          description: "Le paiement n'a pas pu être confirmé. Vérifiez votre solde.",
+          title: t('recharge.paymentTimeout'),
+          description: t('recharge.paymentTimeoutDesc'),
           variant: "destructive"
         });
         return;
@@ -103,8 +105,8 @@ const Recharge = () => {
         await refreshProfile();
         await refreshTransactions();
         toast({
-          title: "Recharge réussie !",
-          description: `${parseInt(amount).toLocaleString()} F ont été ajoutés à votre compte`,
+          title: t('recharge.success'),
+          description: `${parseInt(amount).toLocaleString()} F ${t('recharge.addedToAccount')}`,
         });
         setAmount('');
         setIsProcessing(false);
@@ -114,8 +116,8 @@ const Recharge = () => {
       if (tx.status === 'failed') {
         setPaymentStatus('failed');
         toast({
-          title: "Paiement échoué",
-          description: "Le paiement n'a pas pu être effectué. Veuillez réessayer.",
+          title: t('recharge.paymentFailed'),
+          description: t('recharge.paymentFailedRetry'),
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -152,8 +154,8 @@ const Recharge = () => {
 
     if (!selectedMethod) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner une méthode de paiement",
+        title: t('common.error'),
+        description: t('recharge.selectPaymentMethod'),
         variant: "destructive"
       });
       return;
@@ -161,8 +163,8 @@ const Recharge = () => {
 
     if (!amount || parseInt(amount) < 500) {
       toast({
-        title: "Erreur",
-        description: "Le montant minimum est de 500 F",
+        title: t('common.error'),
+        description: t('recharge.minimumAmount'),
         variant: "destructive"
       });
       return;
@@ -170,8 +172,8 @@ const Recharge = () => {
 
     if (!phoneNumber || phoneNumber.length < 8) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer un numéro de téléphone valide",
+        title: t('common.error'),
+        description: t('recharge.enterValidPhone'),
         variant: "destructive"
       });
       return;
@@ -196,8 +198,8 @@ const Recharge = () => {
         console.error('Payment initiation error:', error);
         setPaymentStatus('failed');
         toast({
-          title: "Erreur",
-          description: "Impossible d'initier le paiement. Veuillez réessayer.",
+          title: t('common.error'),
+          description: t('recharge.cannotInitiatePayment'),
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -221,15 +223,15 @@ const Recharge = () => {
         const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
         if (!opened) {
           toast({
-            title: "Action requise",
-            description: "Appuyez sur 'Ouvrir la page de paiement' pour valider.",
+            title: t('recharge.actionRequired'),
+            description: t('recharge.pressToValidate'),
           });
         }
       }
 
       toast({
-        title: "Paiement initié !",
-        description: `Confirmez le paiement sur votre téléphone ${phoneNumber}`,
+        title: t('recharge.paymentInitiated'),
+        description: `${t('recharge.confirmPaymentOnPhone')} ${phoneNumber}`,
       });
 
       // Start polling for transaction status
@@ -241,8 +243,8 @@ const Recharge = () => {
       console.error('Payment error:', err);
       setPaymentStatus('failed');
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        title: t('common.error'),
+        description: t('recharge.errorOccurred'),
         variant: "destructive"
       });
       setIsProcessing(false);
@@ -271,11 +273,11 @@ const Recharge = () => {
   const getTransactionLabel = (type: string) => {
     switch (type) {
       case 'recharge':
-        return 'Recharge';
+        return t('recharge.rechargeType');
       case 'purchase':
-        return 'Achat';
+        return t('recharge.purchaseType');
       case 'refund':
-        return 'Remboursement';
+        return t('recharge.refundType');
       default:
         return type;
     }
@@ -284,11 +286,11 @@ const Recharge = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <span className="text-xs text-green-500 flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Confirmé</span>;
+        return <span className="text-xs text-green-500 flex items-center gap-1"><CheckCircle className="h-3 w-3" /> {t('recharge.statusConfirmed')}</span>;
       case 'pending':
-        return <span className="text-xs text-jinbao-blue flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> En attente</span>;
+        return <span className="text-xs text-jinbao-blue flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> {t('recharge.statusPending')}</span>;
       case 'failed':
-        return <span className="text-xs text-destructive flex items-center gap-1"><XCircle className="h-3 w-3" /> Échoué</span>;
+        return <span className="text-xs text-destructive flex items-center gap-1"><XCircle className="h-3 w-3" /> {t('recharge.statusFailed')}</span>;
       default:
         return null;
     }
@@ -326,7 +328,7 @@ const Recharge = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold text-foreground">Mon Portefeuille</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('recharge.title')}</h1>
           </div>
         </div>
       </header>
@@ -339,7 +341,7 @@ const Recharge = () => {
             <Card className="bg-gradient-to-br from-jinbao-red to-red-600 border-0 text-white">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-white/80 text-sm">Solde actuel</p>
+                  <p className="text-white/80 text-sm">{t('recharge.currentBalance')}</p>
                   <p className="text-4xl font-bold mt-1">
                     {profile?.wallet_balance?.toLocaleString() || 0} F
                   </p>
@@ -361,8 +363,8 @@ const Recharge = () => {
                         <div className="flex items-center justify-center gap-3">
                           <Loader2 className="h-6 w-6 text-jinbao-blue animate-spin" />
                           <div>
-                            <p className="font-semibold text-foreground">Paiement en cours...</p>
-                            <p className="text-sm text-muted-foreground">Confirmez sur votre téléphone</p>
+                            <p className="font-semibold text-foreground">{t('recharge.pendingPayment')}</p>
+                            <p className="text-sm text-muted-foreground">{t('recharge.confirmOnPhone')}</p>
                           </div>
                         </div>
 
@@ -373,7 +375,7 @@ const Recharge = () => {
                             onClick={() => window.open(paymentUrl, '_blank', 'noopener,noreferrer')}
                             className="mt-2"
                           >
-                            Ouvrir la page de paiement
+                            {t('recharge.openPaymentPage')}
                           </Button>
                         )}
                       </>
@@ -382,8 +384,8 @@ const Recharge = () => {
                       <>
                         <CheckCircle className="h-6 w-6 text-green-500" />
                         <div>
-                          <p className="font-semibold text-foreground">Paiement réussi !</p>
-                          <p className="text-sm text-muted-foreground">Votre solde a été mis à jour</p>
+                          <p className="font-semibold text-foreground">{t('recharge.paymentSuccess')}</p>
+                          <p className="text-sm text-muted-foreground">{t('recharge.balanceUpdated')}</p>
                         </div>
                       </>
                     )}
@@ -391,8 +393,8 @@ const Recharge = () => {
                       <>
                         <XCircle className="h-6 w-6 text-destructive" />
                         <div>
-                          <p className="font-semibold text-foreground">Paiement échoué</p>
-                          <p className="text-sm text-muted-foreground">Veuillez réessayer</p>
+                          <p className="font-semibold text-foreground">{t('recharge.paymentFailed')}</p>
+                          <p className="text-sm text-muted-foreground">{t('recharge.pleaseRetry')}</p>
                         </div>
                       </>
                     )}
@@ -404,17 +406,17 @@ const Recharge = () => {
             {/* VPN Warning */}
             <Alert className="border-amber-500 bg-amber-500/10">
               <ShieldOff className="h-4 w-4 text-amber-500" />
-              <AlertTitle className="text-amber-600 dark:text-amber-400">Important - VPN & Localisation</AlertTitle>
+              <AlertTitle className="text-amber-600 dark:text-amber-400">{t('recharge.vpnWarningTitle')}</AlertTitle>
               <AlertDescription className="text-muted-foreground text-sm">
-                Les paiements NotchPay ne fonctionnent que depuis l'Afrique Centrale et de l'Ouest. 
-                <strong className="block mt-1">Désactivez votre VPN</strong> avant d'effectuer un paiement pour éviter tout blocage.
+                {t('recharge.vpnWarningDesc')} 
+                <strong className="block mt-1">{t('recharge.disableVpn')}</strong> {t('recharge.disableVpnDesc')}
               </AlertDescription>
             </Alert>
 
             {/* Payment method */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Méthode de paiement</CardTitle>
+                <CardTitle className="text-foreground">{t('recharge.paymentMethod')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -449,17 +451,17 @@ const Recharge = () => {
             {/* Amount */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Montant à recharger</CardTitle>
+                <CardTitle className="text-foreground">{t('recharge.amountToRecharge')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Montant personnalisé
+                    {t('recharge.customAmount')}
                   </label>
                   <div className="relative">
                     <Input
                       type="number"
-                      placeholder="Entrez le montant"
+                      placeholder={t('recharge.enterAmount')}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       disabled={isProcessing}
