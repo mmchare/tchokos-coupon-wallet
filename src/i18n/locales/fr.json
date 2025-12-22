@@ -150,6 +150,18 @@
   "orders": {
     "title": "Mes commandes",
     "empty": "Aucune commande",
+    "all": "Toutes",
+    "active": "En cours",
+    "delivered": "Livrées",
+    "loadingOrders": "Chargement de vos commandes...",
+    "noActiveOrders": "Aucune commande en cours",
+    "noDeliveredOrders": "Aucune commande livrée",
+    "noOrdersYet": "Vous n'avez pas encore passé de commande",
+    "allDelivered": "Toutes vos commandes ont été livrées",
+    "activeWillAppear": "Vos commandes en cours apparaîtront ici une fois livrées",
+    "discoverProducts": "Découvrir nos produits",
+    "deliveryTime": "Délai de livraison JinBao",
+    "deliveryTimeDesc": "10-14 jours maximum pour la livraison depuis la Chine",
     "status": {
       "pending": "En attente",
       "confirmed": "Confirmée",
@@ -209,7 +221,10 @@
     "title": "Mes favoris",
     "empty": "Aucun favori",
     "addedToFavorites": "Ajouté aux favoris",
-    "removedFromFavorites": "Retiré des favoris"
+    "removedFromFavorites": "Retiré des favoris",
+    "addSomeProducts": "Ajoutez des produits à vos favoris pour les retrouver ici",
+    "discoverProducts": "Découvrir les produits",
+    "productCount": "{{count}} produit(s) dans vos favoris"
   },
   "recharge": {
     "title": "Recharger",

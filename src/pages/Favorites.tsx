@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Heart, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,7 @@ interface Product {
 
 const Favorites = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [products, setProducts] = useState<Product[]>([]);
@@ -105,7 +107,7 @@ const Favorites = () => {
             </Button>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Heart className="h-6 w-6 text-vibrant-red fill-vibrant-red" />
-              Mes Favoris
+              {t('favorites.title')}
             </h1>
           </div>
         </div>
@@ -115,21 +117,21 @@ const Favorites = () => {
         {products.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Aucun favori</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-2">{t('favorites.empty')}</h2>
             <p className="text-muted-foreground mb-6">
-              Ajoutez des produits à vos favoris pour les retrouver ici
+              {t('favorites.addSomeProducts')}
             </p>
             <Button 
               onClick={() => navigate('/')}
               className="bg-vibrant-red hover:bg-vibrant-red/90 text-white"
             >
-              Découvrir les produits
+              {t('favorites.discoverProducts')}
             </Button>
           </div>
         ) : (
           <>
             <p className="text-muted-foreground mb-4">
-              {products.length} produit{products.length > 1 ? 's' : ''} dans vos favoris
+              {t('favorites.productCount', { count: products.length })}
             </p>
             <Masonry
               breakpointCols={breakpointColumns}

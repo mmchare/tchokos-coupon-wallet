@@ -150,6 +150,18 @@
   "orders": {
     "title": "我的订单",
     "empty": "暂无订单",
+    "all": "全部",
+    "active": "进行中",
+    "delivered": "已送达",
+    "loadingOrders": "正在加载您的订单...",
+    "noActiveOrders": "暂无进行中的订单",
+    "noDeliveredOrders": "暂无已送达的订单",
+    "noOrdersYet": "您还没有下过订单",
+    "allDelivered": "您的所有订单都已送达",
+    "activeWillAppear": "您的进行中订单送达后将显示在这里",
+    "discoverProducts": "发现我们的产品",
+    "deliveryTime": "JinBao 配送时间",
+    "deliveryTimeDesc": "中国发货最多10-14天",
     "status": {
       "pending": "待处理",
       "confirmed": "已确认",
@@ -209,7 +221,10 @@
     "title": "我的收藏",
     "empty": "暂无收藏",
     "addedToFavorites": "已添加到收藏",
-    "removedFromFavorites": "已从收藏移除"
+    "removedFromFavorites": "已从收藏移除",
+    "addSomeProducts": "添加商品到收藏夹，方便以后查找",
+    "discoverProducts": "发现商品",
+    "productCount": "收藏夹中有 {{count}} 个商品"
   },
   "recharge": {
     "title": "充值",
