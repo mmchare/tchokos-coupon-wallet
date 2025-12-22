@@ -150,6 +150,18 @@
   "orders": {
     "title": "My Orders",
     "empty": "No orders",
+    "all": "All",
+    "active": "Active",
+    "delivered": "Delivered",
+    "loadingOrders": "Loading your orders...",
+    "noActiveOrders": "No active orders",
+    "noDeliveredOrders": "No delivered orders",
+    "noOrdersYet": "You haven't placed any orders yet",
+    "allDelivered": "All your orders have been delivered",
+    "activeWillAppear": "Your active orders will appear here once delivered",
+    "discoverProducts": "Discover our products",
+    "deliveryTime": "JinBao Delivery Time",
+    "deliveryTimeDesc": "10-14 days maximum for delivery from China",
     "status": {
       "pending": "Pending",
       "confirmed": "Confirmed",
@@ -209,7 +221,10 @@
     "title": "My Favorites",
     "empty": "No favorites",
     "addedToFavorites": "Added to favorites",
-    "removedFromFavorites": "Removed from favorites"
+    "removedFromFavorites": "Removed from favorites",
+    "addSomeProducts": "Add products to your favorites to find them here",
+    "discoverProducts": "Discover products",
+    "productCount": "{{count}} product(s) in your favorites"
   },
   "recharge": {
     "title": "Recharge",

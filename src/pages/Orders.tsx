@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,6 +31,7 @@ interface Order {
 
 const Orders = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +104,7 @@ const Orders = () => {
             </Button>
             <div className="flex items-center gap-2">
               <Package className="h-6 w-6 text-jinbao-red" />
-              <h1 className="text-2xl font-bold text-foreground">Mes Commandes</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t('orders.title')}</h1>
             </div>
           </div>
         </div>
@@ -121,13 +123,13 @@ const Orders = () => {
               )}
             </TabsTrigger>
             <TabsTrigger value="all" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
-              Toutes ({orders.length})
+              {t('orders.all')} ({orders.length})
             </TabsTrigger>
             <TabsTrigger value="active" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
-              En cours
+              {t('orders.active')}
             </TabsTrigger>
             <TabsTrigger value="delivered" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white">
-              Livrées
+              {t('orders.delivered')}
             </TabsTrigger>
           </TabsList>
 
@@ -144,30 +146,30 @@ const Orders = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-jinbao-red mb-4" />
-              <p className="text-muted-foreground">Chargement de vos commandes...</p>
+              <p className="text-muted-foreground">{t('orders.loadingOrders')}</p>
             </div>
           ) : activeTab === 'notifications' ? null : filteredOrders.length === 0 ? (
             <Card className="bg-card border-border">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {activeTab === 'all' ? 'Aucune commande' : 
-                   activeTab === 'active' ? 'Aucune commande en cours' : 
-                   'Aucune commande livrée'}
+                  {activeTab === 'all' ? t('orders.empty') : 
+                   activeTab === 'active' ? t('orders.noActiveOrders') : 
+                   t('orders.noDeliveredOrders')}
                 </h3>
                 <p className="text-muted-foreground text-center mb-6">
                   {activeTab === 'all' 
-                    ? "Vous n'avez pas encore passé de commande"
+                    ? t('orders.noOrdersYet')
                     : activeTab === 'active'
-                    ? "Toutes vos commandes ont été livrées"
-                    : "Vos commandes en cours apparaîtront ici une fois livrées"}
+                    ? t('orders.allDelivered')
+                    : t('orders.activeWillAppear')}
                 </p>
                 <Button
                   onClick={() => navigate('/')}
                   className="bg-jinbao-red hover:bg-jinbao-red/90 text-white"
                 >
                   <ShoppingBag className="h-4 w-4 mr-2" />
-                  Découvrir nos produits
+                  {t('orders.discoverProducts')}
                 </Button>
               </CardContent>
             </Card>
@@ -186,9 +188,9 @@ const Orders = () => {
             <div className="flex items-center gap-3">
               <Package className="h-8 w-8 text-jinbao-blue" />
               <div>
-                <p className="font-semibold text-foreground">Délai de livraison JinBao</p>
+                <p className="font-semibold text-foreground">{t('orders.deliveryTime')}</p>
                 <p className="text-sm text-muted-foreground">
-                  10-14 jours maximum pour la livraison depuis la Chine
+                  {t('orders.deliveryTimeDesc')}
                 </p>
               </div>
             </div>
