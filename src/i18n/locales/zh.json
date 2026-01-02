@@ -291,7 +291,9 @@
     "refundType": "退款",
     "statusConfirmed": "已确认",
     "statusPending": "待处理",
-    "statusFailed": "失败"
+    "statusFailed": "失败",
+    "ussdInstructions": "如果未收到通知，请拨打：",
+    "ussdNote": "在手机上拨打此代码以访问支付菜单并确认待处理的交易。"
   },
   "notifications": {
     "title": "通知",
