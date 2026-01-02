@@ -291,7 +291,9 @@
     "refundType": "Refund",
     "statusConfirmed": "Confirmed",
     "statusPending": "Pending",
-    "statusFailed": "Failed"
+    "statusFailed": "Failed",
+    "ussdInstructions": "If you don't receive a notification, dial:",
+    "ussdNote": "Dial this code on your phone to access the payment menu and confirm the pending transaction."
   },
   "notifications": {
     "title": "Notifications",

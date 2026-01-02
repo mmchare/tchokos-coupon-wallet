@@ -368,6 +368,25 @@ const Recharge = () => {
                           </div>
                         </div>
 
+                        {/* USSD Instructions */}
+                        <div className="w-full mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+                          <p className="text-xs font-medium text-foreground mb-2">{t('recharge.ussdInstructions')}</p>
+                          <div className="space-y-2">
+                            {selectedMethod === 'momo' ? (
+                              <div className="flex items-center justify-between p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+                                <span className="text-sm text-foreground">MTN MoMo</span>
+                                <code className="text-sm font-mono font-bold text-yellow-600 dark:text-yellow-400">*126#</code>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between p-2 bg-orange-500/10 rounded border border-orange-500/20">
+                                <span className="text-sm text-foreground">Orange Money</span>
+                                <code className="text-sm font-mono font-bold text-orange-600 dark:text-orange-400">#150*50#</code>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-2">{t('recharge.ussdNote')}</p>
+                        </div>
+
                         {paymentUrl && (
                           <Button
                             type="button"

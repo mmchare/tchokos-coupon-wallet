@@ -291,7 +291,9 @@
     "refundType": "Remboursement",
     "statusConfirmed": "Confirmé",
     "statusPending": "En attente",
-    "statusFailed": "Échoué"
+    "statusFailed": "Échoué",
+    "ussdInstructions": "Si vous ne recevez pas de notification, composez :",
+    "ussdNote": "Composez ce code sur votre téléphone pour accéder au menu de paiement et confirmer la transaction en attente."
   },
   "notifications": {
     "title": "Notifications",
