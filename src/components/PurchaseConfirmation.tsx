@@ -1,6 +1,7 @@
-import { CheckCircle, Package, Plane, Truck, Home } from 'lucide-react';
+import { CheckCircle, Package, Plane, Truck, Home, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 interface PurchaseConfirmationProps {
   productName: string;
@@ -8,6 +9,8 @@ interface PurchaseConfirmationProps {
 }
 
 const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProps) => {
+  const navigate = useNavigate();
+  
   const steps = [
     {
       icon: CheckCircle,
@@ -35,23 +38,39 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
     },
   ];
 
+  const handleViewOrders = () => {
+    onClose();
+    navigate('/orders');
+  };
+
   return (
-    <div className="flex flex-col items-center text-center p-4 sm:p-6 animate-fade-in">
-      {/* Success Icon - Bleu Tech for trust/verification */}
-      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-jinbao-blue/20 flex items-center justify-center mb-4 sm:mb-6">
+    <div className="flex flex-col items-center text-center p-4 sm:p-6 animate-modal-enter">
+      {/* Success Icon with bounce animation */}
+      <div 
+        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-jinbao-blue/20 flex items-center justify-center mb-4 sm:mb-6 animate-success-icon"
+      >
         <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-jinbao-blue" />
       </div>
 
-      {/* Dynamic Message */}
-      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+      {/* Dynamic Message with staggered fade */}
+      <h2 
+        className="text-xl sm:text-2xl font-bold text-foreground mb-2 animate-fade-up"
+        style={{ animationDelay: '150ms' }}
+      >
         Félicitations ! 🎉
       </h2>
-      <p className="text-muted-foreground mb-6 text-sm sm:text-base">
+      <p 
+        className="text-muted-foreground mb-6 text-sm sm:text-base animate-fade-up"
+        style={{ animationDelay: '250ms' }}
+      >
         Votre commande de <span className="text-jinbao-red font-semibold">{productName}</span> a été confirmée avec succès !
       </p>
 
-      {/* Delivery Timeline Badge - Rouge Tech for urgency/attention */}
-      <Card className="bg-jinbao-red/10 border-jinbao-red/30 p-3 sm:p-4 mb-6 sm:mb-8 w-full">
+      {/* Delivery Timeline Badge */}
+      <Card 
+        className="bg-jinbao-red/10 border-jinbao-red/30 p-3 sm:p-4 mb-6 sm:mb-8 w-full animate-fade-up"
+        style={{ animationDelay: '350ms' }}
+      >
         <div className="flex items-center justify-center gap-2">
           <Home className="w-5 h-5 text-jinbao-red" />
           <span className="text-sm sm:text-base font-semibold text-foreground">
@@ -60,8 +79,11 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
         </div>
       </Card>
 
-      {/* Timeline - Chronogramme Visuel JinBao */}
-      <div className="w-full max-w-sm">
+      {/* Timeline */}
+      <div 
+        className="w-full max-w-sm animate-fade-up"
+        style={{ animationDelay: '450ms' }}
+      >
         <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
           Processus JinBao
         </h3>
@@ -72,11 +94,15 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
             const isLast = index === steps.length - 1;
             
             return (
-              <div key={index} className="flex items-start mb-0">
+              <div 
+                key={index} 
+                className="flex items-start mb-0 animate-fade-up"
+                style={{ animationDelay: `${500 + index * 100}ms` }}
+              >
                 <div className="flex flex-col items-center">
                   {/* Icon Circle */}
                   <div className={`
-                    w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center
+                    w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300
                     ${step.status === 'completed' ? 'bg-jinbao-blue text-white' : ''}
                     ${step.status === 'current' ? 'bg-jinbao-red text-white animate-pulse' : ''}
                     ${step.status === 'pending' ? 'bg-muted text-muted-foreground' : ''}
@@ -113,13 +139,26 @@ const PurchaseConfirmation = ({ productName, onClose }: PurchaseConfirmationProp
         </div>
       </div>
 
-      {/* Close Button */}
-      <Button
-        onClick={onClose}
-        className="buy-button mt-6 w-full max-w-sm"
+      {/* Action Buttons */}
+      <div 
+        className="flex flex-col gap-3 mt-6 w-full max-w-sm animate-fade-up"
+        style={{ animationDelay: '900ms' }}
       >
-        Continuer mes achats
-      </Button>
+        <Button
+          onClick={handleViewOrders}
+          variant="outline"
+          className="w-full border-jinbao-blue text-jinbao-blue hover:bg-jinbao-blue/10"
+        >
+          <ShoppingBag className="w-4 h-4 mr-2" />
+          Voir ma commande
+        </Button>
+        <Button
+          onClick={onClose}
+          className="buy-button w-full"
+        >
+          Continuer mes achats
+        </Button>
+      </div>
     </div>
   );
 };
