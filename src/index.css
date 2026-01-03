@@ -423,3 +423,58 @@ All colors MUST be HSL.
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* Modal entrance animation - scale up + fade in */
+@keyframes modalEnter {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.9) translateY(10px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+.animate-modal-enter {
+  animation: modalEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Success icon bounce animation */
+@keyframes successIcon {
+  0% { 
+    opacity: 0; 
+    transform: scale(0); 
+  }
+  50% { 
+    transform: scale(1.2); 
+  }
+  70% { 
+    transform: scale(0.9); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+.animate-success-icon {
+  animation: successIcon 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Fade up animation for staggered content */
+@keyframes fadeUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(15px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.5s ease-out forwards;
+}
