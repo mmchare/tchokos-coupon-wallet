@@ -12,6 +12,7 @@ import { useActivityTracking } from '@/hooks/useActivityTracking';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePriceAlerts } from '@/hooks/usePriceAlerts';
 import EmojiPicker from '@/components/EmojiPicker';
+import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import SimilarProducts from '@/components/SimilarProducts';
 import AuctionBidPanel from '@/components/AuctionBidPanel';
@@ -71,6 +72,7 @@ const ProductDetail = () => {
   const [auctionBids, setAuctionBids] = useState<Record<string, Bid[]>>({});
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+  const [showPurchaseConfirmation, setShowPurchaseConfirmation] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -654,10 +656,7 @@ ${t('product.moreInfo')}`;
         onClose={() => setShowDeliveryForm(false)}
         onSubmit={(data) => {
           setShowDeliveryForm(false);
-          toast({
-            title: t('product.orderConfirmed'),
-            description: t('product.orderRegistered', { name: product.name })
-          });
+          setShowPurchaseConfirmation(true);
         }}
         total={product.isAuction ? currentMaxBid : product.price}
         items={[{
@@ -668,6 +667,18 @@ ${t('product.moreInfo')}`;
           quantity: 1
         }]}
       />
+
+      {/* Purchase Confirmation Modal */}
+      {showPurchaseConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card rounded-xl shadow-xl border border-border">
+            <PurchaseConfirmation 
+              productName={product.name}
+              onClose={() => setShowPurchaseConfirmation(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
