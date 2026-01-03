@@ -236,7 +236,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-[500px] bg-card border-border max-h-[85vh] sm:max-h-[90vh] p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-[500px] bg-card border-border max-h-[85vh] sm:max-h-[90vh] p-4 sm:p-6 overflow-x-hidden overflow-y-auto">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-foreground flex items-center gap-2 text-base sm:text-lg">
             <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-jinbao-red" />
