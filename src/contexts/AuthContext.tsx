@@ -168,71 +168,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const handlePromoCode = async (userId: string, promoCode: string) => {
     try {
-      // Find the referrer by their code
-      const { data: referralCodeData } = await supabase
-        .from('referral_codes')
-        .select('user_id')
-        .eq('code', promoCode.toUpperCase())
-        .single();
-
-      if (referralCodeData && referralCodeData.user_id !== userId) {
-        // Check if referral already exists
-        const { data: existingReferral } = await supabase
-          .from('referrals')
-          .select('id')
-          .eq('referred_id', userId)
-          .maybeSingle();
-
-        if (!existingReferral) {
-          // Create referral relationship
-          const { error: referralError } = await supabase.from('referrals').insert({
-            referrer_id: referralCodeData.user_id,
-            referred_id: userId
-          });
-
-          if (referralError) {
-            console.error('Error creating referral:', referralError);
-            return;
-          }
-
-          // Get current balance of the referred user (filleul)
-          const { data: currentProfile } = await supabase
-            .from('profiles')
-            .select('wallet_balance')
-            .eq('id', userId)
-            .single();
-
-          if (currentProfile) {
-            // Bonus filleul: 2000 FCFA immédiatement à l'inscription
-            const newBalance = (currentProfile.wallet_balance || 0) + 2000;
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ wallet_balance: newBalance })
-              .eq('id', userId);
-
-            if (updateError) {
-              console.error('Error updating referred user balance:', updateError);
-            } else {
-              console.log(`Bonus filleul: 2000 FCFA added to user ${userId}. New balance: ${newBalance}`);
-              
-              // Create transaction record for the referral bonus
-              await supabase.from('wallet_transactions').insert({
-                user_id: userId,
-                type: 'referral_bonus',
-                amount: 2000,
-                description: 'Bonus de bienvenue (code parrainage)',
-                status: 'completed'
-              });
-            }
-          }
-
-          // NOTE: Le bonus parrain (5000 FCFA) sera donné après le premier achat du filleul
-          // Cela est géré dans la edge function create-order
-
-          // Refresh profile to show new balance
-          await refreshProfile();
+      console.log('Applying referral code via edge function:', promoCode);
+      
+      // Call the edge function to apply the referral
+      const { data, error } = await supabase.functions.invoke('apply-referral', {
+        body: {
+          user_id: userId,
+          referral_code: promoCode
         }
+      });
+
+      if (error) {
+        console.error('Error calling apply-referral function:', error);
+        return;
       }
+
+      if (data?.error) {
+        console.error('Referral application failed:', data.error);
+        return;
+      }
+
+      console.log('Referral applied successfully:', data);
+      
+      // Refresh profile to show new balance
+      await refreshProfile();
     } catch (err) {
       console.error('Error handling promo code:', err);
     }
