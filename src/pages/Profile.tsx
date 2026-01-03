@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -138,6 +139,43 @@ const Profile = () => {
     }
   };
 
+  const getReferralLink = () => {
+    if (!referralCode) return '';
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/auth?ref=${referralCode}`;
+  };
+
+  const copyReferralLink = () => {
+    const link = getReferralLink();
+    if (link) {
+      navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      toast({
+        title: t('profile.linkCopied'),
+        description: t('profile.shareWithFriends'),
+      });
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
+
+  const shareReferralLink = async () => {
+    const link = getReferralLink();
+    if (link && navigator.share) {
+      try {
+        await navigator.share({
+          title: t('profile.shareTitle'),
+          text: t('profile.shareText'),
+          url: link,
+        });
+      } catch (err) {
+        // User cancelled or share failed, fallback to copy
+        copyReferralLink();
+      }
+    } else {
+      copyReferralLink();
+    }
+  };
+
   if (loading || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -190,7 +228,7 @@ const Profile = () => {
                 {t('profile.myReferralCode')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-jinbao-red tracking-widest">
@@ -209,7 +247,39 @@ const Profile = () => {
                   {copied ? t('common.copied') : t('common.copy')}
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground mt-4">
+
+              {/* Referral Link */}
+              <div className="bg-background/50 rounded-lg p-3 space-y-2">
+                <p className="text-sm font-medium text-foreground flex items-center">
+                  <Link className="h-4 w-4 mr-2 text-jinbao-blue" />
+                  {t('profile.referralLink')}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={getReferralLink()}
+                    readOnly
+                    className="bg-input border-border text-foreground text-sm flex-1"
+                  />
+                  <Button
+                    onClick={copyReferralLink}
+                    variant="outline"
+                    size="icon"
+                    className="border-jinbao-blue text-jinbao-blue hover:bg-jinbao-blue hover:text-white shrink-0"
+                  >
+                    {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    onClick={shareReferralLink}
+                    variant="default"
+                    size="icon"
+                    className="bg-jinbao-red hover:bg-jinbao-red/90 text-white shrink-0"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground">
                 {t('profile.referralBonus')} <span className="text-jinbao-red font-semibold">{t('profile.referralBonusAmount')}</span> {t('profile.referralBonusDesc')} <span className="text-jinbao-blue font-semibold">{t('profile.friendBonusAmount')}</span> {t('profile.friendBonusDesc')}
               </p>
             </CardContent>
