@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ type AuthStep = 'email' | 'profile' | 'magic-link-sent';
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, signInWithMagicLink, signUp } = useAuth();
   
   const [step, setStep] = useState<AuthStep>('email');
@@ -20,6 +21,14 @@ const Auth = () => {
   const [promoCode, setPromoCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+
+  // Pre-fill referral code from URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode && !promoCode) {
+      setPromoCode(refCode.toUpperCase());
+    }
+  }, [searchParams]);
 
   // Redirect if already logged in
   useEffect(() => {
