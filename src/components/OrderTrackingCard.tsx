@@ -87,7 +87,7 @@ const OrderTrackingCard = ({ order }: OrderTrackingCardProps) => {
     const message = encodeURIComponent(
       `Bonjour JinBao, je souhaite avoir des informations sur ma commande #${order.id.slice(0, 8).toUpperCase()}`
     );
-    window.open(`https://wa.me/237696417018?text=${message}`, '_blank');
+    window.open(`https://wa.me/237655852010?text=${message}`, '_blank');
   };
 
   // Get the product name from either product_name field or joined product
