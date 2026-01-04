@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,7 @@ const Profile = () => {
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
+  const [referralEarnings, setReferralEarnings] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   
@@ -72,6 +73,17 @@ const Profile = () => {
         .eq('referrer_id', user.id);
       
       setReferralCount(count || 0);
+
+      // Fetch referral earnings from wallet transactions
+      const { data: earningsData } = await supabase
+        .from('wallet_transactions')
+        .select('amount')
+        .eq('user_id', user.id)
+        .eq('type', 'credit')
+        .ilike('description', '%parrainage%');
+      
+      const totalEarnings = earningsData?.reduce((sum, tx) => sum + Number(tx.amount), 0) || 0;
+      setReferralEarnings(totalEarnings);
 
       // Fetch orders count
       const { count: ordersCount } = await supabase
@@ -406,6 +418,19 @@ const Profile = () => {
                     <Package className="h-8 w-8 text-jinbao-blue" />
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white/80 text-sm">{t('profile.referralEarnings')}</p>
+                    <p className="text-2xl font-bold">{referralEarnings.toLocaleString()} F</p>
+                    <p className="text-white/70 text-xs mt-1">{referralCount} {t('profile.referralCount')}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 opacity-80" />
                 </div>
               </CardContent>
             </Card>
