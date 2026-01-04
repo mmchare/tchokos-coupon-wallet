@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, ArrowRight, CheckCircle, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,12 +21,14 @@ const Auth = () => {
   const [promoCode, setPromoCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [hasReferralFromUrl, setHasReferralFromUrl] = useState(false);
 
   // Pre-fill referral code from URL
   useEffect(() => {
     const refCode = searchParams.get('ref');
-    if (refCode && !promoCode) {
+    if (refCode) {
       setPromoCode(refCode.toUpperCase());
+      setHasReferralFromUrl(true);
     }
   }, [searchParams]);
 
@@ -163,6 +165,23 @@ const Auth = () => {
             Premium Tech • Confiance • Efficacité
           </p>
         </div>
+
+        {/* Referral Bonus Banner */}
+        {hasReferralFromUrl && step !== 'magic-link-sent' && (
+          <div className="mb-4 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3 animate-fade-in">
+            <div className="bg-primary/20 p-2 rounded-full">
+              <Gift className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                🎉 Bonus de parrainage détecté !
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Créez votre compte pour recevoir <span className="text-primary font-semibold">1 000 FCFA</span> de bonus
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Step: Email Input */}
         {step === 'email' && (
