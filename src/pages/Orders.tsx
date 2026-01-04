@@ -44,30 +44,30 @@ const Orders = () => {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user) return;
-      
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          product:products(name, images)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching orders:', error);
-      } else {
-        setOrders(data || []);
-      }
-      
-      setLoading(false);
-    };
+  const fetchOrders = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        product:products(name, images)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching orders:', error);
+    } else {
+      setOrders(data || []);
+    }
+    
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchOrders();
   }, [user]);
 
@@ -176,7 +176,11 @@ const Orders = () => {
           ) : (
             <TabsContent value={activeTab} className="space-y-4 mt-0">
               {filteredOrders.map((order) => (
-                <OrderTrackingCard key={order.id} order={order} />
+                <OrderTrackingCard 
+                  key={order.id} 
+                  order={order} 
+                  onOrderCancelled={fetchOrders}
+                />
               ))}
             </TabsContent>
           )}

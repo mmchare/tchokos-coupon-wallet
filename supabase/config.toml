@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.apply-referral]
 verify_jwt = false
+
+[functions.cancel-order]
+verify_jwt = false

@@ -1,7 +1,21 @@
-import { CheckCircle, Package, Plane, Truck, Home, MessageCircle, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, Package, Plane, Truck, Home, MessageCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface OrderTrackingCardProps {
   order: {
@@ -20,9 +34,70 @@ interface OrderTrackingCardProps {
       images: string[] | null;
     } | null;
   };
+  onOrderCancelled?: () => void;
 }
 
-const OrderTrackingCard = ({ order }: OrderTrackingCardProps) => {
+const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) => {
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  // Check if order can be cancelled (within 2 hours and not shipped)
+  const canCancelOrder = () => {
+    if (order.status === 'cancelled' || order.status === 'delivered') return false;
+    if (order.logistics_step >= 3) return false;
+    
+    const orderDate = new Date(order.created_at);
+    const now = new Date();
+    const hoursDiff = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
+    
+    return hoursDiff <= 2;
+  };
+
+  // Get remaining time for cancellation
+  const getRemainingTime = () => {
+    const orderDate = new Date(order.created_at);
+    const now = new Date();
+    const minutesElapsed = (now.getTime() - orderDate.getTime()) / (1000 * 60);
+    const minutesRemaining = 120 - minutesElapsed;
+    
+    if (minutesRemaining <= 0) return null;
+    
+    const hours = Math.floor(minutesRemaining / 60);
+    const minutes = Math.floor(minutesRemaining % 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${minutes}min`;
+  };
+
+  const handleCancelOrder = async () => {
+    setIsCancelling(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('cancel-order', {
+        body: { order_id: order.id, user_id: user.id }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(`Commande annulée ! ${order.total_amount.toLocaleString()} FCFA remboursés`);
+        onOrderCancelled?.();
+      } else {
+        toast.error(data.error || 'Erreur lors de l\'annulation');
+      }
+    } catch (error: any) {
+      console.error('Cancel order error:', error);
+      toast.error(error.message || 'Erreur lors de l\'annulation');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
   const steps = [
     {
       step: 1,
@@ -192,6 +267,56 @@ const OrderTrackingCard = ({ order }: OrderTrackingCardProps) => {
             </div>
           </div>
         </div>
+
+        {/* Cancel Order Button - Only show if eligible */}
+        {canCancelOrder() && (
+          <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm">
+                <p className="font-medium text-orange-700 dark:text-orange-400">Annulation possible</p>
+                <p className="text-orange-600 dark:text-orange-500 text-xs">
+                  Temps restant : {getRemainingTime()}
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={isCancelling}
+                  >
+                    {isCancelling ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Annuler
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Annuler cette commande ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Cette action est irréversible. Le montant de {order.total_amount.toLocaleString()} FCFA 
+                      sera automatiquement remboursé sur votre portefeuille.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Non, garder</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleCancelOrder}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Oui, annuler et rembourser
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        )}
 
         {/* WhatsApp Contact */}
         <Button 
