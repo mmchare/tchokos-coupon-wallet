@@ -11,6 +11,31 @@ const convertYuanToFCFA = (yuanPrice: number): number => {
   return Math.round(yuanPrice * 85 + 2000);
 };
 
+// Clean JSON string from Mistral response
+const cleanJsonString = (str: string): string => {
+  // Remove markdown code blocks
+  let cleaned = str.replace(/```json\s*/gi, '').replace(/```\s*/gi, '');
+  
+  // Find JSON object
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return '{}';
+  
+  cleaned = jsonMatch[0];
+  
+  // Replace problematic characters in string values
+  // This handles newlines and special chars inside JSON strings
+  cleaned = cleaned.replace(/:\s*"([^"]*)"/g, (match, content) => {
+    const cleanedContent = content
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t')
+      .replace(/[\x00-\x1F\x7F]/g, ' '); // Remove control characters
+    return `: "${cleanedContent}"`;
+  });
+  
+  return cleaned;
+};
+
 // Download image and upload to Supabase Storage
 const uploadImageToStorage = async (
   supabase: any,
@@ -18,17 +43,29 @@ const uploadImageToStorage = async (
   index: number
 ): Promise<string | null> => {
   try {
-    console.log(`Downloading image ${index + 1}: ${imageUrl}`);
+    // Clean image URL
+    let cleanUrl = imageUrl.trim();
+    if (cleanUrl.startsWith('//')) {
+      cleanUrl = 'https:' + cleanUrl;
+    }
     
-    const response = await fetch(imageUrl, {
+    // Remove size suffixes for Alibaba/Taobao images to get full size
+    cleanUrl = cleanUrl.replace(/_\d+x\d+\.[a-z]+$/i, '.jpg');
+    cleanUrl = cleanUrl.replace(/\.jpg_\d+x\d+\.jpg$/i, '.jpg');
+    
+    console.log(`Downloading image ${index + 1}: ${cleanUrl}`);
+    
+    const response = await fetch(cleanUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+        'Referer': 'https://www.taobao.com/',
       },
     });
 
     if (!response.ok) {
       console.error(`Failed to fetch image: ${response.status}`);
-      return null;
+      return cleanUrl; // Return original URL as fallback
     }
 
     const contentType = response.headers.get('content-type') || 'image/jpeg';
@@ -47,7 +84,7 @@ const uploadImageToStorage = async (
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
-      return null;
+      return cleanUrl; // Return original URL as fallback
     }
 
     const { data } = supabase.storage
@@ -58,6 +95,107 @@ const uploadImageToStorage = async (
     return data.publicUrl;
   } catch (error) {
     console.error(`Error uploading image ${index}:`, error);
+    return imageUrl; // Return original URL as fallback
+  }
+};
+
+// Alternative scraping using Apify's Cheerio Scraper (more reliable)
+const scrapeWithCheerioScraper = async (url: string, apifyKey: string) => {
+  const response = await fetch(
+    `https://api.apify.com/v2/acts/apify~cheerio-scraper/run-sync-get-dataset-items?token=${apifyKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        startUrls: [{ url }],
+        pageFunction: `async function pageFunction(context) {
+          const { $, request } = context;
+          
+          // Generic selectors for Chinese e-commerce sites
+          const title = $('h1').first().text().trim() || 
+                       $('[class*="title"]').first().text().trim() || 
+                       $('title').text().trim();
+          
+          const description = $('[class*="desc"]').first().text().trim() || 
+                             $('[class*="detail"]').first().text().trim() || 
+                             $('[class*="content"]').first().text().trim();
+          
+          // Price extraction
+          let priceText = '0';
+          $('[class*="price"], [class*="Price"]').each((i, el) => {
+            const text = $(el).text();
+            const match = text.match(/[\\d.,]+/);
+            if (match && parseFloat(match[0]) > 0) {
+              priceText = match[0];
+              return false;
+            }
+          });
+          
+          // Image extraction
+          const images = [];
+          $('img').each((i, el) => {
+            let src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy-src');
+            if (src && (src.includes('alicdn') || src.includes('taobao') || src.includes('1688') || src.includes('tbcdn'))) {
+              if (src.startsWith('//')) src = 'https:' + src;
+              if (!images.includes(src) && images.length < 10) {
+                images.push(src);
+              }
+            }
+          });
+          
+          return { url: request.url, title, description, priceText, images };
+        }`,
+        proxyConfiguration: { useApifyProxy: true },
+        maxRequestsPerCrawl: 1,
+      }),
+    }
+  );
+  
+  return response;
+};
+
+// Use Firecrawl-style simple scraping as fallback
+const scrapeSimple = async (url: string) => {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+      },
+    });
+    
+    if (!response.ok) return null;
+    
+    const html = await response.text();
+    
+    // Extract data using regex patterns for Chinese e-commerce sites
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    
+    // Extract images from alicdn/taobao URLs
+    const imageMatches = html.matchAll(/(?:src|data-src)=["']([^"']*(?:alicdn|taobao|tbcdn)[^"']*\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi);
+    const images: string[] = [];
+    for (const match of imageMatches) {
+      let imgUrl = match[1];
+      if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
+      if (!images.includes(imgUrl) && images.length < 10) {
+        images.push(imgUrl);
+      }
+    }
+    
+    // Extract price
+    const priceMatch = html.match(/["']?price["']?\s*[:=]\s*["']?(\d+(?:\.\d+)?)/i) ||
+                       html.match(/¥\s*(\d+(?:\.\d+)?)/);
+    const priceText = priceMatch ? priceMatch[1] : '0';
+    
+    // Extract description
+    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+    const description = descMatch ? descMatch[1] : '';
+    
+    return { title, description, priceText, images };
+  } catch (error) {
+    console.error('Simple scraping failed:', error);
     return null;
   }
 };
@@ -79,11 +217,12 @@ serve(async (req) => {
 
     console.log('Processing URL:', url);
 
-    // Check for duplicate URL in database
+    // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Check for duplicate URL
     const { data: existingProduct } = await supabase
       .from('products')
       .select('id, name')
@@ -101,126 +240,51 @@ serve(async (req) => {
       );
     }
 
-    // Step 1: Scrape with Apify
+    let rawTitle = '';
+    let rawDescription = '';
+    let rawPriceText = '0';
+    let rawImages: string[] = [];
+
+    // Try Apify first
     const apifyKey = Deno.env.get('APIFY_API_KEY');
-    if (!apifyKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'APIFY_API_KEY not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Starting Apify scraping...');
-
-    // Use Apify's web scraper actor for Xianyu
-    const apifyResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~web-scraper/run-sync-get-dataset-items?token=' + apifyKey,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startUrls: [{ url }],
-          pageFunction: `async function pageFunction(context) {
-            const { page, request } = context;
-            await page.waitForTimeout(3000);
-            
-            // Extract product data from Xianyu/Taobao/1688
-            const title = await page.evaluate(() => {
-              const selectors = [
-                'h1', '.title', '[class*="title"]', '[class*="Title"]',
-                '.product-title', '.item-title', '.goods-title'
-              ];
-              for (const sel of selectors) {
-                const el = document.querySelector(sel);
-                if (el && el.textContent.trim()) return el.textContent.trim();
-              }
-              return document.title || '';
-            });
-            
-            const description = await page.evaluate(() => {
-              const selectors = [
-                '.description', '[class*="desc"]', '[class*="Desc"]',
-                '.detail', '[class*="detail"]', '.content'
-              ];
-              for (const sel of selectors) {
-                const el = document.querySelector(sel);
-                if (el && el.textContent.trim()) return el.textContent.trim();
-              }
-              return '';
-            });
-            
-            const priceText = await page.evaluate(() => {
-              const selectors = [
-                '.price', '[class*="price"]', '[class*="Price"]',
-                '.money', '[class*="amount"]'
-              ];
-              for (const sel of selectors) {
-                const el = document.querySelector(sel);
-                if (el && el.textContent) {
-                  const match = el.textContent.match(/[\\d.,]+/);
-                  if (match) return match[0];
-                }
-              }
-              return '0';
-            });
-            
-            const images = await page.evaluate(() => {
-              const imgs = [];
-              const imgElements = document.querySelectorAll('img[src*="alicdn"], img[src*="taobao"], img[src*="1688"], img[src*="xianyu"], .gallery img, .slider img, [class*="image"] img, [class*="gallery"] img');
-              imgElements.forEach(img => {
-                let src = img.src || img.dataset.src || img.getAttribute('data-lazy-src');
-                if (src && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
-                  if (src.startsWith('//')) src = 'https:' + src;
-                  if (!imgs.includes(src) && imgs.length < 10) imgs.push(src);
-                }
-              });
-              return imgs;
-            });
-            
-            return {
-              url: request.url,
-              title,
-              description,
-              priceText,
-              images
-            };
-          }`,
-          proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
-          maxRequestsPerCrawl: 1,
-        }),
+    
+    if (apifyKey) {
+      console.log('Starting Apify scraping...');
+      
+      try {
+        const apifyResponse = await scrapeWithCheerioScraper(url, apifyKey);
+        
+        if (apifyResponse.ok) {
+          const scrapedData = await apifyResponse.json();
+          console.log('Apify scraped data:', JSON.stringify(scrapedData, null, 2));
+          
+          if (scrapedData && scrapedData.length > 0 && !scrapedData[0]['#error']) {
+            const item = scrapedData[0];
+            rawTitle = item.title || '';
+            rawDescription = item.description || '';
+            rawPriceText = item.priceText || '0';
+            rawImages = item.images || [];
+          }
+        }
+      } catch (apifyError) {
+        console.error('Apify scraping failed:', apifyError);
       }
-    );
-
-    if (!apifyResponse.ok) {
-      const errorText = await apifyResponse.text();
-      console.error('Apify error:', errorText);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Erreur de récupération : veuillez vérifier le lien ou remplir manuellement' 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    const scrapedData = await apifyResponse.json();
-    console.log('Scraped data:', JSON.stringify(scrapedData, null, 2));
-
-    if (!scrapedData || scrapedData.length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Aucune donnée extraite. Veuillez remplir manuellement.' 
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Fallback to simple scraping if Apify failed or returned no data
+    if (!rawTitle && !rawImages.length) {
+      console.log('Trying simple scraping fallback...');
+      const simpleData = await scrapeSimple(url);
+      
+      if (simpleData) {
+        rawTitle = simpleData.title || rawTitle;
+        rawDescription = simpleData.description || rawDescription;
+        rawPriceText = simpleData.priceText || rawPriceText;
+        rawImages = simpleData.images.length > 0 ? simpleData.images : rawImages;
+      }
     }
 
-    const item = scrapedData[0];
-    const rawTitle = item.title || '';
-    const rawDescription = item.description || '';
-    const rawPriceText = item.priceText || '0';
-    const rawImages = item.images || [];
+    console.log('Final scraped data:', { rawTitle, rawDescription, rawPriceText, imageCount: rawImages.length });
 
     // Parse price (Yuan)
     const priceYuan = parseFloat(rawPriceText.replace(/[^\d.]/g, '')) || 0;
@@ -228,40 +292,16 @@ serve(async (req) => {
 
     console.log(`Price conversion: ${priceYuan} Yuan -> ${priceFCFA} FCFA`);
 
-    // Step 2: Translate and rewrite with Mistral AI
+    // Process with Mistral AI
     const mistralKey = Deno.env.get('MISTRAL_API_KEY');
-    if (!mistralKey) {
-      // Return raw data without AI processing
-      console.log('No Mistral API key, returning raw data');
-      
-      // Upload images to Supabase Storage
-      const uploadedImages: string[] = [];
-      for (let i = 0; i < Math.min(rawImages.length, 5); i++) {
-        const uploadedUrl = await uploadImageToStorage(supabase, rawImages[i], i);
-        if (uploadedUrl) uploadedImages.push(uploadedUrl);
-      }
+    let processedTitle = rawTitle;
+    let processedDescription = rawDescription;
+    let suggestedCategory = '';
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: {
-            name: rawTitle,
-            description: rawDescription,
-            price: priceFCFA,
-            original_price: Math.round(priceFCFA * 1.2),
-            images: uploadedImages,
-            source_link: url,
-            category: '',
-          },
-          ai_processed: false,
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (mistralKey && (rawTitle || rawDescription)) {
+      console.log('Processing with Mistral AI...');
 
-    console.log('Processing with Mistral AI...');
-
-    const mistralPrompt = `Tu es un expert en e-commerce africain. Analyse ce produit chinois et crée une fiche produit professionnelle en français pour le marché africain/camerounais.
+      const mistralPrompt = `Tu es un expert en e-commerce africain. Analyse ce produit chinois et crée une fiche produit professionnelle en français pour le marché africain/camerounais.
 
 DONNÉES BRUTES:
 - Titre: ${rawTitle}
@@ -269,64 +309,57 @@ DONNÉES BRUTES:
 - Prix original: ${priceYuan} Yuan (${priceFCFA} FCFA après conversion)
 
 INSTRUCTIONS:
-1. Traduis le titre du chinois vers le français de manière claire et commerciale
-2. Réécris la description pour qu'elle soit:
-   - Professionnelle et rassurante
-   - Structurée avec des points clés
-   - Adaptée au marché africain
-   - Avec un ton tech/moderne
-3. Suggère une catégorie parmi: Électronique, Mode & Vêtements, Maison & Jardin, Beauté & Santé, Sport & Loisirs, Jouets & Enfants, Accessoires, Sacs & Bagages, Montres & Bijoux, Auto & Moto
+1. Traduis le titre du chinois vers le français de manière claire et commerciale (max 100 caractères)
+2. Réécris la description en français professionnel (max 500 caractères, sans emojis ni caractères spéciaux)
+3. Suggère une catégorie parmi: Électronique, Mode, Maison, Beauté, Sport, Jouets, Accessoires, Sacs, Montres, Auto
 
-Réponds UNIQUEMENT en JSON valide avec ce format exact:
-{
-  "title": "Titre traduit et optimisé",
-  "description": "Description reformulée professionnelle avec points clés",
-  "category": "Catégorie suggérée"
-}`;
-
-    const mistralResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${mistralKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [
-          { role: 'user', content: mistralPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
-
-    let processedTitle = rawTitle;
-    let processedDescription = rawDescription;
-    let suggestedCategory = '';
-
-    if (mistralResponse.ok) {
-      const mistralData = await mistralResponse.json();
-      const aiContent = mistralData.choices?.[0]?.message?.content || '';
-      
-      console.log('Mistral response:', aiContent);
+IMPORTANT: Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans caractères de contrôle, sans sauts de ligne dans les valeurs:
+{"title": "titre traduit", "description": "description courte sans saut de ligne", "category": "catégorie"}`;
 
       try {
-        // Extract JSON from response
-        const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          processedTitle = parsed.title || rawTitle;
-          processedDescription = parsed.description || rawDescription;
-          suggestedCategory = parsed.category || '';
+        const mistralResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${mistralKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'mistral-large-latest',
+            messages: [{ role: 'user', content: mistralPrompt }],
+            temperature: 0.3, // Lower temperature for more consistent JSON
+            max_tokens: 500,
+          }),
+        });
+
+        if (mistralResponse.ok) {
+          const mistralData = await mistralResponse.json();
+          const aiContent = mistralData.choices?.[0]?.message?.content || '';
+          
+          console.log('Mistral raw response:', aiContent);
+
+          try {
+            const cleanedJson = cleanJsonString(aiContent);
+            console.log('Cleaned JSON:', cleanedJson);
+            
+            const parsed = JSON.parse(cleanedJson);
+            processedTitle = parsed.title || rawTitle;
+            processedDescription = parsed.description || rawDescription;
+            suggestedCategory = parsed.category || '';
+            
+            console.log('Mistral parsed successfully');
+          } catch (parseError) {
+            console.error('Error parsing Mistral response:', parseError);
+            // Keep raw values
+          }
+        } else {
+          console.error('Mistral API error:', await mistralResponse.text());
         }
-      } catch (parseError) {
-        console.error('Error parsing Mistral response:', parseError);
+      } catch (mistralError) {
+        console.error('Mistral processing failed:', mistralError);
       }
-    } else {
-      console.error('Mistral API error:', await mistralResponse.text());
     }
 
-    // Step 3: Upload images to Supabase Storage
+    // Upload images to Supabase Storage
     console.log('Uploading images to Supabase Storage...');
     const uploadedImages: string[] = [];
     
@@ -339,23 +372,35 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact:
 
     console.log(`Uploaded ${uploadedImages.length} images`);
 
+    // If still no data, return error with helpful message
+    if (!processedTitle && !processedDescription && uploadedImages.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Impossible de récupérer les données. Le site peut être protégé. Veuillez remplir manuellement.',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          name: processedTitle,
-          description: processedDescription,
+          name: processedTitle || 'Nouveau produit importé',
+          description: processedDescription || 'Description à compléter',
           price: priceFCFA,
-          original_price: Math.round(priceFCFA * 1.2),
+          original_price: priceFCFA > 2000 ? Math.round(priceFCFA * 1.2) : priceFCFA + 3000,
           images: uploadedImages,
           source_link: url,
           category: suggestedCategory,
         },
-        ai_processed: true,
+        ai_processed: !!mistralKey,
         raw: {
           title: rawTitle,
           description: rawDescription,
           priceYuan,
+          imageCount: rawImages.length,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
