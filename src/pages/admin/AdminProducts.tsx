@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
   'Électronique',
@@ -57,6 +57,11 @@ const AdminProducts = () => {
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Magic Import state
+  const [magicImportMode, setMagicImportMode] = useState(false);
+  const [magicImportUrl, setMagicImportUrl] = useState('');
+  const [isMagicImporting, setIsMagicImporting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -99,6 +104,8 @@ const AdminProducts = () => {
     setEditingProduct(null);
     setShowNewCategoryInput(false);
     setNewCategoryName('');
+    setMagicImportMode(false);
+    setMagicImportUrl('');
     setFormData({
       name: '',
       price: '',
@@ -114,6 +121,77 @@ const AdminProducts = () => {
       source_link: ''
     });
     setIsDialogOpen(true);
+  };
+
+  // Magic Import function
+  const handleMagicImport = async () => {
+    if (!magicImportUrl.trim()) {
+      toast({ title: "Erreur", description: "Veuillez entrer une URL", variant: "destructive" });
+      return;
+    }
+
+    // Validate URL format
+    const urlPattern = /^https?:\/\/.+/i;
+    if (!urlPattern.test(magicImportUrl)) {
+      toast({ title: "Erreur", description: "URL invalide. Utilisez un lien complet (https://...)", variant: "destructive" });
+      return;
+    }
+
+    setIsMagicImporting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('magic-import', {
+        body: { url: magicImportUrl.trim() }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.success) {
+        toast({ 
+          title: data.duplicate ? "Produit existant" : "Erreur", 
+          description: data.error, 
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Fill form with imported data
+      const importedData = data.data;
+      setFormData({
+        name: importedData.name || '',
+        price: importedData.price?.toString() || '',
+        original_price: importedData.original_price?.toString() || '',
+        description: importedData.description || '',
+        category: importedData.category || '',
+        stock_available: '1',
+        is_verified: true,
+        is_auction: false,
+        auction_end_date: '',
+        images: importedData.images || [],
+        video_url: '',
+        source_link: importedData.source_link || magicImportUrl
+      });
+
+      setMagicImportMode(false);
+      toast({ 
+        title: "✨ Import réussi!", 
+        description: data.ai_processed 
+          ? "Produit analysé et traduit par l'IA" 
+          : "Produit importé (traduction manuelle requise)"
+      });
+
+    } catch (error) {
+      console.error('Magic import error:', error);
+      toast({ 
+        title: "Erreur d'import", 
+        description: error instanceof Error ? error.message : "Erreur inconnue. Veuillez remplir manuellement.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsMagicImporting(false);
+    }
   };
 
   const handleAddNewCategory = () => {
@@ -452,10 +530,75 @@ const AdminProducts = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
               {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
+              {!editingProduct && (
+                <span className="ml-auto">
+                  <Button
+                    type="button"
+                    variant={magicImportMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setMagicImportMode(!magicImportMode)}
+                    className={magicImportMode ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" : ""}
+                  >
+                    <Wand2 className="h-4 w-4 mr-1" />
+                    Magic Import
+                  </Button>
+                </span>
+              )}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Magic Import Section */}
+          {!editingProduct && magicImportMode && (
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2 text-purple-400">
+                <Sparkles className="h-5 w-5" />
+                <h3 className="font-semibold">Magic Import - Xianyu/Taobao/1688</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Collez l'URL du produit chinois. L'IA va extraire, traduire et créer automatiquement la fiche produit.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={magicImportUrl}
+                  onChange={(e) => setMagicImportUrl(e.target.value)}
+                  placeholder="https://m.tb.cn/... ou https://www.xianyu.com/..."
+                  className="flex-1 border-purple-500/50 focus:border-purple-500"
+                  disabled={isMagicImporting}
+                />
+                <Button
+                  type="button"
+                  onClick={handleMagicImport}
+                  disabled={isMagicImporting || !magicImportUrl.trim()}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                  {isMagicImporting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyse...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Générer
+                    </>
+                  )}
+                </Button>
+              </div>
+              {isMagicImporting && (
+                <div className="text-center py-4">
+                  <div className="flex items-center justify-center gap-2 text-purple-400">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Extraction et traduction en cours...</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Scraping du site • Traduction IA • Upload des images
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
