@@ -146,7 +146,32 @@ serve(async (req) => {
 
     if (notifError) {
       console.error('Error creating notification:', notifError);
-      // Non-blocking error
+    }
+
+    // Create notification for ALL admin users
+    const { data: adminUsers } = await supabase
+      .from('admin_users')
+      .select('user_id');
+
+    if (adminUsers && adminUsers.length > 0) {
+      const adminNotifications = adminUsers
+        .filter(admin => admin.user_id)
+        .map(admin => ({
+          user_id: admin.user_id!,
+          message_type: 'ADMIN_ANNULATION',
+          message_body: `⚠️ Commande #${order_id.slice(0, 8).toUpperCase()} annulée. Montant remboursé: ${order.total_amount.toLocaleString()} FCFA. Produit: ${order.product_name || 'N/A'}`,
+          order_id: order_id
+        }));
+
+      if (adminNotifications.length > 0) {
+        const { error: adminNotifError } = await supabase
+          .from('notifications')
+          .insert(adminNotifications);
+
+        if (adminNotifError) {
+          console.error('Error creating admin notifications:', adminNotifError);
+        }
+      }
     }
 
     console.log(`Order ${order_id} cancelled successfully. Refunded ${order.total_amount} FCFA`);
