@@ -309,6 +309,34 @@ serve(async (req: Request) => {
       }
     }
 
+    // Create notification for ALL admin users about new order
+    const { data: adminUsers } = await supabase
+      .from('admin_users')
+      .select('user_id');
+
+    if (adminUsers && adminUsers.length > 0) {
+      const adminNotifications = adminUsers
+        .filter(admin => admin.user_id)
+        .map(admin => ({
+          user_id: admin.user_id!,
+          message_type: 'ADMIN_NOUVELLE_COMMANDE',
+          message_body: `🛒 Nouvelle commande #${order.id.slice(0, 8).toUpperCase()}! Montant: ${total_amount.toLocaleString()} FCFA. Produit: ${productName}. Ville: ${city}`,
+          order_id: order.id
+        }));
+
+      if (adminNotifications.length > 0) {
+        const { error: adminNotifError } = await supabase
+          .from('notifications')
+          .insert(adminNotifications);
+
+        if (adminNotifError) {
+          console.error('Error creating admin notifications:', adminNotifError);
+        } else {
+          console.log(`Admin notifications sent to ${adminNotifications.length} admins`);
+        }
+      }
+    }
+
     console.log('Order completed successfully:', { order_id: order.id, new_balance: newBalance });
 
     return new Response(

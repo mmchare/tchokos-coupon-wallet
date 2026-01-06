@@ -1,11 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, ShoppingCart, Users, DollarSign, Gavel, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Gavel, TrendingUp, Clock, AlertTriangle, Bell, CheckCheck, XCircle, ShoppingBag } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { format, subDays, subMonths, differenceInDays } from 'date-fns';
+import { format, subDays, subMonths, differenceInDays, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+interface AdminNotification {
+  id: string;
+  message_type: string;
+  message_body: string;
+  is_read: boolean;
+  created_at: string;
+  order_id: string | null;
+}
 
 interface Stats {
   totalProducts: number;
@@ -42,6 +54,84 @@ const AdminDashboard = () => {
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [revenuePeriod, setRevenuePeriod] = useState('30');
+  const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch admin notifications
+  const fetchAdminNotifications = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('message_type', ['ADMIN_NOUVELLE_COMMANDE', 'ADMIN_ANNULATION'])
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (!error && data) {
+      setAdminNotifications(data);
+      setUnreadCount(data.filter(n => !n.is_read).length);
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+
+    setAdminNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+
+  // Mark all as read
+  const markAllAsRead = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .in('message_type', ['ADMIN_NOUVELLE_COMMANDE', 'ADMIN_ANNULATION'])
+      .eq('is_read', false);
+
+    setAdminNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+  };
+
+  // Real-time subscription for new notifications
+  useEffect(() => {
+    fetchAdminNotifications();
+
+    const channel = supabase
+      .channel('admin-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications'
+        },
+        (payload) => {
+          const newNotif = payload.new as AdminNotification;
+          if (newNotif.message_type === 'ADMIN_NOUVELLE_COMMANDE' || newNotif.message_type === 'ADMIN_ANNULATION') {
+            setAdminNotifications(prev => [newNotif, ...prev.slice(0, 19)]);
+            setUnreadCount(prev => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -197,12 +287,75 @@ const AdminDashboard = () => {
 
   const isDeliveryDelayed = stats.avgDeliveryDays > 14;
 
+  const getNotificationIcon = (type: string) => {
+    if (type === 'ADMIN_NOUVELLE_COMMANDE') return <ShoppingBag className="h-5 w-5 text-green-500" />;
+    if (type === 'ADMIN_ANNULATION') return <XCircle className="h-5 w-5 text-destructive" />;
+    return <Bell className="h-5 w-5" />;
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Tableau de bord</h1>
-        <p className="text-muted-foreground">Vue d'ensemble de JinBao Smart Market</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Tableau de bord</h1>
+          <p className="text-muted-foreground">Vue d'ensemble de JinBao Smart Market</p>
+        </div>
+        {unreadCount > 0 && (
+          <Badge variant="destructive" className="text-lg px-3 py-1">
+            <Bell className="h-4 w-4 mr-1" />
+            {unreadCount} nouvelle{unreadCount > 1 ? 's' : ''} notification{unreadCount > 1 ? 's' : ''}
+          </Badge>
+        )}
       </div>
+
+      {/* Admin Notifications Panel */}
+      {adminNotifications.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notifications Commandes
+              {unreadCount > 0 && (
+                <Badge variant="destructive">{unreadCount}</Badge>
+              )}
+            </CardTitle>
+            {unreadCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                <CheckCheck className="h-4 w-4 mr-1" />
+                Tout marquer lu
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-48">
+              <div className="space-y-2">
+                {adminNotifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                      notif.is_read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/20'
+                    }`}
+                    onClick={() => !notif.is_read && markAsRead(notif.id)}
+                  >
+                    {getNotificationIcon(notif.message_type)}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm ${notif.is_read ? 'text-muted-foreground' : 'text-foreground font-medium'}`}>
+                        {notif.message_body}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: fr })}
+                      </p>
+                    </div>
+                    {!notif.is_read && (
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
