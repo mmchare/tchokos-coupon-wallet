@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Star, Plus, Gavel } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Star, Plus, Gavel } from "lucide-react";
 
 interface ProductCardProps {
   id: string;
@@ -15,29 +15,31 @@ interface ProductCardProps {
   onAddToCoupon: (productId: string) => void;
 }
 
-const ProductCard = ({ 
-  id, 
-  image, 
-  name, 
-  price, 
-  originalPrice, 
-  category, 
+const ProductCard = ({
+  id,
+  image,
+  name,
+  price,
+  originalPrice,
+  category,
   rating,
   isAuction = false,
-  onAddToCoupon 
+  onAddToCoupon,
 }: ProductCardProps) => {
   const navigate = useNavigate();
-  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const discount = originalPrice
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
 
   return (
     <div className="product-card group animate-fade-in">
       {/* Image */}
-      <div 
+      <div
         className="relative overflow-hidden rounded-lg mb-3 bg-muted cursor-pointer"
         onClick={() => navigate(`/product/${id}`)}
       >
-        <img 
-          src={image} 
+        <img
+          src={image}
           alt={name}
           className="w-full h-32 sm:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -46,10 +48,13 @@ const ProductCard = ({
             -{discount}%
           </Badge>
         )}
-        <Badge variant="secondary" className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-black/80 text-white text-xs">
+        <Badge
+          variant="secondary"
+          className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-black/80 text-white text-xs"
+        >
           {category}
         </Badge>
-        
+
         {/* Auction Badge */}
         {isAuction && (
           <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 right-1 sm:right-2">
@@ -63,14 +68,18 @@ const ProductCard = ({
 
       {/* Product Info */}
       <div className="space-y-2 sm:space-y-3 px-1">
-        <div 
+        <div
           className="cursor-pointer"
           onClick={() => navigate(`/product/${id}`)}
         >
-          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight hover:text-accent transition-colors">{name}</h3>
+          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight hover:text-accent transition-colors">
+            {name}
+          </h3>
           <div className="flex items-center space-x-1 mt-1">
             <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs sm:text-sm text-muted-foreground">{rating}</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">
+              {Number(rating).toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -94,7 +103,7 @@ const ProductCard = ({
 
         {/* Action Button - Different for auction vs regular products */}
         {isAuction ? (
-          <Button 
+          <Button
             onClick={() => navigate(`/product/${id}`)}
             className="bg-jinbao-red hover:bg-jinbao-red/90 text-white w-full text-xs sm:text-sm py-2 sm:py-3"
           >
@@ -102,7 +111,7 @@ const ProductCard = ({
             <span className="hidden sm:inline">Voir l'</span>Enchère
           </Button>
         ) : (
-          <Button 
+          <Button
             onClick={() => onAddToCoupon(id)}
             className="coupon-button w-full text-xs sm:text-sm py-2 sm:py-3"
           >
