@@ -327,5 +327,11 @@
   "splash": {
     "tagline": "Smart Market",
     "subtitle": "Premium Tech • Trust • Efficiency"
+  },
+  "offline": {
+    "noConnection": "Offline mode",
+    "cachedProducts": "{{count}} product(s) available",
+    "retry": "Retry",
+    "viewingCached": "Viewing cached products"
   }
 }

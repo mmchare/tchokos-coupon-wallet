@@ -1,6 +1,7 @@
 /**
  * Home page - JinBao Smart Market
  * Clean, unified product grid with invisible AI-powered personalization
+ * Supports offline mode with cached products
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -14,6 +15,7 @@ import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import OfflineIndicator from '@/components/OfflineIndicator';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -22,6 +24,7 @@ import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
+import { useOfflineProducts } from '@/hooks/useOfflineProducts';
 
 
 interface CouponItem {
@@ -38,6 +41,7 @@ const Home = () => {
   const { products, isLoading } = useSmartProducts();
   const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
   const { history, addSearch, deleteSearch, clearHistory } = useSearchHistory();
+  const { offlineProducts, isOnline, cacheProducts } = useOfflineProducts();
   
   const [activeCategory, setActiveCategory] = useState('all');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -103,25 +107,53 @@ const Home = () => {
     setShowSearchSuggestions(false);
   };
 
-  // Products to display - AI results or filtered products
-  const displayProducts = hasResults && useAIMode 
-    ? searchResults!.map(p => ({
+  // Cache products when loaded (for offline access)
+  useEffect(() => {
+    if (products.length > 0 && isOnline) {
+      const productsToCache = products.slice(0, 20).map(p => ({
         id: p.id,
         name: p.name,
         price: p.price,
-        originalPrice: p.original_price,
+        originalPrice: p.originalPrice,
+        image: p.image,
+        category: p.category,
+        rating: p.rating,
+        isAuction: p.isAuction,
+      }));
+      cacheProducts(productsToCache);
+    }
+  }, [products, isOnline, cacheProducts]);
+
+  // Products to display - AI results, filtered products, or offline cache
+  const displayProducts = !isOnline && products.length === 0
+    ? offlineProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        originalPrice: p.originalPrice,
         category: p.category || 'Autres',
-        rating: 4.5,
-        image: p.images?.[0] || '/placeholder.svg',
-        isAuction: p.is_auction || false,
+        rating: p.rating,
+        image: p.image,
+        isAuction: p.isAuction || false,
       }))
-    : products.filter(product => {
-        const matchesCategory = activeCategory === 'all' || 
-          (activeCategory === 'auctions' ? product.isAuction === true : product.category === activeCategory);
-        const matchesSearch = searchQuery === '' || 
-          product.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-      });
+    : hasResults && useAIMode 
+      ? searchResults!.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          originalPrice: p.original_price,
+          category: p.category || 'Autres',
+          rating: 4.5,
+          image: p.images?.[0] || '/placeholder.svg',
+          isAuction: p.is_auction || false,
+        }))
+      : products.filter(product => {
+          const matchesCategory = activeCategory === 'all' || 
+            (activeCategory === 'auctions' ? product.isAuction === true : product.category === activeCategory);
+          const matchesSearch = searchQuery === '' || 
+            product.name.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchesCategory && matchesSearch;
+        });
 
   // Paginated products for infinite scroll
   const visibleProducts = displayProducts.slice(0, displayCount);
@@ -192,9 +224,12 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Offline Indicator */}
+      <OfflineIndicator isOnline={isOnline} cachedProductsCount={offlineProducts.length} />
+      
       <Header />
 
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <main className={`container mx-auto px-3 sm:px-4 py-4 sm:py-6 ${!isOnline ? 'pt-16' : ''}`}>
         {/* Hero Section - Compact */}
         <section className="text-center mb-6 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">

@@ -327,5 +327,11 @@
   "splash": {
     "tagline": "智能市场",
     "subtitle": "优质科技 • 信任 • 高效"
+  },
+  "offline": {
+    "noConnection": "离线模式",
+    "cachedProducts": "{{count}} 个商品可用",
+    "retry": "重试",
+    "viewingCached": "查看缓存商品"
   }
 }
