@@ -36,10 +36,12 @@ interface Order {
 }
 
 const LOGISTICS_STEPS = [
-  { step: 1, label: 'Commande confirmée' },
-  { step: 2, label: 'Préparation en Chine' },
-  { step: 3, label: 'Expédition internationale' },
-  { step: 4, label: 'Livraison locale' },
+  { step: 0, label: 'Annulée', status: 'cancelled', color: 'bg-red-500/20 text-red-500' },
+  { step: 1, label: 'Commande confirmée', status: 'confirmed', color: 'bg-blue-500/20 text-blue-500' },
+  { step: 2, label: 'Préparation en Chine', status: 'preparing', color: 'bg-yellow-500/20 text-yellow-500' },
+  { step: 3, label: 'Expédition internationale', status: 'shipping', color: 'bg-orange-500/20 text-orange-500' },
+  { step: 4, label: 'Livraison locale', status: 'delivering', color: 'bg-purple-500/20 text-purple-500' },
+  { step: 5, label: 'Livrée', status: 'delivered', color: 'bg-green-500/20 text-green-500' },
 ];
 
 const AdminOrders = () => {
@@ -72,9 +74,15 @@ const AdminOrders = () => {
   }, []);
 
   const updateOrderStep = async (orderId: string, newStep: number) => {
+    const stepInfo = LOGISTICS_STEPS.find(s => s.step === newStep);
+    const newStatus = stepInfo?.status || 'confirmed';
+    
     const { error } = await supabase
       .from('orders')
-      .update({ logistics_step: newStep })
+      .update({ 
+        logistics_step: newStep,
+        status: newStatus 
+      })
       .eq('id', orderId);
 
     if (error) {
@@ -87,7 +95,7 @@ const AdminOrders = () => {
       p_action: 'UPDATE_ORDER_STATUS',
       p_target_type: 'order',
       p_target_id: orderId,
-      p_details: { new_step: newStep, step_label: LOGISTICS_STEPS.find(s => s.step === newStep)?.label }
+      p_details: { new_step: newStep, new_status: newStatus, step_label: stepInfo?.label }
     });
 
     toast({ title: "Succès", description: "Statut mis à jour" });
@@ -100,17 +108,23 @@ const AdminOrders = () => {
       return;
     }
 
+    const stepInfo = LOGISTICS_STEPS.find(s => s.step === newStep);
+    const newStatus = stepInfo?.status || 'confirmed';
+
     for (const orderId of selectedOrders) {
       await supabase
         .from('orders')
-        .update({ logistics_step: newStep })
+        .update({ 
+          logistics_step: newStep,
+          status: newStatus 
+        })
         .eq('id', orderId);
 
       await supabase.rpc('log_admin_action', {
         p_action: 'BATCH_UPDATE_ORDER',
         p_target_type: 'order',
         p_target_id: orderId,
-        p_details: { new_step: newStep, batch_size: selectedOrders.length }
+        p_details: { new_step: newStep, new_status: newStatus, batch_size: selectedOrders.length }
       });
     }
 
@@ -304,13 +318,14 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.logistics_step === 4 
-                          ? 'bg-green-500/20 text-green-500' 
-                          : 'bg-yellow-500/20 text-yellow-500'
-                      }`}>
-                        {LOGISTICS_STEPS.find(s => s.step === order.logistics_step)?.label}
-                      </span>
+                      {(() => {
+                        const stepInfo = LOGISTICS_STEPS.find(s => s.step === order.logistics_step);
+                        return (
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${stepInfo?.color || 'bg-gray-500/20 text-gray-500'}`}>
+                            {stepInfo?.label || order.status}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <Select
