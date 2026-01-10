@@ -35,7 +35,14 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
-      navigate('/');
+      // Check if there's a redirect path stored
+      const redirectPath = sessionStorage.getItem('redirectAfterAuth');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectPath);
+      } else {
+        navigate('/');
+      }
     }
   }, [user, loading, navigate]);
 

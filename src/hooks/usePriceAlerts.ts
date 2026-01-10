@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +17,7 @@ interface PriceAlert {
 export function usePriceAlerts() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,11 +49,15 @@ export function usePriceAlerts() {
 
   const toggleAlert = useCallback(async (productId: string, currentPrice: number, targetPrice?: number) => {
     if (!user) {
+      // Store current path for redirect after login
+      const currentPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem('redirectAfterAuth', currentPath);
+      
       toast({
         title: "Connexion requise",
-        description: "Veuillez vous connecter pour activer les alertes de prix",
-        variant: "destructive"
+        description: "Connectez-vous pour activer les alertes de prix"
       });
+      navigate('/auth');
       return;
     }
 

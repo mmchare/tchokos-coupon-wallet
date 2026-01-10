@@ -40,6 +40,7 @@ const Orders = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
+      sessionStorage.setItem('redirectAfterAuth', '/orders');
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);

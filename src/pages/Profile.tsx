@@ -35,6 +35,7 @@ const Profile = () => {
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
+      sessionStorage.setItem('redirectAfterAuth', '/profile');
       navigate('/auth');
     }
   }, [user, loading, navigate]);
