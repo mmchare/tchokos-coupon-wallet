@@ -31,6 +31,7 @@ const Favorites = () => {
   // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
+      sessionStorage.setItem('redirectAfterAuth', '/favorites');
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);

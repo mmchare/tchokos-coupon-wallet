@@ -8,10 +8,13 @@
  * Lignes 13-16: Sauvegarder dans sessionStorage quand le splash est terminé
  *   - Empêche le splash de se réafficher lors de la navigation avec le bouton retour
  *   - Le splash ne se réaffichera qu'après fermeture complète de l'onglet
+ * 
+ * MODIFICATION: Accès public aux produits sans connexion (style Xianyu)
+ *   - Les utilisateurs peuvent naviguer et voir les produits sans être connectés
+ *   - La connexion est requise uniquement pour : achat, favoris, panier, profil
  */
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import SplashScreen from '@/components/SplashScreen';
 import Home from './Home';
 
@@ -20,25 +23,18 @@ const Index = () => {
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     return !hasSeenSplash;
   });
-  const navigate = useNavigate();
 
   const handleSplashComplete = () => {
     sessionStorage.setItem('hasSeenSplash', 'true');
     setShowSplash(false);
   };
 
-  // In a real app, you would check authentication status here
-  const isAuthenticated = true; // For demo purposes
-
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
-  if (!isAuthenticated) {
-    navigate('/auth');
-    return null;
-  }
-
+  // Allow access to Home without authentication (like Xianyu)
+  // Authentication is required only for specific actions (purchase, favorites, etc.)
   return <Home />;
 };
 
