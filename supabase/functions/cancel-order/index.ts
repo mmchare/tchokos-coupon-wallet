@@ -124,8 +124,9 @@ serve(async (req) => {
       .insert({
         user_id: user_id,
         amount: order.total_amount,
-        type: 'credit',
+        type: 'recharge',
         description: `Remboursement commande #${order_id.slice(0, 8).toUpperCase()}`,
+        payment_method: 'refund',
         status: 'completed'
       });
 
