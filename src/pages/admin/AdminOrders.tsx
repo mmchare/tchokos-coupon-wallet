@@ -234,7 +234,7 @@ const AdminOrders = () => {
                 {selectedOrders.length} commande(s) sélectionnée(s)
               </span>
               <div className="flex gap-2">
-                {LOGISTICS_STEPS.map(step => (
+                {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
                   <Button
                     key={step.step}
                     variant="outline"
@@ -380,7 +380,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {LOGISTICS_STEPS.map(step => (
+                          {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
                             <SelectItem key={step.step} value={step.step.toString()}>
                               Étape {step.step}
                             </SelectItem>
