@@ -16,6 +16,9 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.jpg', 'favicon1.ico', 'favicon2.png', 'robots.txt'],
+      devOptions: {
+        enabled: false
+      },
       manifest: {
         name: 'JinBao Smart Market',
         short_name: 'JinBao',
@@ -44,6 +47,7 @@ export default defineConfig(({ mode }) => ({
         dir: 'ltr'
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB limit
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff,woff2}'],
         runtimeCaching: [
           {
