@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.magic-import]
 verify_jwt = false
+
+[functions.send-order-notification]
+verify_jwt = false

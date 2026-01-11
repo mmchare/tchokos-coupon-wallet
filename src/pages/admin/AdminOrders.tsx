@@ -129,7 +129,23 @@ const AdminOrders = () => {
       p_details: { new_step: newStep, new_status: newStatus, step_label: stepInfo?.label }
     });
 
-    toast({ title: "Succès", description: "Statut mis à jour" });
+    // Send email notification to user
+    try {
+      await supabase.functions.invoke('send-order-notification', {
+        body: {
+          orderId,
+          newStep,
+          newStatus,
+          stepLabel: stepInfo?.label || newStatus
+        }
+      });
+      console.log('Email notification sent for order', orderId);
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+      // Don't block the update if email fails
+    }
+
+    toast({ title: "Succès", description: "Statut mis à jour et notification envoyée" });
     fetchOrders();
   };
 
@@ -157,9 +173,23 @@ const AdminOrders = () => {
         p_target_id: orderId,
         p_details: { new_step: newStep, new_status: newStatus, batch_size: selectedOrders.length }
       });
+
+      // Send email notification to user
+      try {
+        await supabase.functions.invoke('send-order-notification', {
+          body: {
+            orderId,
+            newStep,
+            newStatus,
+            stepLabel: stepInfo?.label || newStatus
+          }
+        });
+      } catch (emailError) {
+        console.error('Failed to send email notification for order:', orderId, emailError);
+      }
     }
 
-    toast({ title: "Succès", description: `${selectedOrders.length} commande(s) mise(s) à jour` });
+    toast({ title: "Succès", description: `${selectedOrders.length} commande(s) mise(s) à jour et notifiée(s)` });
     setSelectedOrders([]);
     fetchOrders();
   };
