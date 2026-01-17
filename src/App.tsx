@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,26 +9,31 @@ import { CouponProvider } from "@/contexts/CouponContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Recharge from "./pages/Recharge";
-import Profile from "./pages/Profile";
-import ProductDetail from "./pages/ProductDetail";
-import Orders from "./pages/Orders";
-import Favorites from "./pages/Favorites";
-import NotFound from "./pages/NotFound";
+import PageLoader from "@/components/PageLoader";
 
-// Admin pages
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminAuctions from "./pages/admin/AdminAuctions";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminFinance from "./pages/admin/AdminFinance";
-import AdminModeration from "./pages/admin/AdminModeration";
-import AdminCampaigns from "./pages/admin/AdminCampaigns";
-import AdminLogs from "./pages/admin/AdminLogs";
+// Critical pages - loaded immediately
+import Index from "./pages/Index";
+import ProductDetail from "./pages/ProductDetail";
+
+// Lazy-loaded pages - loaded on demand
+const Auth = lazy(() => import("./pages/Auth"));
+const Recharge = lazy(() => import("./pages/Recharge"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Admin pages - lazy loaded (reduces initial bundle significantly)
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminAuctions = lazy(() => import("./pages/admin/AdminAuctions"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminFinance = lazy(() => import("./pages/admin/AdminFinance"));
+const AdminModeration = lazy(() => import("./pages/admin/AdminModeration"));
+const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns"));
+const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
 
 // Optimized React Query configuration for better caching
 const queryClient = new QueryClient({
@@ -54,30 +60,35 @@ const App = () => (
             <BrowserRouter>
               <ScrollToTop />
               <PWAInstallPrompt />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/recharge" element={<Recharge />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="auctions" element={<AdminAuctions />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="finance" element={<AdminFinance />} />
-                  <Route path="moderation" element={<AdminModeration />} />
-                  <Route path="campaigns" element={<AdminCampaigns />} />
-                  <Route path="logs" element={<AdminLogs />} />
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Critical routes - not lazy loaded */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  
+                  {/* Lazy loaded routes */}
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/recharge" element={<Recharge />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  
+                  {/* Admin Routes - all lazy loaded */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="auctions" element={<AdminAuctions />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="finance" element={<AdminFinance />} />
+                    <Route path="moderation" element={<AdminModeration />} />
+                    <Route path="campaigns" element={<AdminCampaigns />} />
+                    <Route path="logs" element={<AdminLogs />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </BrowserRouter>
           </CouponProvider>
         </AuthProvider>
