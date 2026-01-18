@@ -1,31 +1,26 @@
-/**
- * Home page - JinBao Smart Market
- * Clean, unified product grid with invisible AI-powered personalization
- * Supports offline mode with cached products
- */
-
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
+import Hero from '@/components/home/Hero';
+import FeaturesSection from '@/components/home/FeaturesSection';
+import CategoryGrid from '@/components/home/CategoryGrid';
 import MasonryProductCard from '@/components/MasonryProductCard';
-import CategoryFilter from '@/components/CategoryFilter';
 import LoadCouponModal from '@/components/LoadCouponModal';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
-import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
+import Footer from '@/components/Footer';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2, Sparkles, X } from 'lucide-react';
+import { Search, Download, Loader2, ShoppingBag } from 'lucide-react';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useOfflineProducts } from '@/hooks/useOfflineProducts';
-
 
 interface CouponItem {
   id: string;
@@ -59,21 +54,14 @@ const Home = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Extract categories from products - use keys, not translated values
-  const categoryKeys = ['all', 'auctions', ...new Set(products.map(p => p.category).filter(Boolean))];
-  const categories = categoryKeys;
-
-  // Handle AI search with debounce
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setShowSearchSuggestions(value.length === 0 && history.length > 0);
     
-    // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // If AI mode is enabled and query is long enough, trigger AI search
     if (useAIMode && value.length >= 3) {
       searchTimeoutRef.current = setTimeout(() => {
         aiSearch(value);
@@ -83,7 +71,7 @@ const Home = () => {
     }
   };
 
-  // Handle search submission
+  // ok 
   const handleSearchSubmit = () => {
     if (searchQuery.trim().length >= 2) {
       addSearch(searchQuery.trim());
@@ -91,7 +79,6 @@ const Home = () => {
     }
   };
 
-  // Handle search suggestion selection
   const handleSelectSuggestion = (query: string) => {
     setSearchQuery(query);
     setShowSearchSuggestions(false);
@@ -100,14 +87,12 @@ const Home = () => {
     }
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchQuery('');
     clearSearch();
     setShowSearchSuggestions(false);
   };
 
-  // Cache products when loaded (for offline access)
   useEffect(() => {
     if (products.length > 0 && isOnline) {
       const productsToCache = products.slice(0, 20).map(p => ({
@@ -124,7 +109,6 @@ const Home = () => {
     }
   }, [products, isOnline, cacheProducts]);
 
-  // Products to display - AI results, filtered products, or offline cache
   const displayProducts = !isOnline && products.length === 0
     ? offlineProducts.map(p => ({
         id: p.id,
@@ -148,23 +132,56 @@ const Home = () => {
           isAuction: p.is_auction || false,
         }))
       : products.filter(product => {
-          const matchesCategory = activeCategory === 'all' || 
-            (activeCategory === 'auctions' ? product.isAuction === true : product.category === activeCategory);
+          // Flexible category matching to map new visual categories to existing product categories
+          if (activeCategory === 'all') {
+            const matchesSearch = searchQuery === '' || 
+              product.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesSearch;
+          }
+          
+          let matchCat = false;
+          
+          // Map visual categories to product categories
+          // Map visual categories to product categories
+          if (activeCategory === 'Iphones') {
+            matchCat = product.name.toLowerCase().includes('iphone');
+          } else if (activeCategory === 'Pixels') {
+            matchCat = product.name.toLowerCase().includes('pixel');
+          } else if (activeCategory === 'Xiaomi') {
+            matchCat = product.name.toLowerCase().includes('xiaomi') || 
+                       product.name.toLowerCase().includes('redmi');
+          } else if (activeCategory === 'Samsung') {
+            matchCat = product.name.toLowerCase().includes('samsung') || 
+                       product.name.toLowerCase().includes('galaxy');
+          } else if (activeCategory === 'Accessoires') {
+            matchCat = product.category?.toLowerCase().includes('accessoire') || 
+                       product.category?.toLowerCase().includes('accessory') ||
+                       product.category?.toLowerCase().includes('écouteur') ||
+                       product.category?.toLowerCase().includes('chargeur');
+          } else if (activeCategory === 'Autres') {
+            matchCat = product.category === 'Autres' || product.category === 'Other';
+          } else if (activeCategory === 'bestsellers') {
+             // Proxy for best sellers: High rating
+             matchCat = product.rating >= 4.5;
+          } else if (activeCategory === 'auctions') {
+             matchCat = product.isAuction === true;
+          } else {
+            // Fallback to exact match logic if needed (e.g. for simple strings)
+            matchCat = product.category === activeCategory;
+          }
+
           const matchesSearch = searchQuery === '' || 
             product.name.toLowerCase().includes(searchQuery.toLowerCase());
-          return matchesCategory && matchesSearch;
+          return matchCat && matchesSearch;
         });
 
-  // Paginated products for infinite scroll
   const visibleProducts = displayProducts.slice(0, displayCount);
   const hasMore = displayCount < displayProducts.length;
 
-  // Reset display count when filter changes
   useEffect(() => {
     setDisplayCount(10);
   }, [activeCategory, searchQuery, hasResults]);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore) return;
 
@@ -181,9 +198,9 @@ const Home = () => {
     return () => observer.disconnect();
   }, [hasMore, displayProducts.length]);
 
-  // Masonry breakpoints
   const breakpointColumns = {
-    default: 3,
+    default: 4,
+    1280: 3,
     1024: 3,
     768: 2,
     480: 2
@@ -223,113 +240,62 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Offline Indicator */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <OfflineIndicator isOnline={isOnline} cachedProductsCount={offlineProducts.length} />
       
       <Header />
 
-      <main className={`container mx-auto px-3 sm:px-4 py-4 sm:py-6 ${!isOnline ? 'pt-16' : ''}`}>
-        {/* Hero Section - Compact */}
-        <section className="text-center mb-6 animate-fade-in px-2">
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
-            <span className="text-vibrant-red">JinBao</span> Smart Market
-          </h1>
-          <p className="text-sm text-muted-foreground mb-4 max-w-xl mx-auto">
-            {t('home.tagline')}
-          </p>
-          
-          {/* Search Bar with AI Toggle */}
-          <div className="max-w-md mx-auto relative mb-4">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <input 
-              ref={searchInputRef}
-              type="text"
-              placeholder={useAIMode ? t('common.searchAI') : t('common.search')}
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
-              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              className="w-full pl-10 pr-20 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="p-1 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-              <button
-                onClick={() => setUseAIMode(!useAIMode)}
-                className={`p-1.5 rounded-full transition-colors ${
-                  useAIMode 
-                    ? 'bg-vibrant-red/20 text-vibrant-red' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={useAIMode ? t('home.disableAI') : t('home.enableAI')}
-              >
-                <Sparkles className="h-4 w-4" />
-              </button>
+      {/* Hero Section */}
+      <Hero
+        searchQuery={searchQuery}
+        useAIMode={useAIMode}
+        isSearching={isSearching}
+        interpretation={interpretation}
+        showSearchSuggestions={showSearchSuggestions}
+        history={history}
+        searchInputRef={searchInputRef}
+        onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
+        onSelectSuggestion={handleSelectSuggestion}
+        onDeleteSearch={deleteSearch}
+        onClearHistory={clearHistory}
+        onToggleAI={() => setUseAIMode(!useAIMode)}
+        setShowSearchSuggestions={setShowSearchSuggestions}
+      />
+
+      {/* Features Section */}
+      <FeaturesSection />
+
+      <main className="container mx-auto px-4 sm:px-6 py-12">
+        {/* Category Grid */}
+        <CategoryGrid
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
+
+        {/* Popular Products Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-brand-secondary dark:text-brand-secondary font-bold text-xs tracking-widest uppercase mb-2">
+                Full Catalog
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#222222] dark:text-white mb-3">
+                Popular Products
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl text-sm sm:text-base font-normal">
+                Over 2,400 curated tech items ready for local dispatch. Quality guaranteed through direct sourcing.
+              </p>
             </div>
-            {isSearching && (
-              <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
+            {visibleProducts.length > 0 && (
+              <div className="hidden lg:block text-xs font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full">
+                SHOWING 1-{visibleProducts.length} OF {displayProducts.length} ITEMS
               </div>
             )}
-            
-            {/* Search History Suggestions */}
-            <SearchSuggestions
-              history={history}
-              onSelect={handleSelectSuggestion}
-              onDelete={deleteSearch}
-              onClearAll={clearHistory}
-              isVisible={showSearchSuggestions}
-            />
           </div>
+        </div>
 
-          {/* AI Interpretation */}
-          {interpretation && useAIMode && (
-            <p className="text-xs text-muted-foreground text-center mb-2">
-              <Sparkles className="h-3 w-3 inline mr-1" />
-              {interpretation}
-            </p>
-          )}
-        </section>
-
-        {/* Category Filter & Actions */}
-        <section className="mb-4">
-          {/* Buttons - Full width on mobile, right-aligned on desktop */}
-          <div className="flex items-center justify-center gap-3 mb-3 px-1 sm:justify-end">
-            <Button 
-              onClick={() => setIsLoadCouponOpen(true)}
-              variant="outline"
-              size="sm"
-              className="flex-1 sm:flex-none text-xs max-w-[160px]"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              {t('home.code')}
-            </Button>
-            <Button 
-              onClick={() => setIsCouponOpen(true)}
-              variant="outline"
-              size="sm"
-              className="flex-1 sm:flex-none border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs max-w-[160px]"
-            >
-              {t('home.coupon')} ({couponItems.length})
-            </Button>
-          </div>
-          
-          <CategoryFilter 
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory}
-          />
-        </section>
-
-        {/* Loading State - Skeleton Grid */}
+        {/* Loading State */}
         {isLoading && (
           <Masonry
             breakpointCols={breakpointColumns}
@@ -340,7 +306,7 @@ const Home = () => {
           </Masonry>
         )}
 
-        {/* Unified Product Grid - Smart ordering invisible to user */}
+        {/* Product Grid */}
         {!isLoading && visibleProducts.length > 0 && (
           <>
             <Masonry
@@ -358,15 +324,19 @@ const Home = () => {
                   originalPrice={product.originalPrice}
                   rating={product.rating}
                   isAuction={product.isAuction}
-                  priority={index < 6} // First 6 images load immediately
+                  priority={index < 6}
                 />
               ))}
             </Masonry>
 
-            {/* Load more trigger for infinite scroll */}
             {hasMore && (
-              <div ref={loadMoreRef} className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div ref={loadMoreRef} className="flex justify-center py-16">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-brand-secondary dark:text-brand-secondary" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium">
+                    Loading more products...
+                  </span>
+                </div>
               </div>
             )}
           </>
@@ -374,13 +344,59 @@ const Home = () => {
 
         {/* Empty State */}
         {!isLoading && displayProducts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {useAIMode && searchQuery ? t('home.noProductsAI') : t('home.noProducts')}
+          <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+            <div className="p-5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5">
+              <Search className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              No products found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md text-center mb-6">
+              {useAIMode && searchQuery 
+                ? "Our AI couldn't find a match. Try using different keywords." 
+                : "Try adjusting your filters or search query to find what you're looking for."}
             </p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchQuery(''); 
+                setActiveCategory('all');
+              }} 
+              className="text-brand-secondary dark:text-brand-secondary border-brand-secondary dark:border-brand-secondary hover:bg-brand-secondary/5 dark:hover:bg-brand-secondary/10 font-semibold rounded-lg"
+            >
+              Clear All Filters
+            </Button>
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <Button 
+          onClick={() => setIsLoadCouponOpen(true)}
+          size="icon"
+          variant="secondary"
+          className="rounded-full h-14 w-14 shadow-card bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#222222] dark:text-gray-200 border border-gray-200 dark:border-gray-700"
+          title={t('home.code')}
+        >
+          <Download className="h-5 w-5" />
+        </Button>
+        <Button 
+          onClick={() => setIsCouponOpen(true)}
+          size="icon"
+          className="rounded-full h-16 w-16 shadow-2xl bg-brand-secondary hover:bg-brand-secondary/90 text-white relative group font-bold"
+        >
+          <ShoppingBag className="h-7 w-7 group-hover:scale-110 transition-transform" />
+          {couponItems.length > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-primary text-[11px] font-bold text-white ring-2 ring-white dark:ring-gray-900 animate-pulse">
+              {couponItems.length}
+            </span>
+          )}
+        </Button>
+      </div>
 
       {/* Coupon Sheet */}
       <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
