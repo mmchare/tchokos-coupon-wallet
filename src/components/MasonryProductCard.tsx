@@ -52,42 +52,50 @@ const MasonryProductCard = memo(
         </div>
 
         {/* Product Info */}
-        <div className="p-2 space-y-1">
-          {/* Product Name - Compact */}
-          <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-2 group-hover:text-vibrant-red transition-colors">
-            {name}
-          </h3>
-
-          {/* Rating Stars & Auction Indicator */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
+        <div className="p-4 space-y-3">
+          {/* Title and Rating Row */}
+          <div className="flex justify-between items-start gap-2">
+            <h3 className="font-bold text-brand-text text-base leading-tight line-clamp-2 group-hover:text-brand-primary transition-colors flex-1">
+              {name}
+            </h3>
+            <div className="flex items-center gap-1 shrink-0 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded-md">
               <Star className="h-3.5 w-3.5 fill-vibrant-yellow text-vibrant-yellow" />
-              <span className="text-xs font-medium text-vibrant-yellow">
-                {Number(rating).toFixed(2)}
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                {Number(rating).toFixed(1)}
               </span>
             </div>
-
-            {/* Auction Indicator - Bleu Tech */}
-            {isAuction && (
-              <div className="flex items-center gap-1 text-primary">
-                <Gavel className="h-3 w-3" />
-                <span className="text-xs font-medium">Enchère</span>
-              </div>
-            )}
           </div>
 
           {/* Price Section */}
-          <div className="flex items-baseline gap-2 flex-wrap">
-            {/* Current Price - Rouge Vif, Gras, Grand */}
-            <span className="text-lg font-bold text-vibrant-red">
-              {price.toLocaleString()} F
-            </span>
-
-            {/* Original Price - Gris Barré */}
-            {originalPrice && (
-              <span className="text-xs text-muted-foreground line-through">
-                {originalPrice.toLocaleString()} F
+          <div className="flex items-end justify-between gap-2">
+            <div className="flex flex-col">
+              {originalPrice && (
+                <span className="text-xs text-gray-400 line-through font-medium">
+                  {originalPrice.toLocaleString()} F
+                </span>
+              )}
+              <span className="text-lg font-bold text-brand-text">
+                {price.toLocaleString()} F
               </span>
+            </div>
+            
+            {/* Auction Indicator or Add Button */}
+            {isAuction ? (
+              <div className="flex items-center gap-1 text-brand-primary bg-brand-primary/10 px-2 py-1 rounded text-xs font-bold">
+                <Gavel className="h-3 w-3" />
+                <span>Enchère</span>
+              </div>
+            ) : (
+              <button 
+                className="bg-brand-primary hover:bg-brand-primary/90 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:translate-y-px"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Add to cart logic would go here
+                  handleClick(); // For now, go to details
+                }}
+              >
+                Add to Cart
+              </button>
             )}
           </div>
         </div>
