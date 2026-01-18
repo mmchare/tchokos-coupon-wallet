@@ -203,7 +203,7 @@ const Profile = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -385,7 +385,7 @@ const Profile = () => {
           </Card>
 
           {/* Statistiques */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card className="bg-gradient-to-br from-jinbao-red to-red-600 border-0 text-white">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
