@@ -13,7 +13,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold tracking-wider flex items-center gap-2">
-              <span className="bg-brand-secondary text-white w-8 h-8 flex items-center justify-center rounded-lg text-lg">J</span>
+              <span className="bg-brand-secondary text-white w-8 h-8 flex items-center justify-center rounded-lg text-lg">金</span>
               JinBao
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed max-w-xs">
