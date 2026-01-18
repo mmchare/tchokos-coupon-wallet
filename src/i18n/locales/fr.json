@@ -275,7 +275,9 @@
     "myFavorites": "Mes favoris",
     "adminAccess": "Accès Admin",
     "recharge": "Recharger",
-    "seeYouSoon": "À bientôt sur JinBao Smart Market !"
+    "seeYouSoon": "À bientôt sur JinBao Smart Market !",
+    "pushNotifications": "Notifications push",
+    "pushNotificationsDesc": "Recevoir des alertes même hors application"
   },
   "favorites": {
     "title": "Mes favoris",

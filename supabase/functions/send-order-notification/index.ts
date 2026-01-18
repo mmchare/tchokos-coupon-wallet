@@ -206,6 +206,36 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Also send push notification
+    try {
+      const pushPayload = {
+        title: stepConfig.title,
+        body: `${stepConfig.emoji} ${productName}: ${stepConfig.message}`,
+        icon: "/favicon2.png",
+        badge: "/favicon2.png",
+        tag: `order-${orderId}`,
+        data: { url: "/orders" }
+      };
+
+      const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseKey}`
+        },
+        body: JSON.stringify({
+          userId: order.user_id,
+          payload: pushPayload
+        })
+      });
+
+      const pushResult = await pushResponse.json();
+      console.log("Push notification result:", pushResult);
+    } catch (pushError) {
+      console.error("Error sending push notification:", pushError);
+      // Don't fail the request if push fails
+    }
+
     return new Response(
       JSON.stringify({ success: true, emailResponse }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2, TrendingUp } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2, TrendingUp, Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import AdminPasswordModal from '@/components/AdminPasswordModal';
 import AddressManager from '@/components/AddressManager';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -17,6 +19,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
+  const { isSupported: pushSupported, isSubscribed: pushSubscribed, subscribe: subscribePush, unsubscribe: unsubscribePush, loading: pushLoading } = usePushNotifications();
   const [isEditing, setIsEditing] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -367,6 +370,34 @@ const Profile = () => {
               <AddressManager />
             </CardContent>
           </Card>
+
+          {/* Notifications Push */}
+          {pushSupported && (
+            <Card className="bg-card border-border">
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Bell className="h-5 w-5 text-jinbao-blue" />
+                    <div>
+                      <span className="font-medium text-foreground">{t('profile.pushNotifications')}</span>
+                      <p className="text-sm text-muted-foreground">{t('profile.pushNotificationsDesc')}</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={pushSubscribed}
+                    onCheckedChange={async (checked) => {
+                      if (checked) {
+                        await subscribePush();
+                      } else {
+                        await unsubscribePush();
+                      }
+                    }}
+                    disabled={pushLoading}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Lien vers favoris */}
           <Card 
