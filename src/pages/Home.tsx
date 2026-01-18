@@ -71,6 +71,7 @@ const Home = () => {
     }
   };
 
+  // ok 
   const handleSearchSubmit = () => {
     if (searchQuery.trim().length >= 2) {
       addSearch(searchQuery.trim());
