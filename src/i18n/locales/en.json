@@ -240,7 +240,9 @@
     "myFavorites": "My favorites",
     "adminAccess": "Admin Access",
     "recharge": "Recharge",
-    "seeYouSoon": "See you soon on JinBao Smart Market!"
+    "seeYouSoon": "See you soon on JinBao Smart Market!",
+    "pushNotifications": "Push notifications",
+    "pushNotificationsDesc": "Receive alerts even when not in the app"
   },
   "favorites": {
     "title": "My Favorites",
