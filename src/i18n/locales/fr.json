@@ -358,7 +358,9 @@
     "xiaomi": "Xiaomi",
     "samsung": "Samsung",
     "accessories": "Accessoires",
-    "others": "Autres"
+    "others": "Autres",
+    "ordinateurs": "Ordinateurs"
+
   },
   "footer": {
     "about": "À propos",

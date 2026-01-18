@@ -19,6 +19,7 @@ import SplashScreen from '@/components/SplashScreen';
 import Home from './Home';
 
 const Index = () => {
+ 
   const [showSplash, setShowSplash] = useState(() => {
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     return !hasSeenSplash;

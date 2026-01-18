@@ -402,6 +402,9 @@ Typography: Inter / Poppins | Titles: Bold | Text: Regular
     background-color: hsl(var(--brand-success));
   }
 
+  .text-jinbao-red-new {
+    color: hsl(3 83% 49%);
+  } 
   /* Legacy aliases - now use orange */
   .text-jinbao-red {
     color: hsl(var(--brand-secondary));

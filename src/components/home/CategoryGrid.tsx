@@ -1,4 +1,4 @@
-import { LucideIcon, Smartphone, Headphones, Home, Sparkles, Gavel } from 'lucide-react';
+import { LucideIcon, Smartphone,Computer, Headphones, Home, Sparkles, Gavel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +33,15 @@ const CategoryGrid = ({ activeCategory, onCategoryChange }: CategoryGridProps) =
       bgColor: 'bg-brand-secondary',
       iconColor: 'text-white'
     },
+
+    { 
+      id: 'Ordinateurs', 
+      label: t('categories.ordinateurs'), 
+          icon: Computer, 
+
+       bgColor: 'bg-purple-500',
+      iconColor: 'text-white'
+    },
     { 
       id: 'Iphones', 
       label: t('categories.iphones'), 
@@ -47,13 +56,13 @@ const CategoryGrid = ({ activeCategory, onCategoryChange }: CategoryGridProps) =
       bgColor: 'bg-green-600',
       iconColor: 'text-white'
     },
-    { 
-      id: 'Xiaomi', 
-      label: t('categories.xiaomi'), 
-      icon: Smartphone, 
-      bgColor: 'bg-orange-500',
-      iconColor: 'text-white'
-    },
+    // { 
+    //   id: 'Xiaomi', 
+    //   label: t('categories.xiaomi'), 
+    //   icon: Smartphone, 
+    //   bgColor: 'bg-orange-500',
+    //   iconColor: 'text-white'
+    // },
     { 
       id: 'Samsung', 
       label: t('categories.samsung'), 
@@ -65,7 +74,7 @@ const CategoryGrid = ({ activeCategory, onCategoryChange }: CategoryGridProps) =
       id: 'Accessoires', 
       label: t('categories.accessories'), 
       icon: Headphones, 
-      bgColor: 'bg-purple-500',
+       bgColor: 'bg-orange-500',
       iconColor: 'text-white'
     },
     { 
