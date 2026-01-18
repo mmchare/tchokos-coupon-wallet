@@ -23,8 +23,11 @@ const Orders = lazy(() => import("./pages/Orders"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+const Catalog = lazy(() => import("./pages/Catalog"));
+
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
@@ -68,6 +71,7 @@ const App = () => (
                   
                   {/* Lazy loaded routes */}
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/catalog" element={<Catalog />} />
                   <Route path="/recharge" element={<Recharge />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/orders" element={<Orders />} />

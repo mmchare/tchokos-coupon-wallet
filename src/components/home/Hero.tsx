@@ -60,13 +60,7 @@ const Hero = ({
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="mb-4 md:mb-6 animate-fade-in">
-            <span className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-brand-secondary/20 text-brand-secondary text-[10px] md:text-xs font-bold tracking-wider border border-brand-secondary/30 backdrop-blur-sm">
-              <span className="w-2 h-2 bg-brand-secondary rounded-full animate-pulse"></span>
-              {t('home.hero.visitStore')}
-            </span>
-          </div>
-
+          
           {/* Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight animate-fade-in">
             {t('home.hero.title')}{' '}

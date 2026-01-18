@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import Hero from '@/components/home/Hero';
@@ -32,13 +33,13 @@ interface CouponItem {
 
 const Home = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { couponItems, removeFromCoupon, updateQuantity, clearCoupon, loadCoupon } = useCoupon();
   const { products, isLoading } = useSmartProducts();
   const { search: aiSearch, isSearching, searchResults, interpretation, clearSearch, hasResults } = useAISearch();
   const { history, addSearch, deleteSearch, clearHistory } = useSearchHistory();
   const { offlineProducts, isOnline, cacheProducts } = useOfflineProducts();
   
-  const [activeCategory, setActiveCategory] = useState('all');
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isLoadCouponOpen, setIsLoadCouponOpen] = useState(false);
   const [isDeliveryFormOpen, setIsDeliveryFormOpen] = useState(false);
@@ -71,20 +72,18 @@ const Home = () => {
     }
   };
 
-  // ok 
   const handleSearchSubmit = () => {
     if (searchQuery.trim().length >= 2) {
       addSearch(searchQuery.trim());
       setShowSearchSuggestions(false);
+      navigate(`/catalog?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
   const handleSelectSuggestion = (query: string) => {
     setSearchQuery(query);
     setShowSearchSuggestions(false);
-    if (useAIMode && query.length >= 3) {
-      aiSearch(query);
-    }
+    navigate(`/catalog?q=${encodeURIComponent(query)}`);
   };
 
   const handleClearSearch = () => {
@@ -120,67 +119,23 @@ const Home = () => {
         image: p.image,
         isAuction: p.isAuction || false,
       }))
-    : hasResults && useAIMode 
-      ? searchResults!.map(p => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          originalPrice: p.original_price,
-          category: p.category || 'Autres',
-          rating: 4.5,
-          image: p.images?.[0] || '/placeholder.svg',
-          isAuction: p.is_auction || false,
-        }))
-      : products.filter(product => {
-          // Flexible category matching to map new visual categories to existing product categories
-          if (activeCategory === 'all') {
-            const matchesSearch = searchQuery === '' || 
-              product.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesSearch;
-          }
-          
-          let matchCat = false;
-          
-          // Map visual categories to product categories
-          // Map visual categories to product categories
-          if (activeCategory === 'Iphones') {
-            matchCat = product.name.toLowerCase().includes('iphone');
-          } else if (activeCategory === 'Pixels') {
-            matchCat = product.name.toLowerCase().includes('pixel');
-          } else if (activeCategory === 'Xiaomi') {
-            matchCat = product.name.toLowerCase().includes('xiaomi') || 
-                       product.name.toLowerCase().includes('redmi');
-          } else if (activeCategory === 'Samsung') {
-            matchCat = product.name.toLowerCase().includes('samsung') || 
-                       product.name.toLowerCase().includes('galaxy');
-          } else if (activeCategory === 'Accessoires') {
-            matchCat = product.category?.toLowerCase().includes('accessoire') || 
-                       product.category?.toLowerCase().includes('accessory') ||
-                       product.category?.toLowerCase().includes('écouteur') ||
-                       product.category?.toLowerCase().includes('chargeur');
-          } else if (activeCategory === 'Autres') {
-            matchCat = product.category === 'Autres' || product.category === 'Other';
-          } else if (activeCategory === 'bestsellers') {
-             // Proxy for best sellers: High rating
-             matchCat = product.rating >= 4.5;
-          } else if (activeCategory === 'auctions') {
-             matchCat = product.isAuction === true;
-          } else {
-            // Fallback to exact match logic if needed (e.g. for simple strings)
-            matchCat = product.category === activeCategory;
-          }
-
-          const matchesSearch = searchQuery === '' || 
-            product.name.toLowerCase().includes(searchQuery.toLowerCase());
-          return matchCat && matchesSearch;
-        });
+    : products.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        originalPrice: p.originalPrice,
+        category: p.category || 'Autres',
+        rating: p.rating,
+        image: p.image,
+        isAuction: p.isAuction || false,
+    }));
 
   const visibleProducts = displayProducts.slice(0, displayCount);
   const hasMore = displayCount < displayProducts.length;
 
   useEffect(() => {
     setDisplayCount(10);
-  }, [activeCategory, searchQuery, hasResults]);
+  }, [searchQuery, hasResults]);
 
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore) return;
@@ -271,8 +226,8 @@ const Home = () => {
       <main className="container mx-auto px-4 sm:px-6 py-6 md:py-12">
         {/* Category Grid */}
         <CategoryGrid
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
+          activeCategory="all"
+          onCategoryChange={(cat) => navigate(`/catalog?category=${cat}`)}
         />
 
         {/* Popular Products Section */}
@@ -354,15 +309,13 @@ const Home = () => {
               {t('home.noProducts')}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md text-center mb-6">
-              {useAIMode && searchQuery 
-                ? t('home.noProductsAI') 
-                : t('home.noProductsDesc')}
+              {t('home.noProductsDesc')}
             </p>
             <Button 
               variant="outline" 
               onClick={() => {
                 setSearchQuery(''); 
-                setActiveCategory('all');
+                navigate('/catalog'); // Or just reload if needed, but here simple reset
               }} 
               className="text-brand-secondary dark:text-brand-secondary border-brand-secondary dark:border-brand-secondary hover:bg-brand-secondary/5 dark:hover:bg-brand-secondary/10 font-semibold rounded-lg"
             >
