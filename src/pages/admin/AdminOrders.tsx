@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ChevronRight, Phone, Link2, ExternalLink } from 'lucide-react';
+import { Search, ChevronRight, Phone, Link2, ExternalLink, AlertTriangle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -24,6 +24,7 @@ interface Order {
   delivery_address: string;
   whatsapp_number: string;
   created_at: string;
+  updated_at: string;
   products?: {
     name: string;
     images: string[] | null;
@@ -36,11 +37,22 @@ interface Order {
 }
 
 const LOGISTICS_STEPS = [
-  { step: 1, label: 'Commande confirmée' },
-  { step: 2, label: 'Préparation en Chine' },
-  { step: 3, label: 'Expédition internationale' },
-  { step: 4, label: 'Livraison locale' },
+  { step: 0, label: 'Annulée', status: 'cancelled', color: 'bg-red-500/20 text-red-500', icon: 'XCircle' },
+  { step: 1, label: 'Commande confirmée', status: 'confirmed', color: 'bg-blue-500/20 text-blue-500', icon: 'CheckCircle' },
+  { step: 2, label: 'Préparation en Chine', status: 'preparing', color: 'bg-yellow-500/20 text-yellow-500', icon: 'Package' },
+  { step: 3, label: 'Expédition internationale', status: 'shipping', color: 'bg-orange-500/20 text-orange-500', icon: 'Plane' },
+  { step: 4, label: 'Livraison locale', status: 'delivering', color: 'bg-purple-500/20 text-purple-500', icon: 'Truck' },
+  { step: 5, label: 'Livrée', status: 'delivered', color: 'bg-green-500/20 text-green-500', icon: 'CheckCircle2' },
 ];
+
+// Check if order was cancelled recently (within last 24 hours)
+const isRecentlyCancelled = (order: Order) => {
+  if (order.status !== 'cancelled') return false;
+  const updatedAt = new Date(order.updated_at);
+  const now = new Date();
+  const hoursDiff = (now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60);
+  return hoursDiff <= 24;
+};
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -69,12 +81,39 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchOrders();
+
+    // Subscribe to real-time order updates
+    const channel = supabase
+      .channel('admin-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          console.log('Order update received:', payload);
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateOrderStep = async (orderId: string, newStep: number) => {
+    const stepInfo = LOGISTICS_STEPS.find(s => s.step === newStep);
+    const newStatus = stepInfo?.status || 'confirmed';
+    
     const { error } = await supabase
       .from('orders')
-      .update({ logistics_step: newStep })
+      .update({ 
+        logistics_step: newStep,
+        status: newStatus 
+      })
       .eq('id', orderId);
 
     if (error) {
@@ -87,10 +126,26 @@ const AdminOrders = () => {
       p_action: 'UPDATE_ORDER_STATUS',
       p_target_type: 'order',
       p_target_id: orderId,
-      p_details: { new_step: newStep, step_label: LOGISTICS_STEPS.find(s => s.step === newStep)?.label }
+      p_details: { new_step: newStep, new_status: newStatus, step_label: stepInfo?.label }
     });
 
-    toast({ title: "Succès", description: "Statut mis à jour" });
+    // Send email notification to user
+    try {
+      await supabase.functions.invoke('send-order-notification', {
+        body: {
+          orderId,
+          newStep,
+          newStatus,
+          stepLabel: stepInfo?.label || newStatus
+        }
+      });
+      console.log('Email notification sent for order', orderId);
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+      // Don't block the update if email fails
+    }
+
+    toast({ title: "Succès", description: "Statut mis à jour et notification envoyée" });
     fetchOrders();
   };
 
@@ -100,21 +155,41 @@ const AdminOrders = () => {
       return;
     }
 
+    const stepInfo = LOGISTICS_STEPS.find(s => s.step === newStep);
+    const newStatus = stepInfo?.status || 'confirmed';
+
     for (const orderId of selectedOrders) {
       await supabase
         .from('orders')
-        .update({ logistics_step: newStep })
+        .update({ 
+          logistics_step: newStep,
+          status: newStatus 
+        })
         .eq('id', orderId);
 
       await supabase.rpc('log_admin_action', {
         p_action: 'BATCH_UPDATE_ORDER',
         p_target_type: 'order',
         p_target_id: orderId,
-        p_details: { new_step: newStep, batch_size: selectedOrders.length }
+        p_details: { new_step: newStep, new_status: newStatus, batch_size: selectedOrders.length }
       });
+
+      // Send email notification to user
+      try {
+        await supabase.functions.invoke('send-order-notification', {
+          body: {
+            orderId,
+            newStep,
+            newStatus,
+            stepLabel: stepInfo?.label || newStatus
+          }
+        });
+      } catch (emailError) {
+        console.error('Failed to send email notification for order:', orderId, emailError);
+      }
     }
 
-    toast({ title: "Succès", description: `${selectedOrders.length} commande(s) mise(s) à jour` });
+    toast({ title: "Succès", description: `${selectedOrders.length} commande(s) mise(s) à jour et notifiée(s)` });
     setSelectedOrders([]);
     fetchOrders();
   };
@@ -189,7 +264,7 @@ const AdminOrders = () => {
                 {selectedOrders.length} commande(s) sélectionnée(s)
               </span>
               <div className="flex gap-2">
-                {LOGISTICS_STEPS.map(step => (
+                {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
                   <Button
                     key={step.step}
                     variant="outline"
@@ -241,7 +316,10 @@ const AdminOrders = () => {
                 </TableRow>
               ) : (
                 filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
+                  <TableRow 
+                    key={order.id} 
+                    className={isRecentlyCancelled(order) ? 'bg-red-500/10 border-l-4 border-l-red-500' : ''}
+                  >
                     <TableCell>
                       <Checkbox
                         checked={selectedOrders.includes(order.id)}
@@ -304,13 +382,24 @@ const AdminOrders = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.logistics_step === 4 
-                          ? 'bg-green-500/20 text-green-500' 
-                          : 'bg-yellow-500/20 text-yellow-500'
-                      }`}>
-                        {LOGISTICS_STEPS.find(s => s.step === order.logistics_step)?.label}
-                      </span>
+                      {(() => {
+                        const stepInfo = LOGISTICS_STEPS.find(s => s.step === order.logistics_step);
+                        const recentlyCancelled = isRecentlyCancelled(order);
+                        return (
+                          <div className="flex items-center gap-2">
+                            {recentlyCancelled && (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-medium animate-pulse">
+                                <AlertTriangle className="h-3 w-3" />
+                                Nouveau
+                              </div>
+                            )}
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${stepInfo?.color || 'bg-gray-500/20 text-gray-500'}`}>
+                              {order.status === 'cancelled' && <XCircle className="h-3 w-3 inline mr-1" />}
+                              {stepInfo?.label || order.status}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <Select
@@ -321,7 +410,7 @@ const AdminOrders = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {LOGISTICS_STEPS.map(step => (
+                          {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
                             <SelectItem key={step.step} value={step.step.toString()}>
                               Étape {step.step}
                             </SelectItem>

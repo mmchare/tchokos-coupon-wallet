@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +13,7 @@ interface Favorite {
 export const useFavorites = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,11 +51,15 @@ export const useFavorites = () => {
   // Add to favorites
   const addFavorite = useCallback(async (productId: string) => {
     if (!user) {
+      // Store current path for redirect after login
+      const currentPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem('redirectAfterAuth', currentPath);
+      
       toast({
         title: "Connexion requise",
-        description: "Connectez-vous pour ajouter des favoris",
-        variant: "destructive"
+        description: "Connectez-vous pour ajouter des favoris"
       });
+      navigate('/auth');
       return false;
     }
 
@@ -77,8 +83,7 @@ export const useFavorites = () => {
 
     await fetchFavorites();
     toast({
-      title: "Ajouté aux favoris ❤️",
-      description: "Retrouvez ce produit dans vos favoris"
+      title: "Ajouté aux favoris ❤️"
     });
     return true;
   }, [user, fetchFavorites, toast]);
