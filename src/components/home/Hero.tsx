@@ -44,7 +44,7 @@ const Hero = ({
   const { t } = useTranslation();
 
   return (
-    <section className="relative bg-gradient-to-br from-[#0A3D62] to-[#0C4A75] text-white pt-16 pb-28 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#0A3D62] to-[#0C4A75] text-white pt-20 pb-12 md:pt-16 md:pb-28 overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div 
@@ -60,43 +60,20 @@ const Hero = ({
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="mb-6 animate-fade-in">
-            <span className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-brand-secondary/20 text-brand-secondary text-xs font-bold tracking-wider border border-brand-secondary/30 backdrop-blur-sm">
-              <span className="w-2 h-2 bg-brand-secondary rounded-full animate-pulse"></span>
-              VISIT OUR STORE
-            </span>
-          </div>
-
+          
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight animate-fade-in">
-            Premium Products.{' '}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight animate-fade-in">
+            {t('home.hero.title')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-orange-600">
-              Local Delivery.
+              {t('home.hero.subtitle')}
             </span>
           </h1>
 
           {/* Description */}
-          <p className="text-gray-200 text-base sm:text-lg mb-8 max-w-lg leading-relaxed font-normal">
-            Unbeatable value on the world's most innovative electronics, shipped directly to your door from our local hubs.
+          <p className="text-gray-200 text-sm sm:text-lg mb-6 md:mb-8 max-w-lg leading-relaxed font-normal">
+            {t('home.hero.description')}
           </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-wrap gap-4 mb-12">
-            <Button 
-              size="lg" 
-              className="bg-white text-brand-primary hover:bg-gray-100 font-bold rounded-lg px-8 shadow-lg hover:shadow-xl transition-all h-12 min-w-[160px]"
-            >
-              Shop Collection
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-2 border-white/30 bg-transparent text-white hover:bg-white/10 hover:border-white/50 backdrop-blur-sm rounded-lg px-8 font-semibold h-12 min-w-[160px]"
-            >
-              View Lookbook
-            </Button>
-          </div>
-
+ 
           {/* Search Bar - hidden in this design variant to match image, or minimal */}
           {/* <div className="max-w-md relative"> ... </div> */}
 
@@ -108,7 +85,7 @@ const Hero = ({
               <input 
                 ref={searchInputRef}
                 type="text"
-                placeholder={useAIMode ? t('common.searchAI') : "Search for premium electronics..."}
+                placeholder={useAIMode ? t('common.searchAI') : t('common.search')}
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}

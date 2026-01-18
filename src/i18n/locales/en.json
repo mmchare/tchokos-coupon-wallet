@@ -57,6 +57,37 @@
     "all": "All",
     "auctions": "Auctions",
     "featured": "Featured",
+    "hero": {
+      "title": "Direct from China.",
+      "subtitle": "Delivered to You.",
+      "description": "We source premium electronics directly from top Chinese manufacturers. No middlemen, just unbeatable factory prices delivered straight to your door.",
+      "visitStore": "VISIT OUR STORE",
+      "shopCollection": "Shop Collection",
+      "viewLookbook": "View Lookbook"
+    },
+    "features": {
+       "secure": {
+         "title": "Secure Transaction",
+         "desc": "Fully encrypted checkout with 100% buyer protection."
+       },
+       "express": {
+         "title": "Express Delivery",
+         "desc": "Order by 2pm for same-day dispatch. Arrives in 2-4 days."
+       },
+       "warranty": {
+         "title": "Factory Warranty",
+         "desc": "Rigorous quality checks and 12-month coverage."
+       }
+    },
+    "categoryTitle": "Shop by Category",
+    "browseAll": "Browse All",
+    "explore": "Explore",
+    "fullCatalog": "Full Catalog",
+    "popularProducts": "Popular Products",
+    "catalogDesc": "Over 2,400 curated tech items ready for local dispatch. Quality guaranteed through direct sourcing.",
+    "syncing": "Syncing with global inventory...",
+    "discovering": "Discovering more tech...",
+    "synced": "SYNCED WITH GLOBAL INVENTORY (PAGE 3 OF 247)",
     "newArrivals": "New Arrivals",
     "bestSellers": "Best Sellers",
     "flashSale": "Flash Sale",
@@ -64,6 +95,10 @@
     "viewAll": "View All",
     "noProducts": "No products found",
     "noProductsAI": "No products match your search",
+    "noProductsDesc": "Try adjusting your filters or search query to find what you're looking for.",
+    "clearFilters": "Clear All Filters",
+    "showing": "SHOWING {{visible}} OF {{total}} ITEMS",
+    "loadingMore": "Loading more products...",
     "loadMore": "Load More",
     "code": "Code",
     "coupon": "Coupon",
@@ -77,6 +112,7 @@
     "addedToCouponDesc": "has been added to your coupon",
     "buyNow": "Buy Now",
     "bidNow": "Bid Now",
+    "auctionLabel": "Auction",
     "outOfStock": "Out of Stock",
     "inStock": "In Stock",
     "stockLeft": "{{count}} left",
@@ -240,7 +276,9 @@
     "myFavorites": "My favorites",
     "adminAccess": "Admin Access",
     "recharge": "Recharge",
-    "seeYouSoon": "See you soon on JinBao Smart Market!"
+    "seeYouSoon": "See you soon on JinBao Smart Market!",
+    "pushNotifications": "Push notifications",
+    "pushNotificationsDesc": "Receive alerts even when not in the app"
   },
   "favorites": {
     "title": "My Favorites",
@@ -315,14 +353,46 @@
     "sports": "Sports",
     "books": "Books",
     "toys": "Toys",
-    "other": "Other"
+    "other": "Other",
+    "auctions": "Auctions",
+    "bestsellers": "Best Sellers",
+    "iphones": "iPhones",
+    "pixels": "Pixels",
+    "xiaomi": "Xiaomi",
+    "samsung": "Samsung",
+    "accessories": "Accessories",
+    "others": "Others",
+    "ordinateurs": "Computers"
   },
   "footer": {
     "about": "About",
     "contact": "Contact",
     "terms": "Terms",
     "privacy": "Privacy",
-    "help": "Help"
+    "help": "Help",
+    "description": "Global engineering, local logistics. Unbeatable prices between world-class tech manufacturers and your home.",
+    "company": {
+      "title": "Company",
+      "about": "About Us",
+      "quality": "Quality Control",
+      "sustainability": "Sustainability Hub",
+      "partner": "Partner Program"
+    },
+    "support": {
+      "title": "Support",
+      "shipping": "Shipping & Returns",
+      "policy": "Future Policy",
+      "track": "Track My Package",
+      "help": "Help Center"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "desc": "Get exclusive access to pre-launch batches and price drops.",
+      "placeholder": "Enter your email",
+      "button": "SUBSCRIBE NOW"
+    },
+    "rights": "ALL RIGHTS RESERVED.",
+    "compliance": "COMPLIANCE"
   },
   "splash": {
     "tagline": "Smart Market",

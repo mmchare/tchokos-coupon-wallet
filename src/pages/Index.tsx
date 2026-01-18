@@ -19,6 +19,7 @@ import SplashScreen from '@/components/SplashScreen';
 import Home from './Home';
 
 const Index = () => {
+ 
   const [showSplash, setShowSplash] = useState(() => {
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     return !hasSeenSplash;
@@ -29,12 +30,10 @@ const Index = () => {
     setShowSplash(false);
   };
 
+
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
-
-  // Allow access to Home without authentication (like Xianyu)
-  // Authentication is required only for specific actions (purchase, favorites, etc.)
   return <Home />;
 };
 

@@ -57,6 +57,36 @@
     "all": "Tous",
     "auctions": "Enchères",
     "featured": "En vedette",
+    "hero": {
+      "title": "Directement de Chine.",
+      "subtitle": "Livré chez vous.",
+      "description": "Nous sourçons des produits électroniques premium directement auprès des meilleures usines chinoises. Pas d'intermédiaires, juste des prix d'usine imbattables livrés directement à votre porte.",
+      "visitStore": "VISITER NOTRE BOUTIQUE"
+
+    },
+    "features": {
+       "secure": {
+         "title": "Transaction Sécurisée",
+         "desc": "Paiement crypté avec protection acheteur 100%."
+       },
+       "express": {
+         "title": "Livraison Express",
+         "desc": "Commandez avant 14h pour expédition le jour même. 2-4 jours."
+       },
+       "warranty": {
+         "title": "Garantie Usine",
+         "desc": "Contrôles qualité rigoureux et couverture 12 mois."
+       }
+    },
+    "categoryTitle": "Acheter par Catégorie",
+    "browseAll": "Tout Parcourir",
+    "explore": "Explorer",
+    "fullCatalog": "Catalogue Complet",
+    "popularProducts": "Produits Populaires",
+    "catalogDesc": "Plus de 2 400 articles tech prêts pour expédition locale. Qualité garantie par sourcing direct.",
+    "syncing": "Synchronisation avec l'inventaire mondial...",
+    "discovering": "Découverte de plus de tech...",
+    "synced": "SYNCHRONISÉ AVEC L'INVENTAIRE MONDIAL (PAGE 3 SUR 247)",
     "newArrivals": "Nouveautés",
     "bestSellers": "Meilleures ventes",
     "flashSale": "Vente Flash",
@@ -64,6 +94,10 @@
     "viewAll": "Voir tout",
     "noProducts": "Aucun produit trouvé",
     "noProductsAI": "Aucun produit ne correspond à votre recherche",
+    "noProductsDesc": "Essayez d'ajuster vos filtres ou votre recherche pour trouver ce que vous cherchez.",
+    "clearFilters": "Effacer les filtres",
+    "showing": "AFFICHAGE {{visible}} SUR {{total}} ARTICLES",
+    "loadingMore": "Chargement de plus de produits...",
     "loadMore": "Charger plus",
     "code": "Code",
     "coupon": "Coupon",
@@ -77,6 +111,7 @@
     "addedToCouponDesc": "a été ajouté à votre coupon",
     "buyNow": "Acheter maintenant",
     "bidNow": "Enchérir maintenant",
+    "auctionLabel": "Enchère",
     "outOfStock": "Rupture de stock",
     "inStock": "En stock",
     "stockLeft": "{{count}} restant(s)",
@@ -240,7 +275,9 @@
     "myFavorites": "Mes favoris",
     "adminAccess": "Accès Admin",
     "recharge": "Recharger",
-    "seeYouSoon": "À bientôt sur JinBao Smart Market !"
+    "seeYouSoon": "À bientôt sur JinBao Smart Market !",
+    "pushNotifications": "Notifications push",
+    "pushNotificationsDesc": "Recevoir des alertes même hors application"
   },
   "favorites": {
     "title": "Mes favoris",
@@ -315,14 +352,47 @@
     "sports": "Sports",
     "books": "Livres",
     "toys": "Jouets",
-    "other": "Autre"
+    "other": "Autre",
+    "auctions": "Enchères",
+    "bestsellers": "Meilleures ventes",
+    "iphones": "iPhones",
+    "pixels": "Pixels",
+    "xiaomi": "Xiaomi",
+    "samsung": "Samsung",
+    "accessories": "Accessoires",
+    "others": "Autres",
+    "ordinateurs": "Ordinateurs"
+
   },
   "footer": {
     "about": "À propos",
     "contact": "Contact",
     "terms": "Conditions",
     "privacy": "Confidentialité",
-    "help": "Aide"
+    "help": "Aide",
+    "description": "Ingénierie mondiale, logistique locale. Prix imbattables entre usines de classe mondiale et chez vous.",
+    "company": {
+      "title": "Entreprise",
+      "about": "À Propos",
+      "quality": "Contrôle Qualité",
+      "sustainability": "Hub Durabilité",
+      "partner": "Programme Partenaire"
+    },
+    "support": {
+      "title": "Support",
+      "shipping": "Livraison & Retours",
+      "policy": "Politique Future",
+      "track": "Suivre mon Colis",
+      "help": "Centre d'Aide"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "desc": "Accès exclusif aux lots pré-lancement et baisses de prix.",
+      "placeholder": "Entrez votre email",
+      "button": "S'ABONNER"
+    },
+    "rights": "TOUS DROITS RÉSERVÉS.",
+    "compliance": "CONFORMITÉ"
   },
   "splash": {
     "tagline": "Smart Market",

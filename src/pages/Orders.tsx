@@ -90,7 +90,7 @@ const Orders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -114,7 +114,7 @@ const Orders = () => {
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 h-auto gap-1">
             <TabsTrigger value="notifications" className="data-[state=active]:bg-jinbao-red data-[state=active]:text-white relative">
               <Bell className="h-4 w-4 mr-1" />
               {unreadCount > 0 && (

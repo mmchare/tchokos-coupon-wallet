@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ChevronRight, Phone, Link2, ExternalLink, AlertTriangle, XCircle } from 'lucide-react';
+import { Search, Phone, ExternalLink, AlertTriangle, XCircle, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -45,6 +45,8 @@ const LOGISTICS_STEPS = [
   { step: 5, label: 'Livrée', status: 'delivered', color: 'bg-green-500/20 text-green-500', icon: 'CheckCircle2' },
 ];
 
+const PAGE_SIZE = 20;
+
 // Check if order was cancelled recently (within last 24 hours)
 const isRecentlyCancelled = (order: Order) => {
   if (order.status !== 'cancelled') return false;
@@ -60,28 +62,58 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const { toast } = useToast();
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    
+    // Calculate range for pagination
+    const from = (currentPage - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    // Build query
+    let query = supabase
       .from('orders')
       .select(`
         *,
         products (name, images, source_link),
         profiles:user_id (full_name, phone)
-      `)
-      .order('created_at', { ascending: false });
+      `, { count: 'exact' });
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      query = query.eq('logistics_step', parseInt(statusFilter));
+    }
+
+    // Apply search filter (on server side for name/city)
+    if (searchQuery) {
+      query = query.or(`city.ilike.%${searchQuery}%,product_name.ilike.%${searchQuery}%`);
+    }
+
+    // Order and paginate
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (!error && data) {
       setOrders(data as Order[]);
+      setTotalCount(count || 0);
     }
     setIsLoading(false);
-  };
+  }, [currentPage, statusFilter, searchQuery]);
 
   useEffect(() => {
     fetchOrders();
+  }, [fetchOrders]);
 
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
+
+  useEffect(() => {
     // Subscribe to real-time order updates
     const channel = supabase
       .channel('admin-orders-changes')
@@ -102,7 +134,7 @@ const AdminOrders = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchOrders]);
 
   const updateOrderStep = async (orderId: string, newStep: number) => {
     const stepInfo = LOGISTICS_STEPS.find(s => s.step === newStep);
@@ -142,7 +174,6 @@ const AdminOrders = () => {
       console.log('Email notification sent for order', orderId);
     } catch (emailError) {
       console.error('Failed to send email notification:', emailError);
-      // Don't block the update if email fails
     }
 
     toast({ title: "Succès", description: "Statut mis à jour et notification envoyée" });
@@ -174,7 +205,6 @@ const AdminOrders = () => {
         p_details: { new_step: newStep, new_status: newStatus, batch_size: selectedOrders.length }
       });
 
-      // Send email notification to user
       try {
         await supabase.functions.invoke('send-order-notification', {
           body: {
@@ -195,10 +225,10 @@ const AdminOrders = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedOrders.length === filteredOrders.length) {
+    if (selectedOrders.length === orders.length) {
       setSelectedOrders([]);
     } else {
-      setSelectedOrders(filteredOrders.map(o => o.id));
+      setSelectedOrders(orders.map(o => o.id));
     }
   };
 
@@ -210,23 +240,15 @@ const AdminOrders = () => {
     );
   };
 
-  const filteredOrders = orders.filter(o => {
-    const productName = o.product_name || o.products?.name || '';
-    const matchesSearch =
-      productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.city.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || o.logistics_step.toString() === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Commandes</h1>
-        <p className="text-muted-foreground">Gérez les commandes et la logistique</p>
+        <p className="text-muted-foreground">
+          Gérez les commandes et la logistique ({totalCount} commandes au total)
+        </p>
       </div>
 
       {/* Filters */}
@@ -234,7 +256,7 @@ const AdminOrders = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher..."
+            placeholder="Rechercher par ville ou produit..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -263,7 +285,7 @@ const AdminOrders = () => {
               <span className="text-sm font-medium">
                 {selectedOrders.length} commande(s) sélectionnée(s)
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
                   <Button
                     key={step.step}
@@ -288,7 +310,7 @@ const AdminOrders = () => {
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox
-                    checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                    checked={selectedOrders.length === orders.length && orders.length > 0}
                     onCheckedChange={toggleSelectAll}
                   />
                 </TableHead>
@@ -305,17 +327,20 @@ const AdminOrders = () => {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8">
-                    Chargement...
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Chargement...
+                    </div>
                   </TableCell>
                 </TableRow>
-              ) : filteredOrders.length === 0 ? (
+              ) : orders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Aucune commande trouvée
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredOrders.map((order) => (
+                orders.map((order) => (
                   <TableRow 
                     key={order.id} 
                     className={isRecentlyCancelled(order) ? 'bg-red-500/10 border-l-4 border-l-red-500' : ''}
@@ -425,6 +450,35 @@ const AdminOrders = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2">
+          <p className="text-sm text-muted-foreground">
+            Page {currentPage} sur {totalPages} ({totalCount} commandes)
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1 || isLoading}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || isLoading}
+            >
+              Suivant
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

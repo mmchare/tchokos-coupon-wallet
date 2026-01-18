@@ -23,7 +23,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   return (
     <div className="splash-container">
       <div className="animate-bounce-in text-center">
-        <h1 className="jinbao-logo text-5xl sm:text-6xl mb-3">JinBao</h1>
+        <h1 className="jinbao-logo text-5xl sm:text-6xl mb-3 text-jinbao-red-new">金Bao</h1>
         <p className="text-white/90 text-base sm:text-lg font-semibold tracking-widest uppercase">
           {t('splash.tagline')}
         </p>
