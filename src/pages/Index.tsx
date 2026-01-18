@@ -30,12 +30,10 @@ const Index = () => {
     setShowSplash(false);
   };
 
+
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
-
-  // Allow access to Home without authentication (like Xianyu)
-  // Authentication is required only for specific actions (purchase, favorites, etc.)
   return <Home />;
 };
 
