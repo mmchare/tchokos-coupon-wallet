@@ -200,9 +200,11 @@ const Home = () => {
 
   const breakpointColumns = {
     default: 4,
+    1536: 4,
     1280: 3,
     1024: 3,
     768: 2,
+    640: 2,
     480: 2
   };
 
@@ -266,7 +268,7 @@ const Home = () => {
       {/* Features Section */}
       <FeaturesSection />
 
-      <main className="container mx-auto px-4 sm:px-6 py-12">
+      <main className="container mx-auto px-4 sm:px-6 py-6 md:py-12">
         {/* Category Grid */}
         <CategoryGrid
           activeCategory={activeCategory}
@@ -278,18 +280,18 @@ const Home = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-brand-secondary dark:text-brand-secondary font-bold text-xs tracking-widest uppercase mb-2">
-                Full Catalog
+                {t('home.fullCatalog')}
               </p>
               <h2 className="text-3xl sm:text-4xl font-bold text-[#222222] dark:text-white mb-3">
-                Popular Products
+                {t('home.popularProducts')}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 max-w-2xl text-sm sm:text-base font-normal">
-                Over 2,400 curated tech items ready for local dispatch. Quality guaranteed through direct sourcing.
+                {t('home.catalogDesc')}
               </p>
             </div>
             {visibleProducts.length > 0 && (
               <div className="hidden lg:block text-xs font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full">
-                SHOWING 1-{visibleProducts.length} OF {displayProducts.length} ITEMS
+                {t('home.showing', { visible: visibleProducts.length, total: displayProducts.length })}
               </div>
             )}
           </div>
@@ -334,7 +336,7 @@ const Home = () => {
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="h-8 w-8 animate-spin text-brand-secondary dark:text-brand-secondary" />
                   <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium">
-                    Loading more products...
+                    {t('home.loadingMore')}
                   </span>
                 </div>
               </div>
@@ -349,12 +351,12 @@ const Home = () => {
               <Search className="h-10 w-10 text-gray-400 dark:text-gray-500" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              No products found
+              {t('home.noProducts')}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md text-center mb-6">
               {useAIMode && searchQuery 
-                ? "Our AI couldn't find a match. Try using different keywords." 
-                : "Try adjusting your filters or search query to find what you're looking for."}
+                ? t('home.noProductsAI') 
+                : t('home.noProductsDesc')}
             </p>
             <Button 
               variant="outline" 
@@ -364,7 +366,7 @@ const Home = () => {
               }} 
               className="text-brand-secondary dark:text-brand-secondary border-brand-secondary dark:border-brand-secondary hover:bg-brand-secondary/5 dark:hover:bg-brand-secondary/10 font-semibold rounded-lg"
             >
-              Clear All Filters
+              {t('home.clearFilters')}
             </Button>
           </div>
         )}

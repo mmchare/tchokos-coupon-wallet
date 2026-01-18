@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Star, Gavel } from "lucide-react";
 import { useActivityTracking } from "@/hooks/useActivityTracking";
 import OptimizedImage from "@/components/OptimizedImage";
+import { useTranslation } from 'react-i18next';
 
 interface MasonryProductCardProps {
   id: string;
@@ -28,6 +29,7 @@ const MasonryProductCard = memo(
   }: MasonryProductCardProps) => {
     const navigate = useNavigate();
     const { trackClick } = useActivityTracking();
+    const { t } = useTranslation();
 
     const handleClick = () => {
       trackClick(id);
@@ -55,7 +57,7 @@ const MasonryProductCard = memo(
         <div className="p-4 space-y-3">
           {/* Title and Rating Row */}
           <div className="flex justify-between items-start gap-2">
-            <h3 className="font-bold text-brand-text text-base leading-tight line-clamp-2 group-hover:text-brand-primary transition-colors flex-1">
+            <h3 className="font-bold text-brand-text dark:text-white text-base leading-tight line-clamp-2 group-hover:text-brand-primary dark:group-hover:text-brand-primary transition-colors flex-1">
               {name}
             </h3>
             <div className="flex items-center gap-1 shrink-0 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded-md">
@@ -74,28 +76,17 @@ const MasonryProductCard = memo(
                   {originalPrice.toLocaleString()} F
                 </span>
               )}
-              <span className="text-lg font-bold text-brand-text">
+              <span className="text-lg font-bold text-brand-text dark:text-white">
                 {price.toLocaleString()} F
               </span>
             </div>
             
-            {/* Auction Indicator or Add Button */}
-            {isAuction ? (
+            {/* Auction Indicator Only */}
+            {isAuction && (
               <div className="flex items-center gap-1 text-brand-primary bg-brand-primary/10 px-2 py-1 rounded text-xs font-bold">
                 <Gavel className="h-3 w-3" />
-                <span>Enchère</span>
+                <span>{t('product.auctionLabel')}</span>
               </div>
-            ) : (
-              <button 
-                className="bg-brand-primary hover:bg-brand-primary/90 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:translate-y-px"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Add to cart logic would go here
-                  handleClick(); // For now, go to details
-                }}
-              >
-                Add to Cart
-              </button>
             )}
           </div>
         </div>

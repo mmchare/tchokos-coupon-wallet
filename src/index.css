@@ -473,13 +473,22 @@ Typography: Inter / Poppins | Titles: Bold | Text: Regular
   /* Masonry Grid Styles */
   .masonry-grid {
     display: flex;
-    margin-left: -8px;
+    margin-left: -16px; /* Increased gap */
     width: auto;
   }
 
-  .masonry-grid-column {
-    padding-left: 8px;
+   .masonry-grid-column {
+    padding-left: 16px; /* Increased gap */
     background-clip: padding-box;
+  }
+
+  /* Utility to hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   .masonry-card {
