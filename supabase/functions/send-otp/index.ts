@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,14 @@ serve(async (req) => {
         JSON.stringify({ error: "Numéro de téléphone requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Rate limiting by phone number (anti-spam for OTP)
+    const rateLimit = checkRateLimit(`send-otp:${phone}`, RATE_LIMITS.OTP_SEND);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for OTP send: ${phone}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
     }
 
     // Format phone number (remove spaces, ensure proper format without +)

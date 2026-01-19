@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,6 +38,15 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { user_id } = await req.json();
+
+    // Rate limiting by user_id or IP
+    const clientId = user_id || getClientIdentifier(req);
+    const rateLimit = checkRateLimit(`ai-recommendations:${clientId}`, RATE_LIMITS.AI_RECOMMENDATIONS);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for AI recommendations: ${clientId}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
+    }
 
     if (!user_id) {
       return new Response(
