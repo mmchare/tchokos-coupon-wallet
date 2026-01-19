@@ -12,7 +12,7 @@ interface MasonryProductCardProps {
   originalPrice?: number;
   rating: number;
   isAuction?: boolean;
-  priority?: boolean; // For above-fold images
+  priority?: boolean;
 }
 
 const MasonryProductCard = memo(({ 
@@ -33,12 +33,15 @@ const MasonryProductCard = memo(({
     navigate(`/product/${id}`);
   };
 
+  // Round rating to 1 decimal place
+  const displayRating = Number(rating.toFixed(1));
+
   return (
     <div 
-      className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-border/50"
+      className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-transparent hover:border-primary"
       onClick={handleClick}
     >
-      {/* Image Container - Aggressive lazy loading with intersection observer */}
+      {/* Image Container */}
       <div className="relative overflow-hidden bg-muted aspect-square">
         <OptimizedImage
           src={image || '/placeholder.svg'}
@@ -47,24 +50,23 @@ const MasonryProductCard = memo(({
           priority={priority}
           placeholder="blur"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
-      {/* Product Info */}
-      <div className="p-2 space-y-1">
-        {/* Product Name - Compact */}
-        <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-2 group-hover:text-vibrant-red transition-colors">
+      {/* Product Info - Clean, sober styling */}
+      <div className="p-3 space-y-2">
+        {/* Product Name - Always foreground color */}
+        <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-2">
           {name}
         </h3>
         
-        {/* Rating Stars & Auction Indicator */}
+        {/* Rating & Auction Row */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-vibrant-yellow text-vibrant-yellow" />
-            <span className="text-xs font-medium text-vibrant-yellow">{rating}</span>
+            <span className="text-xs font-medium text-vibrant-yellow">{displayRating}</span>
           </div>
           
-          {/* Auction Indicator - Bleu Tech */}
+          {/* Auction Indicator */}
           {isAuction && (
             <div className="flex items-center gap-1 text-primary">
               <Gavel className="h-3 w-3" />
@@ -73,19 +75,19 @@ const MasonryProductCard = memo(({
           )}
         </div>
 
-        {/* Price Section */}
+        {/* Price Section - Sober styling */}
         <div className="flex items-baseline gap-2 flex-wrap">
-          {/* Current Price - Rouge Vif, Gras, Grand */}
-          <span className="text-lg font-bold text-vibrant-red">
-            {price.toLocaleString()} F
-          </span>
-          
-          {/* Original Price - Gris Barré */}
+          {/* Original Price - Strikethrough (if exists) */}
           {originalPrice && (
             <span className="text-xs text-muted-foreground line-through">
               {originalPrice.toLocaleString()} F
             </span>
           )}
+          
+          {/* Current Price - Foreground color, clean */}
+          <span className="text-base font-bold text-foreground">
+            {price.toLocaleString()} F
+          </span>
         </div>
       </div>
     </div>
