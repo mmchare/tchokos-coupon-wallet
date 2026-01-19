@@ -96,24 +96,24 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* JinBao Dark Mode - Noir Profond based */
-    --background: 0 0% 4%;                    /* Noir Profond background */
+    /* JinBao Dark Mode - Noir très profond (comme l'app ami) */
+    --background: 24 10% 6%;                  /* Noir chaud profond #0F0D0B */
     --foreground: 0 0% 98%;                   /* Light text */
 
-    --card: 0 0% 8%;                          /* Dark card */
+    --card: 24 8% 10%;                        /* Carte légèrement plus claire #1A1816 */
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 6%;
+    --popover: 24 8% 8%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 3 83% 49%;                     /* Rouge Tech */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;                    /* Dark secondary */
+    --secondary: 24 8% 14%;                   /* Dark secondary */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 66%;             /* Gris Argent */
+    --muted: 24 8% 14%;
+    --muted-foreground: 0 0% 60%;             /* Gris Argent */
 
     --accent: 210 100% 56%;                   /* Bleu Tech */
     --accent-foreground: 0 0% 100%;
@@ -124,20 +124,20 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 16%;
-    --input: 0 0% 12%;
+    --border: 24 8% 18%;
+    --input: 24 8% 14%;
     --ring: 3 83% 49%;
 
-    /* Dark mode gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 4%), hsl(0 0% 8%));
+    /* Dark mode gradients - noir chaud */
+    --gradient-hero: linear-gradient(135deg, hsl(24 10% 6%), hsl(24 8% 10%));
 
-    --sidebar-background: 0 0% 6%;
+    --sidebar-background: 24 8% 8%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 3 83% 49%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent: 24 8% 14%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 12%;
+    --sidebar-border: 24 8% 14%;
     --sidebar-ring: 3 83% 49%;
   }
 }
@@ -381,13 +381,12 @@ All colors MUST be HSL.
 
   .masonry-card {
     @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
-    border: 1px solid hsl(var(--border));
+    border: 1px solid transparent;
   }
 
   .masonry-card:hover {
-    transform: translateY(-4px);
     box-shadow: 0 12px 24px -8px hsl(0 0% 0% / 0.15);
-    border-color: hsl(0 100% 50%);
+    border-color: hsl(var(--primary));
   }
 }
 
