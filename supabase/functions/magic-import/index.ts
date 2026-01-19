@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -206,6 +207,15 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting by IP
+    const clientId = getClientIdentifier(req);
+    const rateLimit = checkRateLimit(`magic-import:${clientId}`, RATE_LIMITS.MAGIC_IMPORT);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for magic import: ${clientId}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
+    }
+
     const { url } = await req.json();
 
     if (!url) {

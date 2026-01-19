@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,6 +31,9 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Rate limiting - use IP + user_id for order creation
+    const clientIp = getClientIdentifier(req);
+    
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -39,6 +43,15 @@ serve(async (req: Request) => {
     console.log('Order request received:', orderData);
 
     const { user_id, product_id, items, total_amount, city, delivery_address, whatsapp_number } = orderData;
+
+    // Rate limiting by user_id + IP
+    const rateLimitKey = `create-order:${user_id || clientIp}`;
+    const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.ORDER_CREATE);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for order creation: ${rateLimitKey}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
+    }
 
     // Validate input
     if (!user_id) {

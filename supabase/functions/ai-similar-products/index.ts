@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,15 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting by IP
+    const clientId = getClientIdentifier(req);
+    const rateLimit = checkRateLimit(`ai-similar:${clientId}`, RATE_LIMITS.AI_SIMILAR);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for AI similar products: ${clientId}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
+    }
+
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');

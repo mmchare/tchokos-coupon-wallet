@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIdentifier, rateLimitResponse, RATE_LIMITS } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -110,6 +111,14 @@ serve(async (req) => {
 
     const body: PaymentRequest = await req.json();
     const { amount, phone_number, payment_method, user_id, description } = body;
+
+    // Rate limiting by user_id
+    const rateLimit = checkRateLimit(`payment:${user_id}`, RATE_LIMITS.PAYMENT);
+    
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for payment: ${user_id}`);
+      return rateLimitResponse(rateLimit.resetIn, corsHeaders);
+    }
 
     console.log('Payment request received:', { amount, phone_number, payment_method, user_id });
 
