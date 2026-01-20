@@ -96,24 +96,24 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* JinBao Dark Mode - Noir très profond (comme l'app ami) */
-    --background: 24 10% 6%;                  /* Noir chaud profond #0F0D0B */
-    --foreground: 0 0% 98%;                   /* Light text */
+    /* JinBao Dark Mode - Bleu nuit profond et chaud (comme l'app ami) */
+    --background: 220 25% 6%;                 /* Bleu nuit profond #0A0C10 */
+    --foreground: 210 20% 98%;                /* Light text with slight blue tint */
 
-    --card: 24 8% 10%;                        /* Carte légèrement plus claire #1A1816 */
-    --card-foreground: 0 0% 98%;
+    --card: 220 22% 10%;                      /* Carte bleu nuit #12151C */
+    --card-foreground: 210 20% 98%;
 
-    --popover: 24 8% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 24% 8%;
+    --popover-foreground: 210 20% 98%;
 
     --primary: 3 83% 49%;                     /* Rouge Tech */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 24 8% 14%;                   /* Dark secondary */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 20% 14%;                 /* Dark secondary with blue tint */
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 24 8% 14%;
-    --muted-foreground: 0 0% 60%;             /* Gris Argent */
+    --muted: 220 18% 14%;
+    --muted-foreground: 215 15% 55%;          /* Gris bleuté pour texte secondaire */
 
     --accent: 210 100% 56%;                   /* Bleu Tech */
     --accent-foreground: 0 0% 100%;
@@ -124,20 +124,20 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 24 8% 18%;
-    --input: 24 8% 14%;
+    --border: 220 18% 18%;
+    --input: 220 20% 14%;
     --ring: 3 83% 49%;
 
-    /* Dark mode gradients - noir chaud */
-    --gradient-hero: linear-gradient(135deg, hsl(24 10% 6%), hsl(24 8% 10%));
+    /* Dark mode gradients - bleu nuit profond */
+    --gradient-hero: linear-gradient(135deg, hsl(220 25% 6%), hsl(220 22% 10%));
 
-    --sidebar-background: 24 8% 8%;
-    --sidebar-foreground: 0 0% 95%;
+    --sidebar-background: 220 24% 8%;
+    --sidebar-foreground: 210 20% 95%;
     --sidebar-primary: 3 83% 49%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 24 8% 14%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 24 8% 14%;
+    --sidebar-accent: 220 20% 14%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 18% 14%;
     --sidebar-ring: 3 83% 49%;
   }
 }

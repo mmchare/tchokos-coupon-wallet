@@ -10,19 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles } from 'lucide-react';
-
-const DEFAULT_CATEGORIES = [
-  'Électronique',
-  'Mode & Vêtements',
-  'Maison & Jardin',
-  'Beauté & Santé',
-  'Sport & Loisirs',
-  'Jouets & Enfants',
-  'Accessoires',
-  'Sacs & Bagages',
-  'Montres & Bijoux',
-  'Auto & Moto',
-];
+import { useCategories, useCreateCategory, AVAILABLE_ICONS, AVAILABLE_COLORS, Category } from '@/hooks/useCategories';
 
 interface Product {
   id: string;
@@ -53,9 +41,13 @@ const AdminProducts = () => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  // Category management with database
+  const { data: dbCategories = [], isLoading: categoriesLoading } = useCategories();
+  const createCategoryMutation = useCreateCategory();
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('Package');
+  const [newCategoryColor, setNewCategoryColor] = useState(AVAILABLE_COLORS[0]);
 
   // Magic Import state
   const [magicImportMode, setMagicImportMode] = useState(false);
@@ -86,12 +78,6 @@ const AdminProducts = () => {
 
     if (!error && data) {
       setProducts(data as Product[]);
-      // Collect unique categories from existing products
-      const existingCategories = data
-        .map(p => p.category)
-        .filter((cat): cat is string => !!cat && cat.trim() !== '');
-      const uniqueCategories = [...new Set([...DEFAULT_CATEGORIES, ...existingCategories])];
-      setCategories(uniqueCategories);
     }
     setIsLoading(false);
   };
@@ -194,14 +180,29 @@ const AdminProducts = () => {
     }
   };
 
-  const handleAddNewCategory = () => {
+  const handleAddNewCategory = async () => {
     if (newCategoryName.trim()) {
       const trimmedCategory = newCategoryName.trim();
-      if (!categories.includes(trimmedCategory)) {
-        setCategories(prev => [...prev, trimmedCategory]);
+      const existingCat = dbCategories.find(c => c.name === trimmedCategory);
+      
+      if (!existingCat) {
+        try {
+          await createCategoryMutation.mutateAsync({
+            name: trimmedCategory,
+            icon: newCategoryIcon,
+            bg_color: newCategoryColor.bg,
+            icon_color: newCategoryColor.icon
+          });
+          toast({ title: "Succès", description: "Catégorie créée" });
+        } catch (error) {
+          toast({ title: "Erreur", description: "Impossible de créer la catégorie", variant: "destructive" });
+        }
       }
+      
       setFormData(prev => ({ ...prev, category: trimmedCategory }));
       setNewCategoryName('');
+      setNewCategoryIcon('Package');
+      setNewCategoryColor(AVAILABLE_COLORS[0]);
       setShowNewCategoryInput(false);
     }
   };
@@ -650,32 +651,71 @@ const AdminProducts = () => {
               <div>
                 <label className="text-sm font-medium">Catégorie</label>
                 {showNewCategoryInput ? (
-                  <div className="flex gap-2">
+                  <div className="space-y-3">
                     <Input
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      placeholder="Nouvelle catégorie..."
-                      className="flex-1"
+                      placeholder="Nom de la catégorie..."
                     />
-                    <Button 
-                      type="button" 
-                      size="sm" 
-                      onClick={handleAddNewCategory}
-                      className="bg-jinbao-red hover:bg-jinbao-red/90"
-                    >
-                      Ajouter
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => {
-                        setShowNewCategoryInput(false);
-                        setNewCategoryName('');
-                      }}
-                    >
-                      Annuler
-                    </Button>
+                    
+                    {/* Icon Selection */}
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Icône</label>
+                      <Select value={newCategoryIcon} onValueChange={setNewCategoryIcon}>
+                        <SelectTrigger className="w-full bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border border-border z-50 max-h-[200px]">
+                          {AVAILABLE_ICONS.map((icon) => (
+                            <SelectItem key={icon.name} value={icon.name}>
+                              {icon.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Color Selection */}
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Couleur</label>
+                      <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_COLORS.slice(0, 12).map((color) => (
+                          <button
+                            key={color.name}
+                            type="button"
+                            onClick={() => setNewCategoryColor(color)}
+                            className={`w-6 h-6 rounded-full ${color.bg} border-2 transition-all ${
+                              newCategoryColor.name === color.name 
+                                ? 'border-primary scale-110' 
+                                : 'border-transparent hover:scale-105'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        onClick={handleAddNewCategory}
+                        disabled={createCategoryMutation.isPending}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {createCategoryMutation.isPending ? 'Création...' : 'Créer'}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setShowNewCategoryInput(false);
+                          setNewCategoryName('');
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <Select
@@ -692,12 +732,12 @@ const AdminProducts = () => {
                       <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border border-border z-50">
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                      {dbCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
                         </SelectItem>
                       ))}
-                      <SelectItem value="__new__" className="text-jinbao-red font-medium">
+                      <SelectItem value="__new__" className="text-primary font-medium">
                         + Ajouter une nouvelle catégorie
                       </SelectItem>
                     </SelectContent>
