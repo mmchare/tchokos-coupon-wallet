@@ -1,6 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Gavel, Sparkles, Smartphone, Laptop, Watch, Headphones, Camera, Shirt, Home, Gamepad2, Package } from 'lucide-react';
-import { ReactNode } from 'react';
+import { 
+  Gavel, Sparkles, Smartphone, Laptop, Watch, Headphones, Camera, Shirt, Home, 
+  Gamepad2, Package, Gem, Briefcase, Car, Dumbbell, Baby, Tv, Tablet, Bike, 
+  Wrench, Book, Music, Utensils, Flower2, Dog, Plane, Gift, LucideIcon
+} from 'lucide-react';
+import { useCategories, Category } from '@/hooks/useCategories';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -8,110 +12,62 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void;
 }
 
-// Category icons mapping - each category gets a unique icon and color
-const getCategoryConfig = (category: string): { icon: ReactNode; bgColor: string; iconColor: string } => {
-  const configs: Record<string, { icon: ReactNode; bgColor: string; iconColor: string }> = {
-    'all': { 
-      icon: <Package className="h-5 w-5" />, 
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30', 
-      iconColor: 'text-blue-600 dark:text-blue-400' 
-    },
-    'auctions': { 
-      icon: <Gavel className="h-5 w-5" />, 
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30', 
-      iconColor: 'text-orange-600 dark:text-orange-400' 
-    },
-    'Electronics': { 
-      icon: <Smartphone className="h-5 w-5" />, 
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30', 
-      iconColor: 'text-purple-600 dark:text-purple-400' 
-    },
-    'Électronique': { 
-      icon: <Smartphone className="h-5 w-5" />, 
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30', 
-      iconColor: 'text-purple-600 dark:text-purple-400' 
-    },
-    'Fashion': { 
-      icon: <Shirt className="h-5 w-5" />, 
-      bgColor: 'bg-pink-100 dark:bg-pink-900/30', 
-      iconColor: 'text-pink-600 dark:text-pink-400' 
-    },
-    'Mode': { 
-      icon: <Shirt className="h-5 w-5" />, 
-      bgColor: 'bg-pink-100 dark:bg-pink-900/30', 
-      iconColor: 'text-pink-600 dark:text-pink-400' 
-    },
-    'Accessories': { 
-      icon: <Watch className="h-5 w-5" />, 
-      bgColor: 'bg-teal-100 dark:bg-teal-900/30', 
-      iconColor: 'text-teal-600 dark:text-teal-400' 
-    },
-    'Accessoires': { 
-      icon: <Watch className="h-5 w-5" />, 
-      bgColor: 'bg-teal-100 dark:bg-teal-900/30', 
-      iconColor: 'text-teal-600 dark:text-teal-400' 
-    },
-    'Home & Garden': { 
-      icon: <Home className="h-5 w-5" />, 
-      bgColor: 'bg-green-100 dark:bg-green-900/30', 
-      iconColor: 'text-green-600 dark:text-green-400' 
-    },
-    'Maison': { 
-      icon: <Home className="h-5 w-5" />, 
-      bgColor: 'bg-green-100 dark:bg-green-900/30', 
-      iconColor: 'text-green-600 dark:text-green-400' 
-    },
-    'Beauty & Health': { 
-      icon: <Sparkles className="h-5 w-5" />, 
-      bgColor: 'bg-rose-100 dark:bg-rose-900/30', 
-      iconColor: 'text-rose-600 dark:text-rose-400' 
-    },
-    'Beauté': { 
-      icon: <Sparkles className="h-5 w-5" />, 
-      bgColor: 'bg-rose-100 dark:bg-rose-900/30', 
-      iconColor: 'text-rose-600 dark:text-rose-400' 
-    },
-    'Sports & Hobbies': { 
-      icon: <Gamepad2 className="h-5 w-5" />, 
-      bgColor: 'bg-indigo-100 dark:bg-indigo-900/30', 
-      iconColor: 'text-indigo-600 dark:text-indigo-400' 
-    },
-    'Sports': { 
-      icon: <Gamepad2 className="h-5 w-5" />, 
-      bgColor: 'bg-indigo-100 dark:bg-indigo-900/30', 
-      iconColor: 'text-indigo-600 dark:text-indigo-400' 
-    },
-    'Audio': { 
-      icon: <Headphones className="h-5 w-5" />, 
-      bgColor: 'bg-cyan-100 dark:bg-cyan-900/30', 
-      iconColor: 'text-cyan-600 dark:text-cyan-400' 
-    },
-    'Photo': { 
-      icon: <Camera className="h-5 w-5" />, 
-      bgColor: 'bg-amber-100 dark:bg-amber-900/30', 
-      iconColor: 'text-amber-600 dark:text-amber-400' 
-    },
-    'Ordinateur': { 
-      icon: <Laptop className="h-5 w-5" />, 
-      bgColor: 'bg-slate-100 dark:bg-slate-900/30', 
-      iconColor: 'text-slate-600 dark:text-slate-400' 
-    },
-    'Computers': { 
-      icon: <Laptop className="h-5 w-5" />, 
-      bgColor: 'bg-slate-100 dark:bg-slate-900/30', 
-      iconColor: 'text-slate-600 dark:text-slate-400' 
-    },
-  };
+// Icon mapping from string to Lucide component
+const iconMap: Record<string, LucideIcon> = {
+  Package, Smartphone, Laptop, Tablet, Tv, Headphones, Camera, Gamepad2,
+  Watch, Gem, Shirt, Briefcase, Home, Sparkles, Dumbbell, Baby, Car, Bike,
+  Wrench, Book, Music, Utensils, Flower2, Dog, Plane, Gift, Gavel
+};
 
-  return configs[category] || { 
-    icon: <Package className="h-5 w-5" />, 
-    bgColor: 'bg-gray-100 dark:bg-gray-800/50', 
-    iconColor: 'text-gray-600 dark:text-gray-400' 
-  };
+// Default configurations for special categories
+const defaultConfigs: Record<string, { icon: LucideIcon; bgColor: string; iconColor: string }> = {
+  'all': { 
+    icon: Package, 
+    bgColor: 'bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40', 
+    iconColor: 'text-blue-600 dark:text-blue-400' 
+  },
+  'auctions': { 
+    icon: Gavel, 
+    bgColor: 'bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/40 dark:to-red-900/40', 
+    iconColor: 'text-orange-600 dark:text-orange-400' 
+  },
+};
+
+// Fallback config for categories not in database
+const fallbackConfig = { 
+  icon: Package, 
+  bgColor: 'bg-gray-100 dark:bg-gray-800/50', 
+  iconColor: 'text-gray-600 dark:text-gray-400' 
 };
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
   const { t } = useTranslation();
+  const { data: dbCategories = [] } = useCategories();
+
+  // Build a lookup map from DB categories
+  const categoryLookup = new Map<string, Category>();
+  dbCategories.forEach(cat => categoryLookup.set(cat.name, cat));
+
+  // Get config for a category
+  const getCategoryConfig = (categoryName: string) => {
+    // Check special defaults first
+    if (defaultConfigs[categoryName]) {
+      return defaultConfigs[categoryName];
+    }
+
+    // Check database
+    const dbCat = categoryLookup.get(categoryName);
+    if (dbCat) {
+      const IconComponent = iconMap[dbCat.icon] || Package;
+      return {
+        icon: IconComponent,
+        bgColor: dbCat.bg_color,
+        iconColor: dbCat.icon_color
+      };
+    }
+
+    return fallbackConfig;
+  };
 
   // Translate category keys to display names
   const getCategoryLabel = (category: string) => {
@@ -124,6 +80,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
     <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide px-1">
       {categories.map((category) => {
         const config = getCategoryConfig(category);
+        const IconComponent = config.icon;
         const isActive = activeCategory === category;
         
         return (
@@ -131,36 +88,36 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
             key={category}
             onClick={() => onCategoryChange(category)}
             className={`
-              flex-shrink-0 flex flex-col items-start p-4 rounded-2xl cursor-pointer
-              min-w-[130px] transition-all duration-300
-              bg-card border
+              flex-shrink-0 flex flex-col items-center p-3 rounded-2xl cursor-pointer
+              min-w-[100px] transition-all duration-300
+              bg-card border relative overflow-hidden
               ${isActive 
-                ? 'border-primary shadow-lg scale-[1.02]' 
+                ? 'border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
                 : 'border-border/50 hover:border-border hover:shadow-md'
               }
             `}
           >
-            {/* Icon Container */}
+            {/* Decorative background gradient on active */}
+            {isActive && (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            )}
+            
+            {/* Icon Container with gradient background */}
             <div className={`
-              w-11 h-11 rounded-xl flex items-center justify-center mb-3
+              relative w-12 h-12 rounded-xl flex items-center justify-center mb-2
               ${config.bgColor}
+              transition-transform duration-300
+              ${isActive ? 'scale-110' : 'group-hover:scale-105'}
             `}>
-              <span className={config.iconColor}>
-                {config.icon}
-              </span>
+              <IconComponent className={`h-6 w-6 ${config.iconColor}`} />
             </div>
             
             {/* Category Name */}
             <span className={`
-              text-sm font-semibold leading-tight
-              ${isActive ? 'text-foreground' : 'text-foreground'}
+              text-xs font-medium text-center leading-tight line-clamp-2
+              ${isActive ? 'text-primary' : 'text-foreground'}
             `}>
               {getCategoryLabel(category)}
-            </span>
-            
-            {/* Explorer Label */}
-            <span className="text-xs text-muted-foreground mt-0.5">
-              Explorer
             </span>
           </div>
         );

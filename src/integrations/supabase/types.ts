@@ -112,6 +112,36 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          bg_color: string
+          created_at: string
+          icon: string
+          icon_color: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          bg_color?: string
+          created_at?: string
+          icon?: string
+          icon_color?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          bg_color?: string
+          created_at?: string
+          icon?: string
+          icon_color?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       delivery_addresses: {
         Row: {
           address: string
