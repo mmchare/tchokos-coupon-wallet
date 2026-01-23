@@ -16,6 +16,7 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
+import MascotAssistant from '@/components/MascotAssistant';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -427,6 +428,9 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* JinBao Mascot Assistant */}
+      <MascotAssistant />
     </div>
   );
 };
