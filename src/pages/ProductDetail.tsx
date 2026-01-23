@@ -18,6 +18,7 @@ import SimilarProducts from '@/components/SimilarProducts';
 import AuctionBidPanel from '@/components/AuctionBidPanel';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import ReviewPhotoUpload from '@/components/ReviewPhotoUpload';
+import { ExpandableDescription } from '@/components/ExpandableDescription';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Review {
@@ -467,15 +468,10 @@ ${t('product.moreInfo')}`;
         </div>
 
         {/* Description Card */}
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-5 mt-3">
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 bg-primary rounded-full"></span>
-            {t('product.description')}
-          </h3>
-          <p className="text-muted-foreground text-[15px] leading-7 whitespace-pre-line font-light tracking-wide">
-            {product.description}
-          </p>
-        </div>
+        <ExpandableDescription 
+          description={product.description} 
+          title={t('product.description')} 
+        />
 
         {/* Auction Panel */}
         {product.isAuction && product.auctionEndDate && (

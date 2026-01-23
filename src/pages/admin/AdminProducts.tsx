@@ -9,8 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles, icons } from 'lucide-react';
 import { useCategories, useCreateCategory, AVAILABLE_ICONS, AVAILABLE_COLORS, Category } from '@/hooks/useCategories';
+
+// Dynamic icon component
+const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
+  const IconComponent = icons[name as keyof typeof icons];
+  if (!IconComponent) return null;
+  return <IconComponent className={className} />;
+};
 
 interface Product {
   id: string;
@@ -663,12 +670,20 @@ const AdminProducts = () => {
                       <label className="text-xs text-muted-foreground mb-1 block">Icône</label>
                       <Select value={newCategoryIcon} onValueChange={setNewCategoryIcon}>
                         <SelectTrigger className="w-full bg-background">
-                          <SelectValue />
+                          <div className="flex items-center gap-2">
+                            <div className={`w-5 h-5 rounded flex items-center justify-center ${newCategoryColor.bg}`}>
+                              <DynamicIcon name={newCategoryIcon} className={`h-3 w-3 ${newCategoryColor.icon}`} />
+                            </div>
+                            <span>{AVAILABLE_ICONS.find(i => i.name === newCategoryIcon)?.label || newCategoryIcon}</span>
+                          </div>
                         </SelectTrigger>
-                        <SelectContent className="bg-popover border border-border z-50 max-h-[200px]">
+                        <SelectContent className="bg-popover border border-border z-50 max-h-[280px]">
                           {AVAILABLE_ICONS.map((icon) => (
                             <SelectItem key={icon.name} value={icon.name}>
-                              {icon.label}
+                              <div className="flex items-center gap-2">
+                                <DynamicIcon name={icon.name} className="h-4 w-4" />
+                                <span>{icon.label}</span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -729,16 +744,38 @@ const AdminProducts = () => {
                     }}
                   >
                     <SelectTrigger className="w-full bg-background">
-                      <SelectValue placeholder="Sélectionner une catégorie" />
+                      <SelectValue placeholder="Sélectionner une catégorie">
+                        {formData.category && (
+                          <div className="flex items-center gap-2">
+                            {dbCategories.find(c => c.name === formData.category) && (
+                              <div className={`w-5 h-5 rounded flex items-center justify-center ${dbCategories.find(c => c.name === formData.category)?.bg_color}`}>
+                                <DynamicIcon 
+                                  name={dbCategories.find(c => c.name === formData.category)?.icon || 'Package'} 
+                                  className={`h-3 w-3 ${dbCategories.find(c => c.name === formData.category)?.icon_color}`} 
+                                />
+                              </div>
+                            )}
+                            <span>{formData.category}</span>
+                          </div>
+                        )}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border border-border z-50">
+                    <SelectContent className="bg-popover border border-border z-50 max-h-[280px]">
                       {dbCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
+                          <div className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded flex items-center justify-center ${cat.bg_color}`}>
+                              <DynamicIcon name={cat.icon} className={`h-3.5 w-3.5 ${cat.icon_color}`} />
+                            </div>
+                            <span>{cat.name}</span>
+                          </div>
                         </SelectItem>
                       ))}
                       <SelectItem value="__new__" className="text-primary font-medium">
-                        + Ajouter une nouvelle catégorie
+                        <div className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          <span>Ajouter une nouvelle catégorie</span>
+                        </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
