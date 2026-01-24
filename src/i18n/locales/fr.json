@@ -11,6 +11,7 @@
     "confirm": "Confirmer",
     "back": "Retour",
     "next": "Suivant",
+    "previous": "Précédent",
     "close": "Fermer",
     "add": "Ajouter",
     "remove": "Supprimer",
@@ -335,5 +336,28 @@
     "cachedProducts": "{{count}} produit(s) disponible(s)",
     "retry": "Réessayer",
     "viewingCached": "Affichage des produits en cache"
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur",
+    "subtitle": "Laissez-moi vous présenter la plateforme !",
+    "feature1Title": "Recherche Intelligente IA",
+    "feature1Desc": "Décrivez ce que vous cherchez en langage naturel et notre IA trouvera les meilleurs produits pour vous.",
+    "feature2Title": "Système de Coupon Unique",
+    "feature2Desc": "Ajoutez plusieurs produits à votre coupon et achetez tout en une seule commande. Simple et pratique !",
+    "feature3Title": "Programme de Parrainage",
+    "feature3Desc": "Gagnez 5000 FCFA pour chaque ami parrainé et votre ami reçoit 2000 FCFA de bienvenue !",
+    "feature4Title": "Livraison Rapide",
+    "feature4Desc": "Livraison dans toute la région CEMAC en 10-14 jours maximum depuis la Chine.",
+    "feature5Title": "Paiements Sécurisés",
+    "feature5Desc": "Payez par Mobile Money, avec votre solde JinBao ou à la livraison. Vos transactions sont 100% sécurisées.",
+    "start": "C'est parti !"
+  },
+  "chat": {
+    "welcomeMessage": "Bonjour ! 👋 Je suis JinBao, votre assistant. Comment puis-je vous aider aujourd'hui ?",
+    "errorMessage": "Désolé, je n'ai pas pu traiter votre message. Réessayez !",
+    "online": "En ligne",
+    "placeholder": "Posez-moi une question...",
+    "quickQuestions": "Questions fréquentes :",
+    "openChat": "Discuter avec JinBao"
   }
 }

@@ -11,6 +11,7 @@
     "confirm": "Confirm",
     "back": "Back",
     "next": "Next",
+    "previous": "Previous",
     "close": "Close",
     "add": "Add",
     "remove": "Remove",
@@ -335,5 +336,28 @@
     "cachedProducts": "{{count}} product(s) available",
     "retry": "Retry",
     "viewingCached": "Viewing cached products"
+  },
+  "onboarding": {
+    "welcome": "Welcome to",
+    "subtitle": "Let me show you around!",
+    "feature1Title": "Smart AI Search",
+    "feature1Desc": "Describe what you're looking for in natural language and our AI will find the best products for you.",
+    "feature2Title": "Unique Coupon System",
+    "feature2Desc": "Add multiple products to your coupon and buy everything in one order. Simple and convenient!",
+    "feature3Title": "Referral Program",
+    "feature3Desc": "Earn 5000 FCFA for each referred friend and your friend gets 2000 FCFA welcome bonus!",
+    "feature4Title": "Fast Delivery",
+    "feature4Desc": "Delivery throughout the CEMAC region in 10-14 days maximum from China.",
+    "feature5Title": "Secure Payments",
+    "feature5Desc": "Pay with Mobile Money, your JinBao balance, or on delivery. Your transactions are 100% secure.",
+    "start": "Let's go!"
+  },
+  "chat": {
+    "welcomeMessage": "Hello! 👋 I'm JinBao, your assistant. How can I help you today?",
+    "errorMessage": "Sorry, I couldn't process your message. Please try again!",
+    "online": "Online",
+    "placeholder": "Ask me a question...",
+    "quickQuestions": "Common questions:",
+    "openChat": "Chat with JinBao"
   }
 }
