@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2, TrendingUp, Bell } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Edit2, CreditCard, LogOut, Gift, Copy, Check, Lock, Package, ChevronRight, Heart, Link, Share2, TrendingUp, Bell, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import AdminPasswordModal from '@/components/AdminPasswordModal';
 import AddressManager from '@/components/AddressManager';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import JinBaoChat from '@/components/JinBaoChat';
 import mascotImage from '@/assets/jinbao-mascot.jpg';
 
 const Profile = () => {
@@ -29,6 +30,8 @@ const Profile = () => {
   const [referralEarnings, setReferralEarnings] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  
+  const [showChatModal, setShowChatModal] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -531,6 +534,38 @@ const Profile = () => {
           onOpenChange={setShowAdminModal}
           onSuccess={() => navigate('/admin')}
         />
+
+        {/* JinBao Chat */}
+        <JinBaoChat isOpen={showChatModal} onClose={() => setShowChatModal(false)} />
+        
+        {/* Floating Chat Button */}
+        <div className="fixed bottom-20 right-4 z-40">
+          <button
+            onClick={() => setShowChatModal(true)}
+            className="group relative"
+            aria-label={t('chat.openChat')}
+          >
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-vibrant-red/40 to-tech-blue/40 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
+            
+            {/* Mascot container */}
+            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-vibrant-red/50 shadow-lg hover:shadow-vibrant-red/30 hover:shadow-xl transition-all duration-300 hover:scale-110">
+              <img
+                src={mascotImage}
+                alt="JinBao Mascot"
+                className="w-full h-full object-cover object-top scale-125"
+              />
+              
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-vibrant-red/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+
+            {/* Chat badge */}
+            <div className="absolute -top-1 -right-1 bg-vibrant-red text-white rounded-full p-1.5 shadow-md animate-bounce">
+              <MessageCircle className="h-3 w-3" />
+            </div>
+          </button>
+        </div>
       </main>
     </div>
   );
