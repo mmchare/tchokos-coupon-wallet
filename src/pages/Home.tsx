@@ -27,6 +27,7 @@ import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useOfflineProducts } from '@/hooks/useOfflineProducts';
 
+const ONBOARDING_KEY = 'jinbao_onboarding_completed';
 
 interface CouponItem {
   id: string;
@@ -53,12 +54,29 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [useAIMode, setUseAIMode] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(10);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Check for first-time onboarding
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY);
+    if (!hasCompletedOnboarding) {
+      const timeout = setTimeout(() => {
+        setShowOnboarding(true);
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem(ONBOARDING_KEY, 'true');
+    setShowOnboarding(false);
+  };
 
   // Extract categories from products - use keys, not translated values
   const categoryKeys = ['all', 'auctions', ...new Set(products.map(p => p.category).filter(Boolean))];
@@ -430,7 +448,9 @@ const Home = () => {
       )}
 
       {/* JinBao Onboarding - shows only on first visit */}
-      <JinBaoOnboarding onComplete={() => {}} />
+      {showOnboarding && (
+        <JinBaoOnboarding onComplete={handleOnboardingComplete} />
+      )}
     </div>
   );
 };
