@@ -71,20 +71,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${subscriptions.length} subscriptions for user`);
 
-    // For web push, we store subscription info and the client handles display
-    // The actual push is triggered when the notification is created in DB
-    // and the client receives it via realtime subscription
+    // Store notification data for polling/realtime
+    // The client-side service worker will display the notification
+    // when it receives the data via realtime subscription or polling
     
-    // Log that we have active subscriptions
-    const activeEndpoints = subscriptions.map(s => s.endpoint);
-    console.log("Active push endpoints:", activeEndpoints.length);
+    // Insert a notification record that the client can pick up
+    const { error: notifError } = await supabase
+      .from("notifications")
+      .insert({
+        user_id: userId,
+        message_type: payload.tag || "PUSH",
+        message_body: `${payload.title}: ${payload.body}`,
+      });
+
+    if (notifError) {
+      console.error("Error creating notification:", notifError);
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         sent: subscriptions.length, 
         total: subscriptions.length,
-        message: "Push subscriptions found, notification will be shown via service worker"
+        message: "Notification created, service worker will display via realtime"
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

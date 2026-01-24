@@ -16,7 +16,7 @@ import PurchaseConfirmation from '@/components/PurchaseConfirmation';
 import CouponPanel from '@/components/CouponPanel';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
-import MascotAssistant from '@/components/MascotAssistant';
+import JinBaoOnboarding from '@/components/JinBaoOnboarding';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -429,8 +429,8 @@ const Home = () => {
         </div>
       )}
 
-      {/* JinBao Mascot Assistant */}
-      <MascotAssistant />
+      {/* JinBao Onboarding - shows only on first visit */}
+      <JinBaoOnboarding onComplete={() => {}} />
     </div>
   );
 };
