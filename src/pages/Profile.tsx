@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AdminPasswordModal from '@/components/AdminPasswordModal';
 import AddressManager from '@/components/AddressManager';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import mascotImage from '@/assets/jinbao-mascot.jpg';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -237,14 +238,32 @@ const Profile = () => {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           {/* Code de parrainage */}
-          <Card className="bg-gradient-to-r from-jinbao-red/10 to-jinbao-blue/10 border-jinbao-red/30">
-            <CardHeader>
+          <Card className="relative bg-gradient-to-r from-jinbao-red/10 to-jinbao-blue/10 border-jinbao-red/30 overflow-hidden">
+            {/* Mascot Background */}
+            <div className="absolute right-0 top-0 w-32 h-32 opacity-10 pointer-events-none">
+              <img
+                src={mascotImage}
+                alt=""
+                className="w-full h-full object-cover object-top"
+                aria-hidden="true"
+              />
+            </div>
+            <div className="absolute right-4 bottom-4 w-20 h-20 opacity-20 pointer-events-none transform rotate-12">
+              <img
+                src={mascotImage}
+                alt=""
+                className="w-full h-full object-cover rounded-full border-2 border-jinbao-red/30"
+                aria-hidden="true"
+              />
+            </div>
+            
+            <CardHeader className="relative z-10">
               <CardTitle className="text-foreground flex items-center">
                 <Gift className="h-5 w-5 mr-2 text-jinbao-red" />
                 {t('profile.myReferralCode')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 relative z-10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-jinbao-red tracking-widest">

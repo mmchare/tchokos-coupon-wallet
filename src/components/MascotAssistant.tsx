@@ -1,168 +1,89 @@
 /**
- * JinBao Mascot Assistant - Floating animated mascot with interactive features
- * Appears as a friendly helper that can bounce, wave, and provide tips
+ * JinBao Mascot Assistant - First-time onboarding and AI chat launcher
+ * Shows onboarding only once on first visit, then provides chat access
  */
 
 import { useState, useEffect } from 'react';
-import { X, MessageCircle, Sparkles } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import JinBaoOnboarding from './JinBaoOnboarding';
+import JinBaoChat from './JinBaoChat';
 import mascotImage from '@/assets/jinbao-mascot.jpg';
 
-const TIPS = [
-  { key: 'tip1', text: '💡 Activez le mode IA pour une recherche intelligente !' },
-  { key: 'tip2', text: '🔥 Découvrez nos enchères exclusives !' },
-  { key: 'tip3', text: '⭐ Ajoutez vos favoris pour ne rien manquer !' },
-  { key: 'tip4', text: '📦 Livraison rapide dans toute la région CEMAC !' },
-  { key: 'tip5', text: '🎁 Parrainez vos amis et gagnez des bonus !' },
-];
+const ONBOARDING_KEY = 'jinbao_onboarding_completed';
 
 const MascotAssistant = () => {
   const { t } = useTranslation();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [currentTip, setCurrentTip] = useState(0);
-  const [isWaving, setIsWaving] = useState(false);
-  const [hasSeenMascot, setHasSeenMascot] = useState(() => {
-    return sessionStorage.getItem('hasSeenMascotTip') === 'true';
-  });
 
-  // Rotate tips
+  // Check if user has completed onboarding
   useEffect(() => {
-    if (isExpanded) {
-      const interval = setInterval(() => {
-        setCurrentTip((prev) => (prev + 1) % TIPS.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isExpanded]);
-
-  // Wave animation on mount
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsWaving(true);
-      setTimeout(() => setIsWaving(false), 1500);
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  // Auto-show tip bubble for first-time visitors
-  useEffect(() => {
-    if (!hasSeenMascot) {
+    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY);
+    if (!hasCompletedOnboarding) {
+      // Show onboarding after a short delay for first-time users
       const timeout = setTimeout(() => {
-        setIsExpanded(true);
-        sessionStorage.setItem('hasSeenMascotTip', 'true');
-        setHasSeenMascot(true);
-      }, 3500);
+        setShowOnboarding(true);
+      }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenMascot]);
-
-  const handleClick = () => {
-    if (!isExpanded) {
-      setIsExpanded(true);
-      setIsWaving(true);
-      setTimeout(() => setIsWaving(false), 500);
-    }
-  };
-
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(false);
-  };
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    sessionStorage.setItem('mascotDismissed', 'true');
-  };
-
-  // Check if mascot was dismissed this session
-  useEffect(() => {
-    if (sessionStorage.getItem('mascotDismissed') === 'true') {
-      setIsVisible(false);
-    }
   }, []);
 
-  if (!isVisible) return null;
+  const handleOnboardingComplete = () => {
+    localStorage.setItem(ONBOARDING_KEY, 'true');
+    setShowOnboarding(false);
+  };
+
+  const handleOpenChat = () => {
+    setShowChat(true);
+  };
+
+  const handleCloseChat = () => {
+    setShowChat(false);
+  };
+
+  // Don't show the floating button if onboarding is active
+  if (showOnboarding) {
+    return <JinBaoOnboarding onComplete={handleOnboardingComplete} />;
+  }
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-2">
-      {/* Tip Bubble */}
-      {isExpanded && (
-        <div className="animate-in slide-in-from-bottom-2 fade-in duration-300 max-w-[260px] bg-card/95 backdrop-blur-md rounded-2xl shadow-xl border border-border p-4 relative">
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute -top-2 -right-2 bg-muted hover:bg-muted/80 rounded-full p-1 transition-colors"
-          >
-            <X className="h-3 w-3 text-muted-foreground" />
-          </button>
-          
-          {/* Tip content */}
-          <div className="flex items-start gap-2">
-            <Sparkles className="h-4 w-4 text-vibrant-red flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-foreground leading-relaxed">
-              {TIPS[currentTip].text}
-            </p>
-          </div>
-          
-          {/* Tip indicators */}
-          <div className="flex justify-center gap-1.5 mt-3">
-            {TIPS.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentTip(idx)}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  idx === currentTip ? 'bg-vibrant-red' : 'bg-muted-foreground/30'
-                }`}
-              />
-            ))}
-          </div>
+    <>
+      {/* Chat Window */}
+      <JinBaoChat isOpen={showChat} onClose={handleCloseChat} />
 
-          {/* Arrow pointing to mascot */}
-          <div className="absolute -bottom-2 right-6 w-4 h-4 bg-card/95 border-r border-b border-border transform rotate-45" />
+      {/* Floating Mascot Button - Only show when chat is closed */}
+      {!showChat && isVisible && (
+        <div className="fixed bottom-20 right-4 z-40">
+          <button
+            onClick={handleOpenChat}
+            className="group relative"
+            aria-label={t('chat.openChat')}
+          >
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-vibrant-red/40 to-tech-blue/40 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
+            
+            {/* Mascot container */}
+            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-vibrant-red/50 shadow-lg hover:shadow-vibrant-red/30 hover:shadow-xl transition-all duration-300 hover:scale-110">
+              <img
+                src={mascotImage}
+                alt="JinBao Mascot"
+                className="w-full h-full object-cover object-top scale-125"
+              />
+              
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-vibrant-red/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+
+            {/* Chat badge */}
+            <div className="absolute -top-1 -right-1 bg-vibrant-red text-white rounded-full p-1.5 shadow-md animate-bounce">
+              <MessageCircle className="h-3 w-3" />
+            </div>
+          </button>
         </div>
       )}
-
-      {/* Mascot Button */}
-      <div className="relative group">
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-vibrant-red/30 via-tech-blue/30 to-vibrant-red/30 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
-        
-        {/* Mascot container */}
-        <button
-          onClick={handleClick}
-          className={`relative w-16 h-16 rounded-full overflow-hidden border-2 border-vibrant-red/50 shadow-lg hover:shadow-vibrant-red/30 hover:shadow-xl transition-all duration-300 hover:scale-110 ${
-            isWaving ? 'animate-bounce' : ''
-          }`}
-        >
-          {/* Mascot image */}
-          <img
-            src={mascotImage}
-            alt="JinBao Mascot"
-            className="w-full h-full object-cover object-top scale-125"
-          />
-          
-          {/* Sparkle overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-vibrant-red/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        </button>
-
-        {/* Notification badge when collapsed */}
-        {!isExpanded && (
-          <div className="absolute -top-1 -right-1 bg-vibrant-red text-white rounded-full p-1 animate-pulse">
-            <MessageCircle className="h-3 w-3" />
-          </div>
-        )}
-
-        {/* Dismiss button */}
-        <button
-          onClick={handleDismiss}
-          className="absolute -top-1 -left-1 bg-muted hover:bg-destructive hover:text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          title="Masquer la mascotte"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      </div>
-    </div>
+    </>
   );
 };
 

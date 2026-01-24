@@ -11,6 +11,7 @@
     "confirm": "确认",
     "back": "返回",
     "next": "下一步",
+    "previous": "上一步",
     "close": "关闭",
     "add": "添加",
     "remove": "移除",
@@ -335,5 +336,28 @@
     "cachedProducts": "{{count}} 个商品可用",
     "retry": "重试",
     "viewingCached": "查看缓存商品"
+  },
+  "onboarding": {
+    "welcome": "欢迎来到",
+    "subtitle": "让我为您介绍平台！",
+    "feature1Title": "智能AI搜索",
+    "feature1Desc": "用自然语言描述您要找的东西，我们的AI会为您找到最好的产品。",
+    "feature2Title": "独特的优惠券系统",
+    "feature2Desc": "将多个产品添加到您的优惠券中，一次性购买。简单方便！",
+    "feature3Title": "推荐计划",
+    "feature3Desc": "每推荐一位朋友可获得5000 FCFA，您的朋友也将获得2000 FCFA迎新奖励！",
+    "feature4Title": "快速配送",
+    "feature4Desc": "从中国到CEMAC地区最多10-14天送达。",
+    "feature5Title": "安全支付",
+    "feature5Desc": "使用Mobile Money、JinBao余额或货到付款。您的交易100%安全。",
+    "start": "开始吧！"
+  },
+  "chat": {
+    "welcomeMessage": "您好！👋 我是JinBao，您的助手。今天有什么可以帮助您的？",
+    "errorMessage": "抱歉，我无法处理您的消息。请再试一次！",
+    "online": "在线",
+    "placeholder": "问我一个问题...",
+    "quickQuestions": "常见问题：",
+    "openChat": "与JinBao聊天"
   }
 }
