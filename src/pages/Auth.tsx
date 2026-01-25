@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -371,9 +371,9 @@ const Auth = () => {
         <div className="text-center mt-8 text-muted-foreground text-sm">
           <p>En continuant, vous acceptez nos</p>
           <p>
-            <span className="text-primary hover:underline cursor-pointer">Conditions d'utilisation</span>
+            <Link to="/terms" className="text-primary hover:underline">Conditions d'utilisation</Link>
             {' '} et {' '}
-            <span className="text-primary hover:underline cursor-pointer">Politique de confidentialité</span>
+            <Link to="/privacy" className="text-primary hover:underline">Politique de confidentialité</Link>
           </p>
         </div>
       </div>
