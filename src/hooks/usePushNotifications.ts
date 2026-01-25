@@ -3,9 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-// VAPID public key - this is safe to expose in frontend
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
-
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
@@ -36,6 +33,27 @@ export const usePushNotifications = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [loading, setLoading] = useState(true);
+  const [vapidPublicKey, setVapidPublicKey] = useState<string | null>(null);
+
+  // Fetch VAPID public key from server
+  useEffect(() => {
+    const fetchVapidKey = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-vapid-key');
+        if (error) {
+          console.error('Error fetching VAPID key:', error);
+          return;
+        }
+        if (data?.publicKey) {
+          setVapidPublicKey(data.publicKey);
+        }
+      } catch (error) {
+        console.error('Error fetching VAPID key:', error);
+      }
+    };
+
+    fetchVapidKey();
+  }, []);
 
   // Check if push notifications are supported
   useEffect(() => {
@@ -97,9 +115,9 @@ export const usePushNotifications = () => {
       return false;
     }
 
-    if (!VAPID_PUBLIC_KEY) {
+    if (!vapidPublicKey) {
       console.error('VAPID public key not configured');
-      toast.error('Configuration des notifications incomplète');
+      toast.error('Configuration des notifications incomplète. Veuillez réessayer.');
       return false;
     }
 
@@ -120,7 +138,7 @@ export const usePushNotifications = () => {
       const registration = await navigator.serviceWorker.ready;
 
       // Subscribe to push - use ArrayBuffer directly
-      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
@@ -164,7 +182,7 @@ export const usePushNotifications = () => {
       setLoading(false);
       return false;
     }
-  }, [isSupported, user]);
+  }, [isSupported, user, vapidPublicKey]);
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
