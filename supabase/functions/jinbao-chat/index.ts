@@ -1,8 +1,9 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
 
 const SYSTEM_PROMPT = `Tu es JinBao, la mascotte adorable et serviable de la plateforme JinBao Smart Market. 
 Tu es un panda amical et enthousiaste qui aide les utilisateurs à comprendre et utiliser la plateforme.
@@ -23,7 +24,8 @@ Ton style:
 - Donne des réponses concises mais complètes
 - Si tu ne connais pas la réponse, suggère de contacter le support
 - Utilise des listes numérotées pour les étapes
-- Maximum 150 mots par réponse`;
+- Maximum 150 mots par réponse
+- Quand tu recommandes des produits, base-toi sur l'historique d'achat de l'utilisateur`;
 
 // Fallback responses for common questions
 const FALLBACK_RESPONSES: Record<string, string> = {
@@ -57,6 +59,21 @@ function getFallbackResponse(message: string): string {
   return FALLBACK_RESPONSES.default;
 }
 
+interface OrderWithProduct {
+  id: string;
+  product_name: string | null;
+  total_amount: number;
+  created_at: string;
+  status: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string | null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === "OPTIONS") {
@@ -64,7 +81,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { message, history } = await req.json();
+    const { message, history, userId } = await req.json();
 
     if (!message) {
       return new Response(
@@ -73,13 +90,83 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Initialize Supabase client for fetching user data
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    let purchaseContext = "";
+    let recommendedProducts: Product[] = [];
+    
+    if (supabaseUrl && supabaseServiceKey && userId) {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      // Fetch user's recent orders for context
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id, product_name, total_amount, created_at, status')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (orders && orders.length > 0) {
+        const orderList = (orders as OrderWithProduct[])
+          .map(o => `- ${o.product_name} (${o.total_amount} FCFA, ${o.status})`)
+          .join('\n');
+        purchaseContext = `\n\nHistorique d'achats récents de l'utilisateur:\n${orderList}`;
+        
+        // Get categories from purchased products for recommendations
+        const purchasedNames = orders
+          .filter(o => o.product_name)
+          .map(o => o.product_name!.toLowerCase());
+        
+        // Fetch similar products for recommendations
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, name, price, category')
+          .limit(50);
+        
+        if (products && products.length > 0) {
+          // Find products similar to what user bought
+          recommendedProducts = (products as Product[])
+            .filter(p => !purchasedNames.some(pn => p.name.toLowerCase().includes(pn)))
+            .slice(0, 5);
+          
+          if (recommendedProducts.length > 0) {
+            const recList = recommendedProducts
+              .map(p => `- ${p.name} (${p.price} FCFA)`)
+              .join('\n');
+            purchaseContext += `\n\nProduits recommandés pour cet utilisateur:\n${recList}`;
+          }
+        }
+      }
+      
+      // Fetch user's favorites for additional context
+      const { data: favorites } = await supabase
+        .from('favorites')
+        .select('product_id, products(name, category)')
+        .eq('user_id', userId)
+        .limit(5);
+      
+      if (favorites && favorites.length > 0) {
+        const favList = favorites
+          .filter((f: any) => f.products?.name)
+          .map((f: any) => `- ${f.products.name}`)
+          .join('\n');
+        if (favList) {
+          purchaseContext += `\n\nProduits favoris de l'utilisateur:\n${favList}`;
+        }
+      }
+    }
+
     // Try to use Mistral AI if available
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     
     if (MISTRAL_API_KEY) {
       try {
+        const systemPromptWithContext = SYSTEM_PROMPT + purchaseContext;
+        
         const messages = [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPromptWithContext },
           ...(history || []),
           { role: "user", content: message }
         ];
@@ -93,7 +180,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             model: "mistral-small-latest",
             messages,
-            max_tokens: 300,
+            max_tokens: 400,
             temperature: 0.7,
           }),
         });
@@ -104,7 +191,10 @@ Deno.serve(async (req) => {
           
           if (aiResponse) {
             return new Response(
-              JSON.stringify({ response: aiResponse }),
+              JSON.stringify({ 
+                response: aiResponse,
+                recommendedProducts: recommendedProducts.length > 0 ? recommendedProducts : undefined
+              }),
               { headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
