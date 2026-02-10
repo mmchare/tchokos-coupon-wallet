@@ -17,6 +17,7 @@ import CouponPanel from '@/components/CouponPanel';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import JinBaoOnboarding from '@/components/JinBaoOnboarding';
+import NewDropsCarousel from '@/components/NewDropsCarousel';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -318,6 +319,9 @@ const Home = () => {
           )}
         </section>
 
+        {/* New Drops Stories Carousel */}
+        <NewDropsCarousel />
+
         {/* Category Filter & Actions */}
         <section className="mb-4">
           {/* Buttons - Full width on mobile, right-aligned on desktop */}
@@ -377,7 +381,9 @@ const Home = () => {
                   originalPrice={product.originalPrice}
                   rating={product.rating}
                   isAuction={product.isAuction}
-                  priority={index < 6} // First 6 images load immediately
+                  isVerified={product.isVerified}
+                  interestCount={product.interestCount}
+                  priority={index < 6}
                 />
               ))}
             </Masonry>
