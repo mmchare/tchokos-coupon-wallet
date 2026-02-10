@@ -63,7 +63,7 @@ const ProductDetail = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { addToCoupon } = useCoupon();
-  const { trackView, trackAddToCart } = useActivityTracking();
+  const { trackView, endView, trackAddToCart } = useActivityTracking();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { hasAlert, toggleAlert } = usePriceAlerts();
   const [comment, setComment] = useState('');
@@ -177,7 +177,12 @@ const ProductDetail = () => {
     };
 
     fetchProduct();
-  }, [id, toast, trackView]);
+
+    // Track time spent when leaving page
+    return () => {
+      if (id) endView(id);
+    };
+  }, [id, toast, trackView, endView]);
 
   if (isLoading) {
     return (
