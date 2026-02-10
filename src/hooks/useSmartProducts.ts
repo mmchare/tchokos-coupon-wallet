@@ -100,7 +100,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data } = await supabase
       .from('user_activity')
-      .select('product_id, activity_type')
+      .select('product_id, activity_type, duration_seconds')
       .eq('user_id', user.id)
       .gte('created_at', sevenDaysAgo.toISOString());
 
@@ -118,7 +118,17 @@ export const useSmartProducts = (): SmartProductsResult => {
       data.forEach(activity => {
         const currentScore = scores.get(activity.product_id) || 0;
         const weight = weights[activity.activity_type as keyof typeof weights] || 1;
-        scores.set(activity.product_id, currentScore + weight);
+        
+        // Time-spent bonus: longer views = stronger interest signal
+        // 10-30s = +2, 30-60s = +5, 60s+ = +8
+        let timeBonus = 0;
+        if (activity.duration_seconds && activity.activity_type === 'VIEW') {
+          if (activity.duration_seconds >= 60) timeBonus = 8;
+          else if (activity.duration_seconds >= 30) timeBonus = 5;
+          else if (activity.duration_seconds >= 10) timeBonus = 2;
+        }
+        
+        scores.set(activity.product_id, currentScore + weight + timeBonus);
       });
 
       setActivityScores(scores);
