@@ -704,6 +704,7 @@ export type Database = {
         Row: {
           activity_type: string
           created_at: string
+          duration_seconds: number | null
           id: string
           product_id: string
           user_id: string
@@ -711,6 +712,7 @@ export type Database = {
         Insert: {
           activity_type: string
           created_at?: string
+          duration_seconds?: number | null
           id?: string
           product_id: string
           user_id: string
@@ -718,6 +720,7 @@ export type Database = {
         Update: {
           activity_type?: string
           created_at?: string
+          duration_seconds?: number | null
           id?: string
           product_id?: string
           user_id?: string
