@@ -17,6 +17,8 @@ interface Product {
   rating: number;
   image: string;
   isAuction?: boolean;
+  isVerified?: boolean;
+  interestCount?: number;
 }
 
 interface SmartProductsResult {
@@ -55,7 +57,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, original_price, category, images, is_auction, auction_end_date')
+      .select('id, name, price, original_price, category, images, is_auction, auction_end_date, is_verified')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -77,8 +79,27 @@ export const useSmartProducts = (): SmartProductsResult => {
         rating: 4.5 + Math.random() * 0.5,
         image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
         isAuction: p.is_auction || false,
+        isVerified: p.is_verified || false,
+        interestCount: 0, // will be enriched later
       }));
       
+      // Enrich with interest counts (views + favorites aggregated)
+      // Fetch view counts from user_activity
+      const { data: activityCounts } = await supabase
+        .from('user_activity')
+        .select('product_id')
+        .in('activity_type', ['VIEW', 'CLICK', 'ADD_TO_CART']);
+
+      if (activityCounts) {
+        const countMap = new Map<string, number>();
+        activityCounts.forEach(a => {
+          countMap.set(a.product_id, (countMap.get(a.product_id) || 0) + 1);
+        });
+        products.forEach(p => {
+          p.interestCount = countMap.get(p.id) || 0;
+        });
+      }
+
       // Update cache
       productCache.data = products;
       productCache.timestamp = Date.now();
