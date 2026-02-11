@@ -187,9 +187,26 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
 
       if (error) {
         console.error('Order error:', error);
+        // Try to extract the actual error message from the edge function response
+        let errorMessage = "Impossible de créer la commande. Veuillez réessayer.";
+        try {
+          // FunctionsHttpError contains the response body in context
+          const errorBody = error.context ? await error.context.json() : null;
+          if (errorBody?.error) {
+            errorMessage = errorBody.error;
+            if (errorBody.details && Array.isArray(errorBody.details)) {
+              errorMessage += ': ' + errorBody.details.join(', ');
+            }
+          }
+        } catch (e) {
+          // If parsing fails, try the message property
+          if (error.message && !error.message.includes('FunctionsHttpError')) {
+            errorMessage = error.message;
+          }
+        }
         toast({
           title: "Erreur",
-          description: "Impossible de créer la commande. Veuillez réessayer.",
+          description: errorMessage,
           variant: "destructive"
         });
         setIsProcessing(false);
