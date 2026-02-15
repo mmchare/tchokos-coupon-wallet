@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Gavel, ShieldCheck, Eye } from 'lucide-react';
+import { Gavel, Eye, ShieldCheck, RotateCcw } from 'lucide-react';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
 import OptimizedImage from '@/components/OptimizedImage';
 
@@ -37,81 +37,90 @@ const MasonryProductCard = memo(({
     navigate(`/product/${id}`);
   };
 
-  const displayRating = Number(rating.toFixed(1));
-
   // Format interest count for display
   const formatInterest = (count: number): string | null => {
-    if (count < 3) return null;
+    if (count < 1) return null;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
     return `${count}`;
   };
 
   const interestLabel = formatInterest(interestCount);
 
+  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
   return (
     <div 
-      className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-transparent hover:border-primary"
+      className="masonry-card group cursor-pointer animate-fade-in mb-3 bg-card rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-border/50 hover:border-primary/40"
       onClick={handleClick}
     >
-      {/* Image Container */}
+      {/* Image Container - Clean, no overlays */}
       <div className="relative overflow-hidden bg-muted aspect-square">
         <OptimizedImage
           src={image || '/placeholder.svg'}
           alt={name}
-          className="w-full h-full group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
           priority={priority}
           placeholder="blur"
         />
-        
-        {/* Verified Badge */}
-        {isVerified && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-blue-500/90 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
-            <ShieldCheck className="h-3 w-3" />
-            <span>Vérifié</span>
+        {/* Discount badge on image - subtle */}
+        {discount > 0 && (
+          <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
+            -{discount}%
+          </div>
+        )}
+        {/* Auction indicator on image */}
+        {isAuction && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-primary/90 backdrop-blur-sm text-primary-foreground text-[10px] font-semibold px-2 py-0.5 rounded-full">
+            <Gavel className="h-3 w-3" />
+            <span>Enchère</span>
           </div>
         )}
       </div>
 
-      {/* Product Info */}
-      <div className="p-3 space-y-2">
-        <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-2">
-          {name}
-        </h3>
-        
-        {/* Rating, Auction & Interest Row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 fill-vibrant-yellow text-vibrant-yellow" />
-            <span className="text-xs font-medium text-vibrant-yellow">{displayRating}</span>
-          </div>
-          
-          {isAuction && (
-            <div className="flex items-center gap-1 text-primary">
-              <Gavel className="h-3 w-3" />
-              <span className="text-xs font-medium">Enchère</span>
-            </div>
+      {/* Product Info - Xianyu style */}
+      <div className="p-2.5 space-y-1.5">
+        {/* Verified badge inline + Product name */}
+        <div className="flex items-start gap-1">
+          {isVerified && (
+            <span className="inline-flex items-center gap-0.5 bg-blue-500 text-white text-[9px] font-bold px-1.5 py-[1px] rounded shrink-0 mt-[3px]">
+              <ShieldCheck className="h-2.5 w-2.5" />
+              Vérifié
+            </span>
           )}
-
-          {/* Social proof */}
-          {interestLabel && (
-            <div className="flex items-center gap-1 text-muted-foreground ml-auto">
-              <Eye className="h-3 w-3" />
-              <span className="text-[10px]">{interestLabel} intéressés</span>
-            </div>
-          )}
+          <h3 className="font-medium text-foreground text-[13px] leading-tight line-clamp-2">
+            {name}
+          </h3>
         </div>
 
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 flex-wrap">
+        {/* Price row + social proof */}
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-[17px] font-extrabold text-destructive tracking-tight">
+            {price.toLocaleString()}<span className="text-[11px] ml-0.5">F</span>
+          </span>
           {originalPrice && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className="text-[11px] text-muted-foreground line-through">
               {originalPrice.toLocaleString()} F
             </span>
           )}
-          
-          <span className="text-base font-bold text-foreground">
-            {price.toLocaleString()} F
+          {interestLabel && (
+            <span className="text-[11px] text-muted-foreground ml-auto flex items-center gap-0.5">
+              <Eye className="h-3 w-3" />
+              {interestLabel} veulent
+            </span>
+          )}
+        </div>
+
+        {/* Trust indicator - like Xianyu's 七天无理由退货 */}
+        <div className="flex items-center gap-2 text-[10px]">
+          <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 font-medium">
+            <RotateCcw className="h-2.5 w-2.5" />
+            Retour 7j
           </span>
+          {isVerified && (
+            <span className="text-blue-500 font-medium">
+              Qualité garantie
+            </span>
+          )}
         </div>
       </div>
     </div>
