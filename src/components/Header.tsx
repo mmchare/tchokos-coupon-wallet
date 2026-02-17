@@ -60,10 +60,11 @@ const Header = () => {
           <div className="flex items-center justify-between gap-2">
             {/* Logo */}
             <h1 
-              className="text-lg sm:text-2xl font-bold text-jinbao-red tracking-wider cursor-pointer shrink-0"
+              className="text-lg sm:text-2xl font-bold tracking-wider cursor-pointer shrink-0 flex items-center gap-1.5"
               onClick={() => navigate('/')}
             >
-              JinBao
+              <span className="w-7 h-7 sm:w-8 sm:h-8 border border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10 text-jinbao-gold text-sm sm:text-base font-black">金</span>
+              <span><span className="text-jinbao-gold">Jin</span><span className="text-jinbao-red">Bao</span></span>
             </h1>
 
             {/* Center Actions - Wallet + Coupon */}
