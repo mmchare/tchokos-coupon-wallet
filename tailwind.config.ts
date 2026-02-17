@@ -49,6 +49,9 @@ export default {
           blue: "hsl(var(--jinbao-blue))",
           silver: "hsl(var(--jinbao-silver))",
           dark: "hsl(var(--jinbao-dark))",
+          gold: "hsl(var(--jinbao-gold))",
+          "gold-light": "hsl(var(--jinbao-gold-light))",
+          "gold-dark": "hsl(var(--jinbao-gold-dark))",
         },
         // Vibrant Chinese E-commerce Colors
         vibrant: {

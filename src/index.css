@@ -55,6 +55,11 @@ All colors MUST be HSL.
     --vibrant-yellow: 45 100% 50%;            /* Jaune/Orange Vif #FFB800 - Étoiles & Wallet */
     --vibrant-orange: 30 100% 50%;            /* Orange Vif #FF8000 */
     
+    /* JinBao Gold - 金 (Jin = Or) */
+    --jinbao-gold: 43 96% 56%;               /* Or Premium #F5A623 */
+    --jinbao-gold-light: 45 100% 72%;         /* Or Clair #FFD700 */
+    --jinbao-gold-dark: 38 90% 42%;           /* Or Foncé #C8860A */
+    
     /* Legacy aliases for compatibility */
     --pinbaoo-yellow: 3 83% 49%;              /* Now Rouge Tech */
     --pinbaoo-green: 210 100% 56%;            /* Now Bleu Tech */
@@ -68,12 +73,14 @@ All colors MUST be HSL.
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(3 83% 49%), hsl(3 83% 55%));
     --gradient-trust: linear-gradient(135deg, hsl(210 100% 56%), hsl(210 100% 62%));
+    --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%), hsl(45 100% 72%));
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 98%));
     
     /* Shadows */
     --shadow-elegant: 0 20px 40px -10px hsl(0 0% 20% / 0.15);
     --shadow-glow-red: 0 0 30px hsl(3 83% 49% / 0.4);
     --shadow-glow-blue: 0 0 30px hsl(210 100% 56% / 0.4);
+    --shadow-glow-gold: 0 0 30px hsl(43 96% 56% / 0.4);
     --shadow-product: 0 10px 30px -5px hsl(0 0% 20% / 0.1);
     
     /* Animations */
