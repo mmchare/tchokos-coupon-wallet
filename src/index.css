@@ -386,6 +386,11 @@ All colors MUST be HSL.
     background-clip: padding-box;
   }
 
+  /* Staggered masonry effect - alternate columns offset */
+  .masonry-grid-column:nth-child(even) {
+    padding-top: 24px;
+  }
+
   .masonry-card {
     @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
     border: 1px solid transparent;
