@@ -1,7 +1,6 @@
 /**
- * Smart Products Hook - Invisible AI-Powered Product Ordering
+ * Smart Products Hook - Optimized AI-Powered Product Ordering
  * Seamlessly blends AI recommendations with catalog for personalized experience
- * Users should feel "JinBao understands me" without knowing AI is involved
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -43,9 +42,8 @@ export const useSmartProducts = (): SmartProductsResult => {
   const [refreshKey, setRefreshKey] = useState(0);
   const isFetchingRef = useRef(false);
 
-  // Fetch only required fields for home page (optimized query)
+  // Fetch products (optimized: single query, no secondary activity count query)
   const fetchProducts = useCallback(async (forceRefresh = false) => {
-    // Use cache if available and fresh
     const now = Date.now();
     if (!forceRefresh && productCache.data && (now - productCache.timestamp) < productCache.maxAge) {
       setAllProducts(productCache.data);
@@ -63,53 +61,33 @@ export const useSmartProducts = (): SmartProductsResult => {
     if (!error && data) {
       const currentTime = new Date();
       
-      // Filter out expired auctions (auction products with end_date in the past)
-      const filteredData = data.filter(p => {
-        if (!p.is_auction) return true; // Non-auction products always visible
-        if (!p.auction_end_date) return true; // Auction without end date = visible
-        return new Date(p.auction_end_date) > currentTime; // Only active auctions
-      });
-      
-      const products: Product[] = filteredData.map(p => ({
-        id: p.id,
-        name: p.name,
-        price: Number(p.price),
-        originalPrice: p.original_price ? Number(p.original_price) : undefined,
-        category: p.category || 'Autres',
-        rating: 4.5 + Math.random() * 0.5,
-        image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
-        isAuction: p.is_auction || false,
-        isVerified: p.is_verified || false,
-        interestCount: 0, // will be enriched later
-      }));
-      
-      // Enrich with interest counts (views + favorites aggregated)
-      // Fetch view counts from user_activity
-      const { data: activityCounts } = await supabase
-        .from('user_activity')
-        .select('product_id')
-        .in('activity_type', ['VIEW', 'CLICK', 'ADD_TO_CART']);
+      const products: Product[] = data
+        .filter(p => {
+          if (!p.is_auction) return true;
+          if (!p.auction_end_date) return true;
+          return new Date(p.auction_end_date) > currentTime;
+        })
+        .map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          originalPrice: p.original_price ? Number(p.original_price) : undefined,
+          category: p.category || 'Autres',
+          rating: 4.5 + Math.random() * 0.5,
+          image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
+          isAuction: p.is_auction || false,
+          isVerified: p.is_verified || false,
+          interestCount: 0,
+        }));
 
-      if (activityCounts) {
-        const countMap = new Map<string, number>();
-        activityCounts.forEach(a => {
-          countMap.set(a.product_id, (countMap.get(a.product_id) || 0) + 1);
-        });
-        products.forEach(p => {
-          p.interestCount = countMap.get(p.id) || 0;
-        });
-      }
-
-      // Update cache
       productCache.data = products;
       productCache.timestamp = Date.now();
-      
       setAllProducts(products);
     }
     isFetchingRef.current = false;
   }, []);
 
-  // Fetch user activity scores (rule-based personalization)
+  // Fetch user activity scores - OPTIMIZED: only user's own data, limited
   const fetchActivityScores = useCallback(async () => {
     if (!user?.id) {
       setActivityScores(new Map());
@@ -123,25 +101,17 @@ export const useSmartProducts = (): SmartProductsResult => {
       .from('user_activity')
       .select('product_id, activity_type, duration_seconds')
       .eq('user_id', user.id)
-      .gte('created_at', sevenDaysAgo.toISOString());
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .limit(200);
 
     if (data) {
       const scores = new Map<string, number>();
-      
-      // Weight activities: PURCHASE > ADD_TO_CART > CLICK > VIEW
-      const weights = {
-        'PURCHASE': 10,
-        'ADD_TO_CART': 5,
-        'CLICK': 3,
-        'VIEW': 1
-      };
+      const weights = { 'PURCHASE': 10, 'ADD_TO_CART': 5, 'CLICK': 3, 'VIEW': 1 };
 
       data.forEach(activity => {
         const currentScore = scores.get(activity.product_id) || 0;
         const weight = weights[activity.activity_type as keyof typeof weights] || 1;
         
-        // Time-spent bonus: longer views = stronger interest signal
-        // 10-30s = +2, 30-60s = +5, 60s+ = +8
         let timeBonus = 0;
         if (activity.duration_seconds && activity.activity_type === 'VIEW') {
           if (activity.duration_seconds >= 60) timeBonus = 8;
@@ -156,7 +126,7 @@ export const useSmartProducts = (): SmartProductsResult => {
     }
   }, [user?.id]);
 
-  // Fetch AI recommendations (invisible to user)
+  // Fetch AI recommendations (non-blocking, silent fail)
   const fetchAIRecommendations = useCallback(async () => {
     if (!user?.id) {
       setAiScores(new Map());
@@ -171,21 +141,18 @@ export const useSmartProducts = (): SmartProductsResult => {
       if (!error && data?.recommendations) {
         const scores = new Map<string, number>();
         data.recommendations.forEach((rec: { product_id: string; score: number }, index: number) => {
-          // Higher score for earlier recommendations (AI prioritizes these)
           scores.set(rec.product_id, (rec.score || 0.5) * 100 + (data.recommendations.length - index));
         });
         setAiScores(scores);
       }
-    } catch (err) {
-      // Silent fail - AI is invisible, should not affect UX
-      console.log('AI recommendations unavailable, using activity-based ordering');
+    } catch {
+      // Silent fail - AI is invisible
     }
   }, [user?.id]);
 
-  // Load all data with stale-while-revalidate pattern
+  // Load data - products first (fast), then personalization in background
   useEffect(() => {
     const loadData = async () => {
-      // Show cached data immediately (no loading state if cache exists)
       if (productCache.data && !refreshKey) {
         setAllProducts(productCache.data);
         setIsLoading(false);
@@ -193,20 +160,13 @@ export const useSmartProducts = (): SmartProductsResult => {
         setIsLoading(true);
       }
       
-      // Fetch fresh products
       await fetchProducts(refreshKey > 0);
-      
-      // Then fetch personalization data in parallel (non-blocking)
-      if (user?.id) {
-        Promise.all([
-          fetchActivityScores(),
-          fetchAIRecommendations()
-        ]).then(() => {
-          // Silent update - no loading state change
-        });
-      }
-      
       setIsLoading(false);
+      
+      // Personalization in background - non-blocking
+      if (user?.id) {
+        Promise.allSettled([fetchActivityScores(), fetchAIRecommendations()]);
+      }
     };
 
     loadData();
@@ -216,58 +176,37 @@ export const useSmartProducts = (): SmartProductsResult => {
   const smartProducts = useMemo(() => {
     if (allProducts.length === 0) return [];
 
-    // If no user, return products with slight randomization for freshness
     if (!user?.id) {
       return [...allProducts].sort(() => Math.random() - 0.5);
     }
 
-    // Calculate combined score for each product
     const scoredProducts = allProducts.map(product => {
       const aiScore = aiScores.get(product.id) || 0;
       const activityScore = activityScores.get(product.id) || 0;
-      
-      // Combined score: AI weight (60%) + Activity weight (40%)
-      // Add small random factor for variety
       const combinedScore = (aiScore * 0.6) + (activityScore * 0.4) + (Math.random() * 5);
-      
       return { product, score: combinedScore };
     });
 
-    // Sort by combined score (highest first)
     scoredProducts.sort((a, b) => b.score - a.score);
 
-    // Inject discovery products: every 5th position, add a random low-score product
-    // This prevents filter bubbles and keeps content fresh
+    // Discovery injection every 5th position
     const result: Product[] = [];
-    const highScoreProducts = scoredProducts.filter(p => p.score > 5);
-    const lowScoreProducts = scoredProducts.filter(p => p.score <= 5);
-    
-    let highIdx = 0;
-    let lowIdx = 0;
+    const highScore = scoredProducts.filter(p => p.score > 5);
+    const lowScore = scoredProducts.filter(p => p.score <= 5);
+    let hi = 0, lo = 0;
 
     for (let i = 0; i < scoredProducts.length; i++) {
-      if (i > 0 && i % 5 === 0 && lowIdx < lowScoreProducts.length) {
-        // Discovery slot
-        result.push(lowScoreProducts[lowIdx].product);
-        lowIdx++;
-      } else if (highIdx < highScoreProducts.length) {
-        result.push(highScoreProducts[highIdx].product);
-        highIdx++;
-      } else if (lowIdx < lowScoreProducts.length) {
-        result.push(lowScoreProducts[lowIdx].product);
-        lowIdx++;
+      if (i > 0 && i % 5 === 0 && lo < lowScore.length) {
+        result.push(lowScore[lo++].product);
+      } else if (hi < highScore.length) {
+        result.push(highScore[hi++].product);
+      } else if (lo < lowScore.length) {
+        result.push(lowScore[lo++].product);
       }
     }
 
-    // Add remaining products
-    while (highIdx < highScoreProducts.length) {
-      result.push(highScoreProducts[highIdx].product);
-      highIdx++;
-    }
-    while (lowIdx < lowScoreProducts.length) {
-      result.push(lowScoreProducts[lowIdx].product);
-      lowIdx++;
-    }
+    while (hi < highScore.length) result.push(highScore[hi++].product);
+    while (lo < lowScore.length) result.push(lowScore[lo++].product);
 
     return result;
   }, [allProducts, aiScores, activityScores, user?.id]);
@@ -276,9 +215,5 @@ export const useSmartProducts = (): SmartProductsResult => {
     setRefreshKey(prev => prev + 1);
   }, []);
 
-  return {
-    products: smartProducts,
-    isLoading,
-    refresh
-  };
+  return { products: smartProducts, isLoading, refresh };
 };
