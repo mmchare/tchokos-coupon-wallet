@@ -4,7 +4,7 @@
  * Supports offline mode with cached products
  */
 
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense, ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
@@ -16,7 +16,8 @@ import NewDropsCarousel from '@/components/NewDropsCarousel';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Search, Download, Loader2, Sparkles, X } from 'lucide-react';
+import { Search, Download, Loader2, Sparkles, X, Camera } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
@@ -58,12 +59,15 @@ const Home = () => {
   const [useAIMode, setUseAIMode] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isImageSearching, setIsImageSearching] = useState(false);
+  const [imageSearchInterpretation, setImageSearchInterpretation] = useState('');
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(10);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Check for first-time onboarding
   useEffect(() => {
@@ -127,6 +131,55 @@ const Home = () => {
     setSearchQuery('');
     clearSearch();
     setShowSearchSuggestions(false);
+    setImageSearchInterpretation('');
+  };
+
+  // Handle image search
+  const handleImageSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsImageSearching(true);
+    setImageSearchInterpretation('');
+    
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const { data, error } = await supabase.functions.invoke('image-search', {
+          body: { imageBase64: base64 },
+        });
+
+        if (error) {
+          console.error('Image search error:', error);
+          setIsImageSearching(false);
+          return;
+        }
+
+        if (data?.interpretation) {
+          setImageSearchInterpretation(data.interpretation);
+        }
+        
+        // Use the search query from keywords to filter
+        if (data?.keywords) {
+          setSearchQuery(data.keywords);
+          setUseAIMode(true);
+          aiSearch(data.keywords);
+        }
+        
+        setIsImageSearching(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Image search failed:', err);
+      setIsImageSearching(false);
+    }
+    
+    // Reset input
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
   };
 
   // Cache products when loaded (for offline access)
@@ -261,7 +314,7 @@ const Home = () => {
             {t('home.tagline')}
           </p>
           
-          {/* Search Bar with AI Toggle */}
+           {/* Search Bar with AI Toggle + Image Search */}
           <div className="max-w-md mx-auto relative mb-4">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
@@ -273,7 +326,7 @@ const Home = () => {
               onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
               onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              className="w-full pl-10 pr-20 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
+              className="w-full pl-10 pr-28 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
               {searchQuery && (
@@ -284,6 +337,27 @@ const Home = () => {
                   <X className="h-4 w-4" />
                 </button>
               )}
+              {/* Image Search Button */}
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                disabled={isImageSearching}
+                className="p-1.5 rounded-full transition-colors text-muted-foreground hover:text-vibrant-red hover:bg-vibrant-red/10 disabled:opacity-50"
+                title="Recherche par image"
+              >
+                {isImageSearching ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
+                ) : (
+                  <Camera className="h-4 w-4" />
+                )}
+              </button>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageSearch}
+                className="hidden"
+              />
               <button
                 onClick={() => setUseAIMode(!useAIMode)}
                 className={`p-1.5 rounded-full transition-colors ${
@@ -296,8 +370,8 @@ const Home = () => {
                 <Sparkles className="h-4 w-4" />
               </button>
             </div>
-            {isSearching && (
-              <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
+            {(isSearching || isImageSearching) && (
+              <div className="absolute right-24 top-1/2 transform -translate-y-1/2">
                 <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
               </div>
             )}
@@ -312,13 +386,13 @@ const Home = () => {
             />
           </div>
 
-          {/* AI Interpretation */}
-          {interpretation && useAIMode && (
+          {/* AI / Image Search Interpretation */}
+          {(interpretation && useAIMode) || imageSearchInterpretation ? (
             <p className="text-xs text-muted-foreground text-center mb-2">
-              <Sparkles className="h-3 w-3 inline mr-1" />
-              {interpretation}
+              <Camera className="h-3 w-3 inline mr-1" />
+              {imageSearchInterpretation || interpretation}
             </p>
-          )}
+          ) : null}
         </section>
 
         {/* New Drops Stories Carousel */}
