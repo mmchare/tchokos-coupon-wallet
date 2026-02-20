@@ -94,7 +94,7 @@ const MasonryProductCard = memo(({
 
         {/* Price row + social proof */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-[17px] font-extrabold text-destructive tracking-tight">
+          <span className="text-[17px] font-extrabold text-foreground tracking-tight">
             {price.toLocaleString()}<span className="text-[11px] ml-0.5">F</span>
           </span>
           {originalPrice && (
