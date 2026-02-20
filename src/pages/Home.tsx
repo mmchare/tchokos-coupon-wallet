@@ -4,19 +4,14 @@
  * Supports offline mode with cached products
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
-import LoadCouponModal from '@/components/LoadCouponModal';
-import DeliveryFormModal from '@/components/DeliveryFormModal';
-import PurchaseConfirmation from '@/components/PurchaseConfirmation';
-import CouponPanel from '@/components/CouponPanel';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
-import JinBaoOnboarding from '@/components/JinBaoOnboarding';
 import NewDropsCarousel from '@/components/NewDropsCarousel';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
 import { Button } from '@/components/ui/button';
@@ -27,6 +22,13 @@ import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useOfflineProducts } from '@/hooks/useOfflineProducts';
+
+// Lazy-loaded non-critical components
+const LoadCouponModal = lazy(() => import('@/components/LoadCouponModal'));
+const DeliveryFormModal = lazy(() => import('@/components/DeliveryFormModal'));
+const PurchaseConfirmation = lazy(() => import('@/components/PurchaseConfirmation'));
+const CouponPanel = lazy(() => import('@/components/CouponPanel'));
+const JinBaoOnboarding = lazy(() => import('@/components/JinBaoOnboarding'));
 
 const ONBOARDING_KEY = 'jinbao_onboarding_completed';
 
@@ -414,48 +416,58 @@ const Home = () => {
             <SheetTitle className="text-foreground">{t('home.myCoupon')}</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
-            <CouponPanel
-              items={couponItems}
-              onRemoveItem={handleRemoveFromCoupon}
-              onUpdateQuantity={handleUpdateCouponQuantity}
-              onPurchase={handlePurchase}
-              onGenerateCode={() => {}}
-            />
+            <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin mx-auto mt-8" />}>
+              <CouponPanel
+                items={couponItems}
+                onRemoveItem={handleRemoveFromCoupon}
+                onUpdateQuantity={handleUpdateCouponQuantity}
+                onPurchase={handlePurchase}
+                onGenerateCode={() => {}}
+              />
+            </Suspense>
           </div>
         </SheetContent>
       </Sheet>
 
       {/* Load Coupon Modal */}
-      <LoadCouponModal
-        isOpen={isLoadCouponOpen}
-        onClose={() => setIsLoadCouponOpen(false)}
-        onLoadCoupon={handleLoadCoupon}
-      />
+      <Suspense fallback={null}>
+        <LoadCouponModal
+          isOpen={isLoadCouponOpen}
+          onClose={() => setIsLoadCouponOpen(false)}
+          onLoadCoupon={handleLoadCoupon}
+        />
+      </Suspense>
 
       {/* Delivery Form Modal */}
-      <DeliveryFormModal
-        isOpen={isDeliveryFormOpen}
-        onClose={() => setIsDeliveryFormOpen(false)}
-        onSubmit={handleDeliverySubmit}
-        total={couponItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
-        items={couponItems}
-      />
+      <Suspense fallback={null}>
+        <DeliveryFormModal
+          isOpen={isDeliveryFormOpen}
+          onClose={() => setIsDeliveryFormOpen(false)}
+          onSubmit={handleDeliverySubmit}
+          total={couponItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+          items={couponItems}
+        />
+      </Suspense>
 
       {/* Purchase Confirmation Modal */}
       {showPurchaseConfirmation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
           <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card rounded-xl shadow-xl border border-border">
-            <PurchaseConfirmation 
-              productName={purchasedProductName}
-              onClose={handleCloseConfirmation}
-            />
+            <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin mx-auto mt-8" />}>
+              <PurchaseConfirmation 
+                productName={purchasedProductName}
+                onClose={handleCloseConfirmation}
+              />
+            </Suspense>
           </div>
         </div>
       )}
 
       {/* JinBao Onboarding - shows only on first visit */}
       {showOnboarding && (
-        <JinBaoOnboarding onComplete={handleOnboardingComplete} />
+        <Suspense fallback={null}>
+          <JinBaoOnboarding onComplete={handleOnboardingComplete} />
+        </Suspense>
       )}
     </div>
   );
