@@ -606,6 +606,25 @@ ${t('product.moreInfo')}`;
           )}
         </div>
 
+        {/* Forum / Discussion Link */}
+        <div 
+          className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3 cursor-pointer active:scale-[0.98] transition-all"
+          onClick={() => navigate(`/product/${product.id}/forum`)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <MessageSquare className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground text-sm">Discussion communautaire</h3>
+                <p className="text-xs text-muted-foreground">Questions, avis, partages d'expérience</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </div>
+
         {/* Similar Products */}
         <div className="mt-6">
           <SimilarProducts currentProductId={product.id} category={product.category} />
