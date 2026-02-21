@@ -16,6 +16,7 @@ import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 
 // Lazy-loaded pages - loaded on demand
+const ProductForum = lazy(() => import("./pages/ProductForum"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Recharge = lazy(() => import("./pages/Recharge"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -67,6 +68,7 @@ const App = () => (
                   {/* Critical routes - not lazy loaded */}
                   <Route path="/" element={<Index />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/product/:id/forum" element={<ProductForum />} />
                   
                   {/* Lazy loaded routes */}
                   <Route path="/auth" element={<Auth />} />
