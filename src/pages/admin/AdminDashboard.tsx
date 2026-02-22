@@ -282,7 +282,7 @@ const AdminDashboard = () => {
     { label: 'En cours', value: stats.pendingOrders, icon: TrendingUp, color: 'text-yellow-500' },
     { label: 'Utilisateurs', value: stats.totalUsers, icon: Users, color: 'text-purple-500' },
     { label: 'Enchères actives', value: stats.activeAuctions, icon: Gavel, color: 'text-orange-500' },
-    { label: 'Revenus total', value: `${stats.totalRevenue.toLocaleString()} F`, icon: DollarSign, color: 'text-jinbao-red' },
+    { label: 'Revenus total', value: `${stats.totalRevenue.toLocaleString()} F`, icon: DollarSign, color: 'text-primary' },
   ];
 
   const isDeliveryDelayed = stats.avgDeliveryDays > 14;

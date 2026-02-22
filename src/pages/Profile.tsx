@@ -429,7 +429,7 @@ const Profile = () => {
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Heart className="h-5 w-5 text-vibrant-red" />
+                  <Heart className="h-5 w-5 text-primary" />
                   <span className="font-medium text-foreground">{t('profile.myFavorites')}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -439,7 +439,7 @@ const Profile = () => {
 
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-jinbao-red to-red-600 border-0 text-white">
+            <Card className="bg-gradient-to-br from-primary to-blue-600 border-0 text-white">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -496,7 +496,7 @@ const Profile = () => {
                     <p className="text-muted-foreground text-sm">{t('profile.referralsCount')}</p>
                     <p className="text-2xl font-bold text-foreground">{referralCount}</p>
                   </div>
-                  <Gift className="h-8 w-8 text-jinbao-red" />
+                  <Gift className="h-8 w-8 text-primary" />
                 </div>
               </CardContent>
             </Card>
@@ -546,10 +546,10 @@ const Profile = () => {
             aria-label={t('chat.openChat')}
           >
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-vibrant-red/40 to-tech-blue/40 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-primary/20 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
             
             {/* Mascot container */}
-            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-vibrant-red/50 shadow-lg hover:shadow-vibrant-red/30 hover:shadow-xl transition-all duration-300 hover:scale-110">
+            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/50 shadow-lg hover:shadow-primary/30 hover:shadow-xl transition-all duration-300 hover:scale-110">
               <img
                 src={mascotImage}
                 alt="JinBao Mascot"
@@ -557,11 +557,11 @@ const Profile = () => {
               />
               
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-vibrant-red/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
 
             {/* Chat badge */}
-            <div className="absolute -top-1 -right-1 bg-vibrant-red text-white rounded-full p-1.5 shadow-md animate-bounce">
+            <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 shadow-md animate-bounce">
               <MessageCircle className="h-3 w-3" />
             </div>
           </button>

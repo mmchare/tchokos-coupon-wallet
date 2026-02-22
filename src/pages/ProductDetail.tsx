@@ -187,7 +187,7 @@ const ProductDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-vibrant-red" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -380,7 +380,7 @@ ${t('product.moreInfo')}`;
             onClick={() => product && toggleFavorite(product.id)}
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
-            <Heart className={`h-5 w-5 ${isProductFavorite ? 'fill-vibrant-red text-vibrant-red' : ''}`} />
+            <Heart className={`h-5 w-5 ${isProductFavorite ? 'fill-primary text-primary' : ''}`} />
           </Button>
         </div>
       </header>
@@ -405,8 +405,8 @@ ${t('product.moreInfo')}`;
           {/* Price Row */}
           <div className="flex items-end justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-sm text-vibrant-red">F</span>
-              <span className="text-3xl font-bold text-vibrant-red">
+              <span className="text-sm text-foreground">F</span>
+              <span className="text-3xl font-bold text-foreground">
                 {product.isAuction ? currentMaxBid.toLocaleString() : product.price.toLocaleString()}
               </span>
               {product.originalPrice && (
@@ -659,7 +659,7 @@ ${t('product.moreInfo')}`;
           {/* Buy/Bid Button */}
           <Button
             onClick={() => setShowDeliveryForm(true)}
-            className="flex-1 h-12 bg-vibrant-red hover:bg-vibrant-red/90 text-white font-semibold text-base"
+            className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base"
           >
             {product.isAuction ? (
               <>

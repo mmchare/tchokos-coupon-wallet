@@ -114,7 +114,7 @@ const AdminUsers = () => {
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <Gift className="h-10 w-10 text-jinbao-red" />
+              <Gift className="h-10 w-10 text-primary" />
               <div>
                 <p className="text-2xl font-bold">
                   {Object.values(referralCounts).reduce((a, b) => a + b, 0)}

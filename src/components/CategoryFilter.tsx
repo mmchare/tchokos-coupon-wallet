@@ -28,7 +28,7 @@ const defaultConfigs: Record<string, { icon: LucideIcon; bgColor: string; iconCo
   },
   'auctions': { 
     icon: Gavel, 
-    bgColor: 'bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/40 dark:to-red-900/40', 
+    bgColor: 'bg-gradient-to-br from-orange-100 to-blue-100 dark:from-orange-900/40 dark:to-blue-900/40', 
     iconColor: 'text-orange-600 dark:text-orange-400' 
   },
 };

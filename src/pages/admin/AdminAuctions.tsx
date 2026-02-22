@@ -126,7 +126,7 @@ const AdminAuctions = () => {
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <Gavel className="h-10 w-10 text-jinbao-red" />
+              <Gavel className="h-10 w-10 text-primary" />
               <div>
                 <p className="text-2xl font-bold">{activeAuctions.length}</p>
                 <p className="text-sm text-muted-foreground">Enchères actives</p>
@@ -206,7 +206,7 @@ const AdminAuctions = () => {
                         </div>
                       </TableCell>
                       <TableCell>{auction.price.toLocaleString()} F</TableCell>
-                      <TableCell className="text-jinbao-red font-bold">
+                      <TableCell className="text-primary font-bold">
                         {(maxBids[auction.id] || auction.price).toLocaleString()} F
                       </TableCell>
                       <TableCell>{bids[auction.id]?.length || 0}</TableCell>
@@ -268,7 +268,7 @@ const AdminAuctions = () => {
                       <span className="font-medium">{bid.productName}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-jinbao-red font-bold">{bid.amount.toLocaleString()} F</span>
+                      <span className="text-primary font-bold">{bid.amount.toLocaleString()} F</span>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(bid.created_at), 'dd/MM HH:mm', { locale: fr })}
                       </p>

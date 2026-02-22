@@ -64,7 +64,7 @@ const Header = () => {
               onClick={() => navigate('/')}
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 border border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10 text-jinbao-gold text-sm sm:text-base font-black">金</span>
-              <span><span className="text-jinbao-gold">Jin</span><span className="text-jinbao-red">Bao</span></span>
+              <span><span className="text-jinbao-gold">Jin</span><span className="text-primary">Bao</span></span>
             </h1>
 
             {/* Center Actions - Wallet + Coupon */}
@@ -85,7 +85,7 @@ const Header = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/auth')}
-                  className="text-xs sm:text-sm border-jinbao-red text-jinbao-red hover:bg-jinbao-red hover:text-white h-8 sm:h-9"
+                  className="text-xs sm:text-sm border-primary text-primary hover:bg-primary hover:text-white h-8 sm:h-9"
                 >
                   <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
                   <span className="hidden xs:inline">{t('auth.login')}</span>
@@ -95,7 +95,7 @@ const Header = () => {
               {/* Coupon Button */}
               <button 
                 onClick={() => setIsCouponOpen(true)}
-                className="relative flex items-center gap-1.5 bg-jinbao-red/10 hover:bg-jinbao-red/20 text-jinbao-red px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-jinbao-red/30 h-8 sm:h-9"
+                className="relative flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:scale-105 border border-primary/30 h-8 sm:h-9"
               >
                 <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline text-xs sm:text-sm font-medium">Coupon</span>
@@ -134,7 +134,7 @@ const Header = () => {
                 >
                   <Package className="h-4 w-4" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-vibrant-red text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}

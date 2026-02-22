@@ -199,7 +199,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-muted-foreground">Montant</p>
-            <p className="font-semibold text-jinbao-red">{order.total_amount.toLocaleString()} F</p>
+            <p className="font-semibold text-primary">{order.total_amount.toLocaleString()} F</p>
           </div>
           <div>
             <p className="text-muted-foreground">Ville</p>
@@ -228,7 +228,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
                   <div className={`
                     w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center
                     ${status === 'completed' ? 'bg-jinbao-blue text-white' : ''}
-                    ${status === 'current' ? 'bg-jinbao-red text-white animate-pulse' : ''}
+                    ${status === 'current' ? 'bg-primary text-primary-foreground animate-pulse' : ''}
                     ${status === 'pending' ? 'bg-muted text-muted-foreground' : ''}
                   `}>
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />

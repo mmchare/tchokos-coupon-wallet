@@ -454,12 +454,12 @@ const AdminFinance = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-jinbao-red/20 to-red-600/20 border-jinbao-red/30">
+        <Card className="bg-gradient-to-br from-primary/20 to-blue-600/20 border-primary/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <TrendingDown className="h-10 w-10 text-jinbao-red" />
+              <TrendingDown className="h-10 w-10 text-primary" />
               <div>
-                <p className="text-2xl font-bold text-jinbao-red">
+                <p className="text-2xl font-bold text-primary">
                   {totalDebits.toLocaleString()} F
                 </p>
                 <p className="text-sm text-muted-foreground">Total débits</p>
@@ -667,7 +667,7 @@ const AdminFinance = () => {
                           Recharge
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 text-jinbao-red">
+                        <span className="flex items-center gap-1 text-primary">
                           <ArrowUpRight className="h-4 w-4" />
                           Débit
                         </span>
@@ -676,7 +676,7 @@ const AdminFinance = () => {
                     <TableCell className="font-medium">
                       {tx.profiles?.full_name || 'Utilisateur'}
                     </TableCell>
-                    <TableCell className={tx.type === 'credit' ? 'text-green-500' : 'text-jinbao-red'}>
+                    <TableCell className={tx.type === 'credit' ? 'text-green-500' : 'text-primary'}>
                       {tx.type === 'credit' ? '+' : '-'}{Number(tx.amount).toLocaleString()} F
                     </TableCell>
                     <TableCell>

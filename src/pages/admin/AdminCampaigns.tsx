@@ -224,7 +224,7 @@ const AdminCampaigns = () => {
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <MessageSquare className="h-10 w-10 text-jinbao-red" />
+              <MessageSquare className="h-10 w-10 text-primary" />
               <div>
                 <p className="text-2xl font-bold">{campaigns.length}</p>
                 <p className="text-sm text-muted-foreground">Campagnes envoyées</p>
@@ -289,7 +289,7 @@ const AdminCampaigns = () => {
           <Button
             onClick={handleSendCampaign}
             disabled={isSending || !formData.title || !formData.message}
-            className="w-full bg-jinbao-red hover:bg-jinbao-red/90"
+            className="w-full bg-primary hover:bg-primary/90"
           >
             <Send className="h-4 w-4 mr-2" />
             {isSending ? 'Envoi en cours...' : `Envoyer à ${recipientsPreview.length} utilisateur(s)`}

@@ -36,7 +36,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         <p className="text-white/40 text-xs sm:text-sm mt-2">
           {t('splash.subtitle')}
         </p>
-        <div className="mt-6 h-1 w-32 mx-auto bg-gradient-to-r from-jinbao-red via-jinbao-gold to-jinbao-blue rounded-full animate-pulse"></div>
+        <div className="mt-6 h-1 w-32 mx-auto bg-gradient-to-r from-primary via-jinbao-gold to-jinbao-blue rounded-full animate-pulse"></div>
       </div>
     </div>
   );
