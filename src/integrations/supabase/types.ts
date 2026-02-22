@@ -446,6 +446,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           likes_count: number
           parent_id: string | null
           product_id: string
@@ -457,6 +458,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           likes_count?: number
           parent_id?: string | null
           product_id: string
@@ -468,6 +470,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           likes_count?: number
           parent_id?: string | null
           product_id?: string
