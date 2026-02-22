@@ -17,6 +17,7 @@ export interface Comment {
   likes_count: number;
   created_at: string;
   parent_id: string | null;
+  image_url?: string | null;
   replies?: Comment[];
   user_has_liked?: boolean;
 }
@@ -107,7 +108,15 @@ const CommentThread = ({ comment, onReplyAdded, productId, depth = 0 }: CommentT
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: fr })}
               </span>
             </div>
-            <p className="text-sm text-foreground/90 whitespace-pre-wrap">{comment.content}</p>
+            {comment.content && <p className="text-sm text-foreground/90 whitespace-pre-wrap">{comment.content}</p>}
+            {comment.image_url && (
+              <img
+                src={comment.image_url}
+                alt="Shared media"
+                className="mt-2 rounded-lg max-w-[240px] max-h-[200px] object-cover border border-border cursor-pointer"
+                onClick={() => window.open(comment.image_url!, '_blank')}
+              />
+            )}
 
             {/* Actions */}
             <div className="flex items-center gap-4 mt-2">
