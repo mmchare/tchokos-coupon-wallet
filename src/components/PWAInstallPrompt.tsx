@@ -72,8 +72,8 @@ const PWAInstallPrompt = () => {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-slide-up">
       <div className="bg-card border border-border rounded-xl p-4 shadow-xl flex items-center gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-vibrant-red/10 rounded-full flex items-center justify-center">
-          <Smartphone className="h-5 w-5 text-vibrant-red" />
+        <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+          <Smartphone className="h-5 w-5 text-primary" />
         </div>
         
         <div className="flex-1 min-w-0">
@@ -87,7 +87,7 @@ const PWAInstallPrompt = () => {
           <Button
             size="sm"
             onClick={handleInstall}
-            className="bg-vibrant-red hover:bg-vibrant-red/90 text-white text-xs px-3"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-3"
           >
             <Download className="h-3 w-3 mr-1" />
             Installer

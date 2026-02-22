@@ -62,7 +62,7 @@ const AdminPasswordModal = ({ open, onOpenChange, onSuccess }: AdminPasswordModa
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-jinbao-red" />
+            <Lock className="h-5 w-5 text-primary" />
             Accès Admin Sécurisé
           </DialogTitle>
           <DialogDescription>
@@ -101,7 +101,7 @@ const AdminPasswordModal = ({ open, onOpenChange, onSuccess }: AdminPasswordModa
             <Button
               type="submit"
               disabled={!password || isLoading}
-              className="flex-1 bg-jinbao-red hover:bg-jinbao-red/90"
+              className="flex-1 bg-primary hover:bg-primary/90"
             >
               {isLoading ? "Vérification..." : "Accéder"}
             </Button>

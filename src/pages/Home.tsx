@@ -308,7 +308,7 @@ const Home = () => {
         {/* Hero Section - Compact */}
         <section className="text-center mb-6 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
-            <span className="text-vibrant-red">JinBao</span> Smart Market
+            <span className="text-primary">JinBao</span> Smart Market
           </h1>
           <p className="text-sm text-muted-foreground mb-4 max-w-xl mx-auto">
             {t('home.tagline')}
@@ -326,7 +326,7 @@ const Home = () => {
               onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
               onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              className="w-full pl-10 pr-28 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-vibrant-red text-sm"
+              className="w-full pl-10 pr-28 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary text-sm"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
               {searchQuery && (
@@ -341,11 +341,11 @@ const Home = () => {
               <button
                 onClick={() => imageInputRef.current?.click()}
                 disabled={isImageSearching}
-                className="p-1.5 rounded-full transition-colors text-muted-foreground hover:text-vibrant-red hover:bg-vibrant-red/10 disabled:opacity-50"
+                className="p-1.5 rounded-full transition-colors text-muted-foreground hover:text-primary hover:bg-primary/10 disabled:opacity-50"
                 title="Recherche par image"
               >
                 {isImageSearching ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 ) : (
                   <Camera className="h-4 w-4" />
                 )}
@@ -362,7 +362,7 @@ const Home = () => {
                 onClick={() => setUseAIMode(!useAIMode)}
                 className={`p-1.5 rounded-full transition-colors ${
                   useAIMode 
-                    ? 'bg-vibrant-red/20 text-vibrant-red' 
+                    ? 'bg-primary/20 text-primary' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 title={useAIMode ? t('home.disableAI') : t('home.enableAI')}
@@ -372,7 +372,7 @@ const Home = () => {
             </div>
             {(isSearching || isImageSearching) && (
               <div className="absolute right-24 top-1/2 transform -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin text-vibrant-red" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
               </div>
             )}
             
@@ -415,7 +415,7 @@ const Home = () => {
               onClick={() => setIsCouponOpen(true)}
               variant="outline"
               size="sm"
-              className="flex-1 sm:flex-none border-vibrant-red text-vibrant-red hover:bg-vibrant-red hover:text-white text-xs max-w-[160px]"
+              className="flex-1 sm:flex-none border-primary text-primary hover:bg-primary hover:text-white text-xs max-w-[160px]"
             >
               {t('home.coupon')} ({couponItems.length})
             </Button>

@@ -279,7 +279,7 @@ const AdminOrders = () => {
 
       {/* Batch Actions */}
       {selectedOrders.length > 0 && (
-        <Card className="bg-jinbao-red/10 border-jinbao-red/30">
+        <Card className="bg-primary/10 border-primary/30">
           <CardContent className="py-3">
             <div className="flex flex-wrap items-center gap-4">
               <span className="text-sm font-medium">
@@ -397,7 +397,7 @@ const AdminOrders = () => {
                           href={order.products.source_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-jinbao-red/10 text-jinbao-red rounded text-xs font-medium hover:bg-jinbao-red/20 transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium hover:bg-primary/20 transition-colors"
                         >
                           <ExternalLink className="h-3 w-3" />
                           Acheter

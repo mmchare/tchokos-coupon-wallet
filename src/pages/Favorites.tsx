@@ -87,7 +87,7 @@ const Favorites = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-vibrant-red" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ const Favorites = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Heart className="h-6 w-6 text-vibrant-red fill-vibrant-red" />
+              <Heart className="h-6 w-6 text-primary fill-primary" />
               {t('favorites.title')}
             </h1>
           </div>
@@ -124,7 +124,7 @@ const Favorites = () => {
             </p>
             <Button 
               onClick={() => navigate('/')}
-              className="bg-vibrant-red hover:bg-vibrant-red/90 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {t('favorites.discoverProducts')}
             </Button>

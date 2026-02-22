@@ -121,13 +121,13 @@ const AuctionBidPanel = ({
 
   return (
     <Card id="auction-panel" className="bg-card border-border overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-jinbao-red/10 to-jinbao-blue/10 border-b border-border">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border">
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground flex items-center gap-2">
-            <Gavel className="h-5 w-5 text-jinbao-red" />
+            <Gavel className="h-5 w-5 text-primary" />
             Enchère en cours
           </CardTitle>
-          <Badge className="bg-jinbao-red text-white animate-pulse">
+          <Badge className="bg-primary text-primary-foreground animate-pulse">
             <Flame className="h-3 w-3 mr-1" />
             LIVE
           </Badge>
@@ -149,7 +149,7 @@ const AuctionBidPanel = ({
               { value: timeRemaining.seconds, label: 'Sec' },
             ].map((item) => (
               <div key={item.label} className="bg-background rounded-lg p-2 sm:p-3">
-                <div className="text-xl sm:text-2xl font-bold text-jinbao-red">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {item.value.toString().padStart(2, '0')}
                 </div>
                 <div className="text-xs text-muted-foreground">{item.label}</div>
@@ -166,12 +166,12 @@ const AuctionBidPanel = ({
               {startingPrice.toLocaleString()} F
             </div>
           </div>
-          <div className="bg-jinbao-red/10 rounded-lg p-3 text-center border border-jinbao-red/20">
-            <div className="text-sm text-jinbao-red mb-1 flex items-center justify-center gap-1">
+          <div className="bg-primary/10 rounded-lg p-3 text-center border border-primary/20">
+            <div className="text-sm text-primary mb-1 flex items-center justify-center gap-1">
               <TrendingUp className="h-3 w-3" />
               Offre maximale
             </div>
-            <div className="text-lg font-bold text-jinbao-red">
+            <div className="text-lg font-bold text-primary">
               {currentMaxBid.toLocaleString()} F
             </div>
           </div>
@@ -232,7 +232,7 @@ const AuctionBidPanel = ({
                   className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2 text-sm"
                 >
                   <span className="text-foreground font-medium">{bid.userName}</span>
-                  <span className="text-jinbao-red font-bold">
+                  <span className="text-primary font-bold">
                     {bid.amount.toLocaleString()} F
                   </span>
                 </div>
@@ -258,7 +258,7 @@ const AuctionBidPanel = ({
               />
               <Button 
                 onClick={handlePlaceBid}
-                className="bg-jinbao-red hover:bg-jinbao-red/90 text-white px-6"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
               >
                 <Gavel className="h-4 w-4 mr-2" />
                 Enchérir

@@ -428,7 +428,7 @@ const AdminProducts = () => {
           <h1 className="text-2xl font-bold text-foreground">Produits</h1>
           <p className="text-muted-foreground">Gérez le catalogue de produits</p>
         </div>
-        <Button onClick={openCreateDialog} className="bg-jinbao-red hover:bg-jinbao-red/90">
+        <Button onClick={openCreateDialog} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Nouveau produit
         </Button>
@@ -499,7 +499,7 @@ const AdminProducts = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className={product.is_auction ? "text-jinbao-red" : "text-muted-foreground"}>
+                      <span className={product.is_auction ? "text-primary" : "text-muted-foreground"}>
                         {product.is_auction ? "Oui" : "Non"}
                       </span>
                     </TableCell>
@@ -621,14 +621,14 @@ const AdminProducts = () => {
 
               {/* Source Link - Required */}
               <div className="col-span-2">
-                <label className="text-sm font-medium text-jinbao-red">
+                <label className="text-sm font-medium text-primary">
                   🔗 Lien Source Fournisseur Chinois *
                 </label>
                 <Input
                   value={formData.source_link}
                   onChange={(e) => setFormData({ ...formData, source_link: e.target.value })}
                   placeholder="https://www.1688.com/... ou https://taobao.com/..."
-                  className="border-jinbao-red/50 focus:border-jinbao-red"
+                  className="border-primary/50 focus:border-primary"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -815,8 +815,8 @@ const AdminProducts = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                     isDragging 
-                      ? 'border-jinbao-red bg-jinbao-red/10' 
-                      : 'border-border hover:border-jinbao-red/50'
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-border hover:border-primary/50'
                   }`}
                 >
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
@@ -938,7 +938,7 @@ const AdminProducts = () => {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Annuler
               </Button>
-              <Button type="submit" className="bg-jinbao-red hover:bg-jinbao-red/90">
+              <Button type="submit" className="bg-primary hover:bg-primary/90">
                 {editingProduct ? 'Enregistrer' : 'Créer'}
               </Button>
             </div>
