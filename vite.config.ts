@@ -10,6 +10,23 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-tooltip', '@radix-ui/react-tabs'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
+        },
+      },
+    },
+    target: 'es2020',
+    cssCodeSplit: true,
+    sourcemap: false,
+    minify: 'esbuild',
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -23,7 +40,7 @@ export default defineConfig(({ mode }) => ({
         name: 'JinBao Smart Market',
         short_name: 'JinBao',
         description: 'Gadgets tech premium à prix imbattables - Marketplace intelligente',
-        theme_color: '#E2231A',
+        theme_color: '#0066FF',
         background_color: '#0A0A0A',
         display: 'standalone',
         orientation: 'portrait-primary',
