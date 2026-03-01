@@ -70,18 +70,35 @@ serve(async (req) => {
     const rawBody = await req.text();
     console.log('Webhook received:', rawBody);
 
+    // Reject empty body
+    if (!rawBody || rawBody.trim().length === 0) {
+      console.error('Empty webhook body received');
+      return new Response(
+        JSON.stringify({ error: 'Body vide', message: 'Le webhook a reçu un body vide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Verify signature if hash key is configured
     const signature = req.headers.get('x-notch-signature');
     if (NOTCHPAY_HASH_KEY && signature) {
       const isValid = await verifySignature(rawBody, signature, NOTCHPAY_HASH_KEY);
       if (!isValid) {
         console.error('Invalid webhook signature');
-        // In sandbox mode, we might skip signature verification
         console.log('Continuing anyway for sandbox testing...');
       }
     }
 
-    const payload: NotchpayWebhookPayload = JSON.parse(rawBody);
+    let payload: NotchpayWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('Failed to parse webhook body:', rawBody.substring(0, 200));
+      return new Response(
+        JSON.stringify({ error: 'JSON invalide', details: 'Le body du webhook n\'est pas un JSON valide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     console.log('Parsed webhook payload:', JSON.stringify(payload));
 
     const { event, data } = payload;
