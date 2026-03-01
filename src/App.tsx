@@ -11,9 +11,11 @@ import ScrollToTop from "@/components/ScrollToTop";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import PageLoader from "@/components/PageLoader";
 
-// Critical pages - loaded immediately
+// Critical page - loaded immediately
 import Index from "./pages/Index";
-import ProductDetail from "./pages/ProductDetail";
+
+// Heavy page - lazy loaded
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 
 // Lazy-loaded pages - loaded on demand
 const ProductForum = lazy(() => import("./pages/ProductForum"));
