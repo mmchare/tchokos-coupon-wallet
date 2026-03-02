@@ -354,7 +354,6 @@ const Home = () => {
                 ref={imageInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={handleImageSearch}
                 className="hidden"
               />
