@@ -12,64 +12,57 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void;
 }
 
-// Icon mapping from string to Lucide component
 const iconMap: Record<string, LucideIcon> = {
   Package, Smartphone, Laptop, Tablet, Tv, Headphones, Camera, Gamepad2,
   Watch, Gem, Shirt, Briefcase, Home, Sparkles, Dumbbell, Baby, Car, Bike,
   Wrench, Book, Music, Utensils, Flower2, Dog, Plane, Gift, Gavel
 };
 
-// Default configurations for special categories
-const defaultConfigs: Record<string, { icon: LucideIcon; bgColor: string; iconColor: string }> = {
+// Vibrant gradient configs inspired by Xianyu style
+const defaultConfigs: Record<string, { icon: LucideIcon; gradient: string }> = {
   'all': { 
     icon: Package, 
-    bgColor: 'bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40', 
-    iconColor: 'text-blue-600 dark:text-blue-400' 
+    gradient: 'from-blue-400 to-indigo-500',
   },
   'auctions': { 
     icon: Gavel, 
-    bgColor: 'bg-gradient-to-br from-orange-100 to-blue-100 dark:from-orange-900/40 dark:to-blue-900/40', 
-    iconColor: 'text-orange-600 dark:text-orange-400' 
+    gradient: 'from-orange-400 to-red-500',
   },
 };
 
-// Fallback config for categories not in database
-const fallbackConfig = { 
-  icon: Package, 
-  bgColor: 'bg-gray-100 dark:bg-gray-800/50', 
-  iconColor: 'text-gray-600 dark:text-gray-400' 
-};
+// Rotating gradients for dynamic categories
+const gradientPalette = [
+  'from-pink-400 to-rose-500',
+  'from-cyan-400 to-blue-500',
+  'from-green-400 to-emerald-500',
+  'from-violet-400 to-purple-500',
+  'from-amber-400 to-orange-500',
+  'from-teal-400 to-cyan-500',
+  'from-fuchsia-400 to-pink-500',
+  'from-lime-400 to-green-500',
+  'from-sky-400 to-blue-500',
+  'from-red-400 to-rose-500',
+];
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
   const { t } = useTranslation();
   const { data: dbCategories = [] } = useCategories();
 
-  // Build a lookup map from DB categories
   const categoryLookup = new Map<string, Category>();
   dbCategories.forEach(cat => categoryLookup.set(cat.name, cat));
 
-  // Get config for a category
-  const getCategoryConfig = (categoryName: string) => {
-    // Check special defaults first
+  const getCategoryConfig = (categoryName: string, index: number) => {
     if (defaultConfigs[categoryName]) {
-      return defaultConfigs[categoryName];
+      return { icon: defaultConfigs[categoryName].icon, gradient: defaultConfigs[categoryName].gradient };
     }
 
-    // Check database
     const dbCat = categoryLookup.get(categoryName);
-    if (dbCat) {
-      const IconComponent = iconMap[dbCat.icon] || Package;
-      return {
-        icon: IconComponent,
-        bgColor: dbCat.bg_color,
-        iconColor: dbCat.icon_color
-      };
-    }
+    const IconComponent = dbCat ? (iconMap[dbCat.icon] || Package) : Package;
+    const gradient = gradientPalette[index % gradientPalette.length];
 
-    return fallbackConfig;
+    return { icon: IconComponent, gradient };
   };
 
-  // Translate category keys to display names
   const getCategoryLabel = (category: string) => {
     if (category === 'all') return t('home.all');
     if (category === 'auctions') return t('home.auctions');
@@ -77,49 +70,39 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
   };
 
   return (
-    <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide px-1">
-      {categories.map((category) => {
-        const config = getCategoryConfig(category);
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1 -mx-1">
+      {categories.map((category, index) => {
+        const config = getCategoryConfig(category, index);
         const IconComponent = config.icon;
         const isActive = activeCategory === category;
         
         return (
-          <div
+          <button
             key={category}
             onClick={() => onCategoryChange(category)}
-            className={`
-              flex-shrink-0 flex flex-col items-center p-3 rounded-2xl cursor-pointer
-              min-w-[100px] transition-all duration-300
-              bg-card border relative overflow-hidden
-              ${isActive 
-                ? 'border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
-                : 'border-border/50 hover:border-border hover:shadow-md'
-              }
-            `}
+            className="flex-shrink-0 flex flex-col items-center gap-1.5 w-[68px] group"
           >
-            {/* Decorative background gradient on active */}
-            {isActive && (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-            )}
-            
-            {/* Icon Container with gradient background */}
+            {/* Bubble icon */}
             <div className={`
-              relative w-12 h-12 rounded-xl flex items-center justify-center mb-2
-              ${config.bgColor}
-              transition-transform duration-300
-              ${isActive ? 'scale-110' : 'group-hover:scale-105'}
+              relative w-14 h-14 rounded-2xl flex items-center justify-center
+              bg-gradient-to-br ${config.gradient}
+              shadow-md transition-all duration-200
+              ${isActive 
+                ? 'scale-110 shadow-lg ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                : 'group-hover:scale-105 group-hover:shadow-lg'
+              }
             `}>
-              <IconComponent className={`h-6 w-6 ${config.iconColor}`} />
+              <IconComponent className="h-6 w-6 text-white drop-shadow-sm" />
             </div>
             
-            {/* Category Name */}
+            {/* Label */}
             <span className={`
-              text-xs font-medium text-center leading-tight line-clamp-2
-              ${isActive ? 'text-primary' : 'text-foreground'}
+              text-[11px] leading-tight text-center line-clamp-2 font-medium transition-colors
+              ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}
             `}>
               {getCategoryLabel(category)}
             </span>
-          </div>
+          </button>
         );
       })}
     </div>
