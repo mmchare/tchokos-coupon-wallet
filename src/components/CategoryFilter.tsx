@@ -44,43 +44,23 @@ const gradientPalette = [
   'from-red-400 to-rose-500',
 ];
 
-// Emoji map for categories - expressive, no boxes
-const emojiMap: Record<string, string> = {
-  'all': '🔥',
-  'auctions': '🔨',
-  'Smartphones': '📱',
-  'Laptops': '💻',
-  'Tablets': '📲',
-  'TV': '📺',
-  'Headphones': '🎧',
-  'Cameras': '📷',
-  'Gaming': '🎮',
-  'Watches': '⌚',
-  'Jewelry': '💎',
-  'Clothing': '👕',
-  'Bags': '👜',
-  'Home': '🏠',
-  'Beauty': '✨',
-  'Sports': '🏋️',
-  'Baby': '👶',
-  'Auto': '🚗',
-  'Bikes': '🚲',
-  'Tools': '🔧',
-  'Books': '📚',
-  'Music': '🎵',
-  'Kitchen': '🍳',
-  'Garden': '🌺',
-  'Pets': '🐶',
-  'Travel': '✈️',
-  'Gifts': '🎁',
-};
-
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
   const { t } = useTranslation();
   const { data: dbCategories = [] } = useCategories();
 
-  const getCategoryEmoji = (categoryName: string) => {
-    return emojiMap[categoryName] || '📦';
+  const categoryLookup = new Map<string, Category>();
+  dbCategories.forEach(cat => categoryLookup.set(cat.name, cat));
+
+  const getCategoryConfig = (categoryName: string, index: number) => {
+    if (defaultConfigs[categoryName]) {
+      return { icon: defaultConfigs[categoryName].icon, gradient: defaultConfigs[categoryName].gradient };
+    }
+
+    const dbCat = categoryLookup.get(categoryName);
+    const IconComponent = dbCat ? (iconMap[dbCat.icon] || Package) : Package;
+    const gradient = gradientPalette[index % gradientPalette.length];
+
+    return { icon: IconComponent, gradient };
   };
 
   const getCategoryLabel = (category: string) => {
@@ -90,34 +70,39 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
   };
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-1 -mx-1">
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1 -mx-1">
       {categories.map((category, index) => {
+        const config = getCategoryConfig(category, index);
+        const IconComponent = config.icon;
         const isActive = activeCategory === category;
         
         return (
           <button
             key={category}
             onClick={() => onCategoryChange(category)}
-            className={`flex-shrink-0 flex flex-col items-center gap-2 w-[64px] group animate-fade-in`}
+            className="flex-shrink-0 flex flex-col items-center gap-1.5 w-[68px] group animate-fade-in"
             style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
           >
-            <span className={`
-              text-3xl sm:text-4xl transition-transform duration-200
-              ${isActive ? 'scale-125' : 'group-hover:scale-110'}
+            {/* Bubble icon */}
+            <div className={`
+              relative w-14 h-14 rounded-2xl flex items-center justify-center
+              bg-gradient-to-br ${config.gradient}
+              shadow-md transition-all duration-200
+              ${isActive 
+                ? 'scale-110 shadow-lg ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                : 'group-hover:scale-105 group-hover:shadow-lg'
+              }
             `}>
-              {getCategoryEmoji(category)}
-            </span>
+              <IconComponent className="h-6 w-6 text-white drop-shadow-sm" />
+            </div>
             
+            {/* Label */}
             <span className={`
-              text-[11px] leading-tight text-center line-clamp-1 font-semibold transition-colors
-              ${isActive ? 'text-primary' : 'text-foreground/70 group-hover:text-foreground'}
+              text-[11px] leading-tight text-center line-clamp-2 font-medium transition-colors
+              ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}
             `}>
               {getCategoryLabel(category)}
             </span>
-
-            {isActive && (
-              <div className="w-5 h-0.5 rounded-full bg-primary -mt-1" />
-            )}
           </button>
         );
       })}
