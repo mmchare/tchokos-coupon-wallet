@@ -70,7 +70,13 @@
     "coupon": "优惠券",
     "myCoupon": "我的优惠券",
     "disableAI": "关闭AI搜索",
-    "enableAI": "开启AI搜索"
+    "enableAI": "开启AI搜索",
+    "services": {
+      "quickSale": "快速卖出",
+      "deals": "超值优惠",
+      "estimate": "估价",
+      "custom": "定制订单"
+    }
   },
   "product": {
     "addToCart": "加入购物车",

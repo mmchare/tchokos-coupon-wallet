@@ -70,7 +70,13 @@
     "coupon": "Coupon",
     "myCoupon": "My Coupon",
     "disableAI": "Disable AI search",
-    "enableAI": "Enable AI search"
+    "enableAI": "Enable AI search",
+    "services": {
+      "quickSale": "Quick Sale",
+      "deals": "Best Deals",
+      "estimate": "Price Check",
+      "custom": "Custom Order"
+    }
   },
   "product": {
     "addToCart": "Add to Cart",
