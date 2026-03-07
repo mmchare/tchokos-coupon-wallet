@@ -70,7 +70,13 @@
     "coupon": "Coupon",
     "myCoupon": "Mon Coupon",
     "disableAI": "Désactiver recherche IA",
-    "enableAI": "Activer recherche IA"
+    "enableAI": "Activer recherche IA",
+    "services": {
+      "quickSale": "Vente rapide",
+      "deals": "Bons plans",
+      "estimate": "Estimation",
+      "custom": "Sur mesure"
+    }
   },
   "product": {
     "addToCart": "Ajouter au panier",

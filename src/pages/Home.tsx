@@ -10,6 +10,7 @@ import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
+import QuickServices from '@/components/QuickServices';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import NewDropsCarousel from '@/components/NewDropsCarousel';
@@ -425,6 +426,9 @@ const Home = () => {
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
+
+          {/* Quick Services */}
+          <QuickServices />
         </section>
 
         {/* Loading State - Skeleton Grid */}
