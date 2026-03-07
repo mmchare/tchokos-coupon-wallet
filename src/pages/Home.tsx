@@ -425,6 +425,9 @@ const Home = () => {
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
+
+          {/* Quick Services */}
+          <QuickServices />
         </section>
 
         {/* Loading State - Skeleton Grid */}

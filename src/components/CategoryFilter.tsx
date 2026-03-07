@@ -80,7 +80,8 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
           <button
             key={category}
             onClick={() => onCategoryChange(category)}
-            className="flex-shrink-0 flex flex-col items-center gap-1.5 w-[68px] group"
+            className="flex-shrink-0 flex flex-col items-center gap-1.5 w-[68px] group animate-fade-in"
+            style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
           >
             {/* Bubble icon */}
             <div className={`
