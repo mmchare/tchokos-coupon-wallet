@@ -77,10 +77,10 @@ All colors MUST be HSL.
     
     /* Shadows */
     --shadow-elegant: 0 20px 40px -10px hsl(0 0% 20% / 0.15);
-    --shadow-glow-red: 0 0 30px hsl(0 85% 46% / 0.4);
-    --shadow-glow-blue: 0 0 30px hsl(0 85% 46% / 0.4);
-    --shadow-glow-gold: 0 0 30px hsl(43 96% 56% / 0.4);
-    --shadow-product: 0 10px 30px -5px hsl(0 0% 20% / 0.1);
+    --shadow-glow-red: 0 4px 12px hsl(0 72% 51% / 0.2);
+    --shadow-glow-blue: 0 4px 12px hsl(0 72% 51% / 0.2);
+    --shadow-glow-gold: 0 4px 12px hsl(43 96% 56% / 0.2);
+    --shadow-product: 0 2px 8px hsl(0 0% 20% / 0.08);
     
     /* Animations */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
