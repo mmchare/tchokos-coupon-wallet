@@ -215,7 +215,7 @@ All colors MUST be HSL.
   /* Buy Now Button - Rouge Chinois */
   .buy-button {
     @apply text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold;
-    background: linear-gradient(135deg, hsl(0 85% 46%), hsl(0 85% 56%));
+    background: hsl(0 72% 51%);
     box-shadow: var(--shadow-glow-red);
     transition: var(--transition-smooth);
     min-height: var(--mobile-touch-target);
