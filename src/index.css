@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* JINBAO SMART MARKET V2.0 Design System
-Tech + Premium Asian E-commerce aesthetic
-Bleu Tech (Primary/Action) | Gris Argent (Quality) | Noir Profond (Background)
+/* JINBAO SMART MARKET V3.0 Design System
+Rouge Chinois (Primary/Action) | Or (Premium/Accent) | Noir Profond (Background)
 All colors MUST be HSL.
 */
 
@@ -20,7 +19,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4%;
 
-    --primary: 210 100% 50%;                   /* Bleu Tech - Primary */
+    --primary: 0 85% 46%;                       /* Rouge Chinois - Primary */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
@@ -29,10 +28,10 @@ All colors MUST be HSL.
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 210 100% 56%;                   /* Bleu Tech */
+    --accent: 0 85% 52%;                        /* Rouge Chinois clair */
     --accent-foreground: 0 0% 100%;
 
-    --success: 210 100% 56%;
+    --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -40,18 +39,19 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 210 100% 50%;
+    --ring: 0 85% 46%;
 
     --radius: 0.75rem;
     
     /* JinBao Custom Colors */
-    --jinbao-blue: 210 100% 50%;              /* Bleu Tech - Primary */
-    --jinbao-silver: 0 0% 66%;                /* Gris Argent */
-    --jinbao-dark: 0 0% 4%;                   /* Noir Profond */
+    --jinbao-red: 0 85% 46%;                    /* Rouge Chinois */
+    --jinbao-blue: 0 85% 46%;                   /* Alias -> Rouge */
+    --jinbao-silver: 0 0% 66%;                  /* Gris Argent */
+    --jinbao-dark: 0 0% 4%;                     /* Noir Profond */
     
     /* Vibrant Colors */
-    --vibrant-red: 0 100% 50%;                /* Rouge Vif - Prix & Réductions */
-    --vibrant-yellow: 45 100% 50%;            /* Jaune/Orange Vif - Étoiles & Wallet */
+    --vibrant-red: 0 100% 50%;                  /* Rouge Vif - Prix & Réductions */
+    --vibrant-yellow: 45 100% 50%;              /* Jaune/Orange Vif - Étoiles & Wallet */
     --vibrant-orange: 30 100% 50%;
     
     /* JinBao Gold - 金 (Jin = Or) */
@@ -60,25 +60,25 @@ All colors MUST be HSL.
     --jinbao-gold-dark: 38 90% 42%;
     
     /* Legacy aliases */
-    --jinbao-red: 210 100% 50%;               /* Now maps to Blue */
-    --pinbaoo-yellow: 210 100% 50%;
-    --pinbaoo-green: 210 100% 56%;
+    --pinbaoo-yellow: 0 85% 46%;
+    --pinbaoo-green: 0 85% 52%;
     --pinbaoo-dark: 0 0% 4%;
     
     --wallet-balance: 45 100% 50%;
     --whatsapp: 142 70% 45%;
-    --stock-warning: 0 84% 60%;               /* Red kept for warnings only */
+    --stock-warning: 0 84% 60%;
     --price-strikethrough: 0 0% 66%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
-    --gradient-trust: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 62%));
+    --gradient-primary: linear-gradient(135deg, hsl(0 85% 46%), hsl(0 85% 56%));
+    --gradient-trust: linear-gradient(135deg, hsl(0 85% 46%), hsl(43 96% 56%));
     --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%), hsl(45 100% 72%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 5% 98%));
     
     /* Shadows */
     --shadow-elegant: 0 20px 40px -10px hsl(0 0% 20% / 0.15);
-    --shadow-glow-blue: 0 0 30px hsl(210 100% 50% / 0.4);
+    --shadow-glow-red: 0 0 30px hsl(0 85% 46% / 0.4);
+    --shadow-glow-blue: 0 0 30px hsl(0 85% 46% / 0.4);
     --shadow-glow-gold: 0 0 30px hsl(43 96% 56% / 0.4);
     --shadow-product: 0 10px 30px -5px hsl(0 0% 20% / 0.1);
     
@@ -93,58 +93,58 @@ All colors MUST be HSL.
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 26%;
-    --sidebar-primary: 210 100% 50%;
+    --sidebar-primary: 0 85% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent: 0 20% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 210 100% 50%;
+    --sidebar-ring: 0 85% 46%;
   }
 
   .dark {
     /* JinBao Dark Mode */
-    --background: 220 25% 6%;
-    --foreground: 210 20% 98%;
+    --background: 0 10% 6%;
+    --foreground: 0 10% 98%;
 
-    --card: 220 22% 10%;
-    --card-foreground: 210 20% 98%;
+    --card: 0 8% 10%;
+    --card-foreground: 0 10% 98%;
 
-    --popover: 220 24% 8%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 0 10% 8%;
+    --popover-foreground: 0 10% 98%;
 
-    --primary: 210 100% 50%;                   /* Bleu Tech */
+    --primary: 0 85% 50%;                       /* Rouge Chinois */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 14%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 0 8% 14%;
+    --secondary-foreground: 0 10% 98%;
 
-    --muted: 220 18% 14%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 0 6% 14%;
+    --muted-foreground: 0 10% 55%;
 
-    --accent: 210 100% 56%;
+    --accent: 0 85% 56%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 210 100% 56%;
+    --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 18%;
-    --input: 220 20% 14%;
-    --ring: 210 100% 50%;
+    --border: 0 8% 18%;
+    --input: 0 8% 14%;
+    --ring: 0 85% 50%;
 
     /* Dark mode gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(220 25% 6%), hsl(220 22% 10%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 10% 6%), hsl(0 8% 10%));
 
-    --sidebar-background: 220 24% 8%;
-    --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 210 100% 50%;
+    --sidebar-background: 0 10% 8%;
+    --sidebar-foreground: 0 10% 95%;
+    --sidebar-primary: 0 85% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 14%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 220 18% 14%;
-    --sidebar-ring: 210 100% 50%;
+    --sidebar-accent: 0 8% 14%;
+    --sidebar-accent-foreground: 0 10% 95%;
+    --sidebar-border: 0 8% 14%;
+    --sidebar-ring: 0 85% 50%;
   }
 }
 
@@ -160,12 +160,12 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* JinBao Logo Animation - Bleu Tech */
+  /* JinBao Logo Animation - Rouge Chinois */
   .jinbao-logo {
     @apply font-bold tracking-wider;
     font-family: 'Inter', system-ui, sans-serif;
-    color: hsl(210 100% 50%);
-    text-shadow: 0 0 20px hsl(210 100% 50% / 0.6);
+    color: hsl(0 85% 46%);
+    text-shadow: 0 0 20px hsl(0 85% 46% / 0.6);
     animation: logoGlow 2s ease-in-out infinite alternate;
   }
 
@@ -187,8 +187,8 @@ All colors MUST be HSL.
   }
 
   .product-card:hover {
-    box-shadow: var(--shadow-glow-blue);
-    border-color: hsl(210 100% 50%);
+    box-shadow: var(--shadow-glow-red);
+    border-color: hsl(0 85% 46%);
   }
 
   /* Wallet Balance */
@@ -198,32 +198,32 @@ All colors MUST be HSL.
     border: 1px solid hsl(0 0% 66% / 0.3);
   }
 
-  /* Coupon Button - Bleu Tech */
+  /* Coupon Button - Rouge Chinois */
   .coupon-button {
     @apply px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-white;
-    background: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
-    box-shadow: var(--shadow-glow-blue);
+    background: linear-gradient(135deg, hsl(0 85% 46%), hsl(0 85% 56%));
+    box-shadow: var(--shadow-glow-red);
     transition: var(--transition-smooth);
     min-height: var(--mobile-touch-target);
   }
 
   .coupon-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px hsl(210 100% 50% / 0.5);
+    box-shadow: 0 8px 25px hsl(0 85% 46% / 0.5);
   }
 
-  /* Buy Now Button - Bleu Tech */
+  /* Buy Now Button - Rouge Chinois */
   .buy-button {
     @apply text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold;
-    background: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
-    box-shadow: var(--shadow-glow-blue);
+    background: linear-gradient(135deg, hsl(0 85% 46%), hsl(0 85% 56%));
+    box-shadow: var(--shadow-glow-red);
     transition: var(--transition-smooth);
     min-height: var(--mobile-touch-target);
   }
 
   .buy-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px hsl(210 100% 50% / 0.5);
+    box-shadow: 0 8px 25px hsl(0 85% 46% / 0.5);
   }
 
   /* WhatsApp Button */
@@ -239,11 +239,11 @@ All colors MUST be HSL.
     box-shadow: 0 8px 20px hsl(142 70% 45% / 0.4);
   }
 
-  /* Verified Badge - Bleu Tech */
+  /* Verified Badge - Or/Gold */
   .verified-badge {
     @apply inline-flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-md;
-    color: hsl(210 100% 50%);
-    background: hsl(210 100% 56% / 0.1);
+    color: hsl(43 96% 56%);
+    background: hsl(43 96% 56% / 0.1);
   }
 
   /* Stock Warning - Red kept for urgency */
@@ -311,11 +311,11 @@ All colors MUST be HSL.
   }
 
   .text-jinbao-red {
-    color: hsl(210 100% 50%);
+    color: hsl(0 85% 46%);
   }
 
   .text-jinbao-blue {
-    color: hsl(210 100% 56%);
+    color: hsl(0 85% 52%);
   }
 
   .text-jinbao-silver {
@@ -345,19 +345,19 @@ All colors MUST be HSL.
 
   /* Legacy aliases */
   .text-pinbaoo {
-    color: hsl(210 100% 50%);
+    color: hsl(0 85% 46%);
   }
 
   .text-success {
-    color: hsl(210 100% 56%);
+    color: hsl(142 70% 45%);
   }
 
   .shadow-glow {
-    box-shadow: var(--shadow-glow-blue);
+    box-shadow: var(--shadow-glow-red);
   }
 
   .shadow-glow-blue {
-    box-shadow: var(--shadow-glow-blue);
+    box-shadow: var(--shadow-glow-red);
   }
 
   .animate-fade-in {
@@ -400,8 +400,8 @@ All colors MUST be HSL.
 }
 
 @keyframes logoGlow {
-  0% { text-shadow: 0 0 20px hsl(210 100% 50% / 0.6); }
-  100% { text-shadow: 0 0 30px hsl(210 100% 50% / 0.9), 0 0 40px hsl(210 100% 60% / 0.4); }
+  0% { text-shadow: 0 0 20px hsl(0 85% 46% / 0.6); }
+  100% { text-shadow: 0 0 30px hsl(0 85% 46% / 0.9), 0 0 40px hsl(43 96% 56% / 0.4); }
 }
 
 @keyframes fadeOut {
