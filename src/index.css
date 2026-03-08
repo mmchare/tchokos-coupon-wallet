@@ -175,7 +175,7 @@ All colors MUST be HSL.
 
   .splash-container {
     @apply fixed inset-0 flex items-center justify-center z-50;
-    background: linear-gradient(135deg, hsl(0 0% 2%), hsl(0 0% 6%));
+    background: hsl(222 47% 6%);
     animation: fadeOut 1s ease-in-out 2.5s forwards;
   }
 
