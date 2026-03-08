@@ -44,8 +44,8 @@ All colors MUST be HSL.
     --radius: 0.75rem;
     
     /* JinBao Custom Colors */
-    --jinbao-red: 0 85% 46%;                    /* Rouge Chinois */
-    --jinbao-blue: 0 85% 46%;                   /* Alias -> Rouge */
+    --jinbao-red: 0 72% 51%;                    /* Rouge Chinois */
+    --jinbao-blue: 0 72% 51%;                   /* Alias -> Rouge */
     --jinbao-silver: 0 0% 66%;                  /* Gris Argent */
     --jinbao-dark: 0 0% 4%;                     /* Noir Profond */
     
