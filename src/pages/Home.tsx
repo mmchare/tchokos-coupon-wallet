@@ -63,12 +63,24 @@ const Home = () => {
   const [isImageSearching, setIsImageSearching] = useState(false);
   const [imageSearchInterpretation, setImageSearchInterpretation] = useState('');
   
+  // Scroll state for collapsing header
+  const [isScrolled, setIsScrolled] = useState(false);
+
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(10);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Detect scroll to collapse sections
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Check for first-time onboarding
   useEffect(() => {
