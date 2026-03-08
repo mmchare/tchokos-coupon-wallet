@@ -454,6 +454,17 @@ const Home = () => {
           </section>
         </div>
 
+        {/* Loading State - Skeleton Grid */}
+        {isLoading && (
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="masonry-grid"
+            columnClassName="masonry-grid-column"
+          >
+            <ProductSkeletonGrid count={8} />
+          </Masonry>
+        )}
+
         {/* Unified Product Grid - Smart ordering invisible to user */}
         {!isLoading && visibleProducts.length > 0 && (
           <>
