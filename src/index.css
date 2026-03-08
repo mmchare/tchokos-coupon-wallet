@@ -164,9 +164,9 @@ All colors MUST be HSL.
   .jinbao-logo {
     @apply font-bold tracking-wider;
     font-family: 'Inter', system-ui, sans-serif;
-    color: hsl(0 85% 46%);
-    text-shadow: 0 0 20px hsl(0 85% 46% / 0.6);
-    animation: logoGlow 2s ease-in-out infinite alternate;
+    color: hsl(0 72% 51%);
+    text-shadow: none;
+    animation: none;
   }
 
   .pinbaoo-logo {
