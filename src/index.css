@@ -70,10 +70,10 @@ All colors MUST be HSL.
     --price-strikethrough: 0 0% 66%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0 85% 46%), hsl(0 85% 56%));
-    --gradient-trust: linear-gradient(135deg, hsl(0 85% 46%), hsl(43 96% 56%));
-    --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%), hsl(45 100% 72%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 5% 98%));
+    --gradient-primary: hsl(0 72% 51%);
+    --gradient-trust: hsl(0 72% 51%);
+    --gradient-gold: hsl(43 96% 56%);
+    --gradient-hero: hsl(0 0% 100%);
     
     /* Shadows */
     --shadow-elegant: 0 20px 40px -10px hsl(0 0% 20% / 0.15);
