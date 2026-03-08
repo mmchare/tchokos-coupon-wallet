@@ -318,17 +318,23 @@ const Home = () => {
       <Header />
 
       <main className={`container mx-auto px-3 sm:px-4 py-4 sm:py-6 ${!isOnline ? 'pt-16' : ''}`}>
-        {/* Hero Section - Compact */}
-        <section className="text-center mb-6 animate-fade-in px-2">
+        {/* Hero Section - Collapses on scroll */}
+        <section className={`text-center mb-4 animate-fade-in px-2 transition-all duration-300 overflow-hidden ${
+          isScrolled ? 'max-h-0 opacity-0 mb-0 py-0' : 'max-h-40 opacity-100'
+        }`}>
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
             <span className="text-primary">JinBao</span> Smart Market
           </h1>
-          <p className="text-sm text-muted-foreground mb-4 max-w-xl mx-auto">
+          <p className="text-sm text-muted-foreground mb-2 max-w-xl mx-auto">
             {t('home.tagline')}
           </p>
-          
-           {/* Search Bar with AI Toggle + Image Search */}
-          <div className="max-w-md mx-auto relative mb-4">
+        </section>
+
+        {/* Sticky Search Bar - Always visible */}
+        <div className={`sticky z-30 transition-all duration-300 ${
+          isScrolled ? 'top-0 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm' : 'top-auto mb-4'
+        }`}>
+          <div className="max-w-md mx-auto relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
               ref={searchInputRef}
@@ -400,59 +406,53 @@ const Home = () => {
 
           {/* AI / Image Search Interpretation */}
           {(interpretation && useAIMode) || imageSearchInterpretation ? (
-            <p className="text-xs text-muted-foreground text-center mb-2">
+            <p className="text-xs text-muted-foreground text-center mt-2">
               <Camera className="h-3 w-3 inline mr-1" />
               {imageSearchInterpretation || interpretation}
             </p>
           ) : null}
-        </section>
+        </div>
 
-        {/* New Drops Stories Carousel */}
-        <NewDropsCarousel />
+        {/* Collapsible sections - New Drops, Categories, Quick Services */}
+        <div className={`transition-all duration-300 overflow-hidden ${
+          isScrolled ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
+        }`}>
+          {/* New Drops Stories Carousel */}
+          <NewDropsCarousel />
 
-        {/* Category Filter & Actions */}
-        <section className="mb-4">
-          {/* Buttons - Full width on mobile, right-aligned on desktop */}
-          <div className="flex items-center justify-center gap-3 mb-3 px-1 sm:justify-end">
-            <Button 
-              onClick={() => setIsLoadCouponOpen(true)}
-              variant="outline"
-              size="sm"
-              className="flex-1 sm:flex-none text-xs max-w-[160px]"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              {t('home.code')}
-            </Button>
-            <Button 
-              onClick={() => setIsCouponOpen(true)}
-              variant="outline"
-              size="sm"
-              className="flex-1 sm:flex-none border-primary text-primary hover:bg-primary hover:text-white text-xs max-w-[160px]"
-            >
-              {t('home.coupon')} ({couponItems.length})
-            </Button>
-          </div>
-          
-          <CategoryFilter 
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory}
-          />
+          {/* Category Filter & Actions */}
+          <section className="mb-4">
+            {/* Buttons - Full width on mobile, right-aligned on desktop */}
+            <div className="flex items-center justify-center gap-3 mb-3 px-1 sm:justify-end">
+              <Button 
+                onClick={() => setIsLoadCouponOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none text-xs max-w-[160px]"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                {t('home.code')}
+              </Button>
+              <Button 
+                onClick={() => setIsCouponOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none border-primary text-primary hover:bg-primary hover:text-white text-xs max-w-[160px]"
+              >
+                {t('home.coupon')} ({couponItems.length})
+              </Button>
+            </div>
+            
+            <CategoryFilter 
+              categories={categories}
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+            />
 
-          {/* Quick Services */}
-          <QuickServices />
-        </section>
-
-        {/* Loading State - Skeleton Grid */}
-        {isLoading && (
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="masonry-grid"
-            columnClassName="masonry-grid-column"
-          >
-            <ProductSkeletonGrid count={8} />
-          </Masonry>
-        )}
+            {/* Quick Services */}
+            <QuickServices />
+          </section>
+        </div>
 
         {/* Unified Product Grid - Smart ordering invisible to user */}
         {!isLoading && visibleProducts.length > 0 && (
