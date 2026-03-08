@@ -93,12 +93,12 @@ All colors MUST be HSL.
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 26%;
-    --sidebar-primary: 0 85% 46%;
+    --sidebar-primary: 0 72% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 20% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 0 85% 46%;
+    --sidebar-ring: 0 72% 51%;
   }
 
   .dark {
