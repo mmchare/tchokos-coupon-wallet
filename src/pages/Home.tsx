@@ -315,9 +315,12 @@ const Home = () => {
       {/* Offline Indicator */}
       <OfflineIndicator isOnline={isOnline} cachedProductsCount={offlineProducts.length} />
       
-      <Header />
-
-      <main className={`container mx-auto px-3 sm:px-4 py-4 sm:py-6 ${!isOnline ? 'pt-16' : ''}`}>
+      {/* Header - Collapses on scroll */}
+      <div className={`transition-all duration-300 overflow-hidden ${
+        isScrolled ? 'max-h-0 opacity-0' : 'max-h-20 opacity-100'
+      }`}>
+        <Header />
+      </div>
         {/* Hero Section - Collapses on scroll */}
         <section className={`text-center mb-4 animate-fade-in px-2 transition-all duration-300 overflow-hidden ${
           isScrolled ? 'max-h-0 opacity-0 mb-0 py-0' : 'max-h-40 opacity-100'
