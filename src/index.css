@@ -188,7 +188,7 @@ All colors MUST be HSL.
 
   .product-card:hover {
     box-shadow: var(--shadow-glow-red);
-    border-color: hsl(0 85% 46%);
+    border-color: hsl(0 72% 51%);
   }
 
   /* Wallet Balance */
