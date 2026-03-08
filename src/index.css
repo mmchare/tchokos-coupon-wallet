@@ -400,8 +400,8 @@ All colors MUST be HSL.
 }
 
 @keyframes logoGlow {
-  0% { text-shadow: 0 0 20px hsl(0 85% 46% / 0.6); }
-  100% { text-shadow: 0 0 30px hsl(0 85% 46% / 0.9), 0 0 40px hsl(43 96% 56% / 0.4); }
+  0% { text-shadow: none; }
+  100% { text-shadow: none; }
 }
 
 @keyframes fadeOut {
