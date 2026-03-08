@@ -209,7 +209,7 @@ All colors MUST be HSL.
 
   .coupon-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px hsl(0 85% 46% / 0.5);
+    box-shadow: 0 4px 16px hsl(0 72% 51% / 0.3);
   }
 
   /* Buy Now Button - Rouge Chinois */
