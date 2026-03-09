@@ -27,6 +27,10 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const QuickSale = lazy(() => import("./pages/QuickSale"));
+const Deals = lazy(() => import("./pages/Deals"));
+const PriceEstimate = lazy(() => import("./pages/PriceEstimate"));
+const CustomOrder = lazy(() => import("./pages/CustomOrder"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -80,6 +84,10 @@ const App = () => (
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/quick-sale" element={<QuickSale />} />
+                  <Route path="/deals" element={<Deals />} />
+                  <Route path="/estimate" element={<PriceEstimate />} />
+                  <Route path="/custom-order" element={<CustomOrder />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
