@@ -1,20 +1,23 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const services = [
-  { key: 'quickSale', emoji: '⚡', bg: 'bg-orange-50 dark:bg-orange-950/30' },
-  { key: 'deals', emoji: '🏷️', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
-  { key: 'estimate', emoji: '💰', bg: 'bg-violet-50 dark:bg-violet-950/30' },
-  { key: 'custom', emoji: '📋', bg: 'bg-sky-50 dark:bg-sky-950/30' },
+  { key: 'quickSale', emoji: '⚡', bg: 'bg-orange-50 dark:bg-orange-950/30', path: '/quick-sale' },
+  { key: 'deals', emoji: '🏷️', bg: 'bg-emerald-50 dark:bg-emerald-950/30', path: '/deals' },
+  { key: 'estimate', emoji: '💰', bg: 'bg-violet-50 dark:bg-violet-950/30', path: '/estimate' },
+  { key: 'custom', emoji: '📋', bg: 'bg-sky-50 dark:bg-sky-950/30', path: '/custom-order' },
 ];
 
 const QuickServices = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-4 gap-3 px-1">
       {services.map((service, index) => (
         <button
           key={service.key}
+          onClick={() => navigate(service.path)}
           className={`flex flex-col items-center gap-2 py-3 px-1 rounded-2xl ${service.bg} hover:scale-105 transition-all duration-200 group animate-fade-in`}
           style={{ animationDelay: `${index * 80 + 200}ms`, animationFillMode: 'both' }}
         >
