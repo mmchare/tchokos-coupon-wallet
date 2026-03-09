@@ -27,6 +27,10 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const QuickSale = lazy(() => import("./pages/QuickSale"));
+const Deals = lazy(() => import("./pages/Deals"));
+const PriceEstimate = lazy(() => import("./pages/PriceEstimate"));
+const CustomOrder = lazy(() => import("./pages/CustomOrder"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
