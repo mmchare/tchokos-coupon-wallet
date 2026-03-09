@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.send-push-notification]
 verify_jwt = false
+
+[functions.ai-price-estimate]
+verify_jwt = false
