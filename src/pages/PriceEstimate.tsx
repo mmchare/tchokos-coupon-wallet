@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Loader2, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const PriceEstimate = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [productName, setProductName] = useState('');
   const [condition, setCondition] = useState('');
   const [description, setDescription] = useState('');
   const [estimated, setEstimated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState({ low: 0, mid: 0, high: 0 });
+  const [reasoning, setReasoning] = useState('');
+  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   const conditions = [
     { key: 'new', label: 'Neuf', emoji: '✨' },
@@ -20,22 +26,33 @@ const PriceEstimate = () => {
     { key: 'used', label: 'Usagé', emoji: '🔧' },
   ];
 
-  const handleEstimate = () => {
-    // Simulated estimation based on a random range
-    const base = Math.floor(Math.random() * 200000) + 30000;
-    const factor = condition === 'new' ? 1 : condition === 'likenew' ? 0.85 : condition === 'good' ? 0.7 : 0.5;
-    const mid = Math.round(base * factor);
-    setEstimatedPrice({
-      low: Math.round(mid * 0.8),
-      mid,
-      high: Math.round(mid * 1.2),
-    });
-    setEstimated(true);
+  const handleEstimate = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-price-estimate', {
+        body: { productName, condition, description },
+      });
+
+      if (error) throw error;
+
+      setEstimatedPrice({ low: data.low, mid: data.mid, high: data.high });
+      setReasoning(data.reasoning || '');
+      setSimilarProducts(data.similarProducts || []);
+      setEstimated(true);
+    } catch (err: any) {
+      console.error('Estimation error:', err);
+      toast({
+        title: 'Erreur',
+        description: err.message || "Impossible d'estimer le prix. Réessayez.",
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">
           <button onClick={() => navigate(-1)} className="p-1">
@@ -48,14 +65,14 @@ const PriceEstimate = () => {
       <div className="p-4 space-y-6">
         {!estimated ? (
           <div className="space-y-5 animate-fade-in">
-            {/* Intro */}
             <div className="text-center py-4">
-              <span className="text-5xl mb-3 block">💰</span>
-              <h2 className="text-base font-bold text-foreground">Combien vaut votre produit ?</h2>
-              <p className="text-sm text-muted-foreground mt-1">Décrivez-le et on vous donne une estimation basée sur le marché JinBao.</p>
+              <span className="text-5xl mb-3 block">🤖</span>
+              <h2 className="text-base font-bold text-foreground">Estimation IA intelligente</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Notre IA analyse les prix réels sur JinBao pour vous donner une estimation précise.
+              </p>
             </div>
 
-            {/* Form */}
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Nom du produit</label>
@@ -94,22 +111,29 @@ const PriceEstimate = () => {
                 />
               </div>
 
-              <Button onClick={handleEstimate} className="w-full" disabled={!productName || !condition}>
-                <Sparkles className="h-4 w-4 mr-1" />
-                Estimer le prix
+              <Button onClick={handleEstimate} className="w-full" disabled={!productName || !condition || isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Analyse en cours...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="h-4 w-4 mr-1" />
+                    Estimer avec l'IA
+                  </>
+                )}
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-5 animate-fade-in">
-            {/* Result */}
             <div className="text-center py-4">
               <span className="text-5xl mb-3 block">📊</span>
               <h2 className="text-base font-bold text-foreground">Estimation pour</h2>
               <p className="text-primary font-bold text-lg">{productName}</p>
             </div>
 
-            {/* Price range card */}
             <div className="rounded-xl border border-border bg-card p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -136,12 +160,36 @@ const PriceEstimate = () => {
               </div>
             </div>
 
+            {reasoning && (
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-foreground">Analyse IA</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{reasoning}</p>
+              </div>
+            )}
+
+            {similarProducts.length > 0 && (
+              <div className="rounded-xl border border-border bg-card p-4">
+                <h3 className="text-sm font-bold text-foreground mb-3">📦 Produits similaires sur JinBao</h3>
+                <div className="space-y-2">
+                  {similarProducts.map((p: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground truncate flex-1 mr-2">{p.name}</span>
+                      <span className="font-bold text-foreground whitespace-nowrap">{Number(p.price).toLocaleString()} F</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <p className="text-xs text-muted-foreground text-center">
-              Estimation basée sur les ventes récentes sur JinBao. Les prix réels peuvent varier.
+              Estimation basée sur l'IA et les données réelles de JinBao.
             </p>
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setEstimated(false)} className="flex-1">
+              <Button variant="outline" onClick={() => { setEstimated(false); setReasoning(''); setSimilarProducts([]); }} className="flex-1">
                 Nouvelle estimation
               </Button>
               <Button onClick={() => navigate('/quick-sale')} className="flex-1">
