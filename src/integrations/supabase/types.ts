@@ -171,6 +171,48 @@ export type Database = {
           },
         ]
       }
+      custom_orders: {
+        Row: {
+          admin_response: string | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          details: string | null
+          id: string
+          product_link: string | null
+          product_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_response?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          product_link?: string | null
+          product_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_response?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          product_link?: string | null
+          product_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       delivery_addresses: {
         Row: {
           address: string
@@ -610,6 +652,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quick_sale_listings: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          price: number
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price: number
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          price?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       referral_codes: {
         Row: {
