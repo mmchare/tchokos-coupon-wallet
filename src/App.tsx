@@ -84,6 +84,10 @@ const App = () => (
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/quick-sale" element={<QuickSale />} />
+                  <Route path="/deals" element={<Deals />} />
+                  <Route path="/estimate" element={<PriceEstimate />} />
+                  <Route path="/custom-order" element={<CustomOrder />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
