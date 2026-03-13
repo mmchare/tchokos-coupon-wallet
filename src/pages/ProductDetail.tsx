@@ -130,16 +130,30 @@ const ProductDetail = () => {
           ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
           : 4.5;
 
+        // Pick translated fields based on language
+        const lang = i18n.language;
+        let displayName = data.name;
+        let displayDesc = data.description || 'Aucune description disponible.';
+        if (lang === 'en') {
+          displayName = (data as any).name_en || data.name;
+          displayDesc = (data as any).description_en || data.description || 'No description available.';
+        } else if (lang === 'zh') {
+          displayName = (data as any).name_zh || data.name;
+          displayDesc = (data as any).description_zh || data.description || '暂无描述';
+        }
+
         const transformedProduct: Product = {
           id: data.id,
-          name: data.name,
+          name: displayName,
           price: Number(data.price),
           originalPrice: data.original_price ? Number(data.original_price) : undefined,
           category: data.category || 'Autres',
           rating: avgRating,
           images: data.images && data.images.length > 0 ? data.images : ['/placeholder.svg'],
           videoUrl: data.video_url || undefined,
-          description: data.description || 'Aucune description disponible.',
+          description: displayDesc,
+          reviews: reviews,
+          isVerified: data.is_verified || false,
           reviews: reviews,
           isVerified: data.is_verified || false,
           isUniqueStock: data.stock_available <= 1,
