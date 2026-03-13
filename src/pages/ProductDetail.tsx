@@ -60,7 +60,7 @@ interface Product {
 const ProductDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { addToCoupon } = useCoupon();
   const { trackView, endView, trackAddToCart } = useActivityTracking();
