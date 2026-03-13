@@ -154,8 +154,6 @@ const ProductDetail = () => {
           description: displayDesc,
           reviews: reviews,
           isVerified: data.is_verified || false,
-          reviews: reviews,
-          isVerified: data.is_verified || false,
           isUniqueStock: data.stock_available <= 1,
           isAuction: data.is_auction || false,
           auctionEndDate: data.auction_end_date ? new Date(data.auction_end_date) : undefined,
