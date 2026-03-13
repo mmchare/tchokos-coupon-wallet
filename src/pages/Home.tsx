@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Search, Download, Loader2, Sparkles, X, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import mascotImage from '@/assets/jinbao-mascot.jpg';
 import { useCoupon } from '@/contexts/CouponContext';
 import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
