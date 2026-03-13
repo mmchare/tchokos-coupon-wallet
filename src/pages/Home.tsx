@@ -425,6 +425,7 @@ const Home = () => {
               onClearAll={clearHistory}
               isVisible={showSearchSuggestions}
             />
+            </div>
           </div>
 
           {/* AI / Image Search Interpretation */}
