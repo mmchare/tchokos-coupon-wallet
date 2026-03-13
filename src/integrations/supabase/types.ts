@@ -543,11 +543,15 @@ export type Database = {
           category: string | null
           created_at: string
           description: string | null
+          description_en: string | null
+          description_zh: string | null
           id: string
           images: string[] | null
           is_auction: boolean
           is_verified: boolean
           name: string
+          name_en: string | null
+          name_zh: string | null
           original_price: number | null
           price: number
           source_link: string | null
@@ -560,11 +564,15 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          description_en?: string | null
+          description_zh?: string | null
           id?: string
           images?: string[] | null
           is_auction?: boolean
           is_verified?: boolean
           name: string
+          name_en?: string | null
+          name_zh?: string | null
           original_price?: number | null
           price?: number
           source_link?: string | null
@@ -577,11 +585,15 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          description_en?: string | null
+          description_zh?: string | null
           id?: string
           images?: string[] | null
           is_auction?: boolean
           is_verified?: boolean
           name?: string
+          name_en?: string | null
+          name_zh?: string | null
           original_price?: number | null
           price?: number
           source_link?: string | null

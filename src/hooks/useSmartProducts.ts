@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -35,6 +36,7 @@ const productCache = {
 
 export const useSmartProducts = (): SmartProductsResult => {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
   const [allProducts, setAllProducts] = useState<Product[]>(productCache.data || []);
   const [aiScores, setAiScores] = useState<Map<string, number>>(new Map());
   const [activityScores, setActivityScores] = useState<Map<string, number>>(new Map());
@@ -55,7 +57,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, original_price, category, images, is_auction, auction_end_date, is_verified')
+      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -67,25 +69,33 @@ export const useSmartProducts = (): SmartProductsResult => {
           if (!p.auction_end_date) return true;
           return new Date(p.auction_end_date) > currentTime;
         })
-        .map(p => ({
-          id: p.id,
-          name: p.name,
-          price: Number(p.price),
-          originalPrice: p.original_price ? Number(p.original_price) : undefined,
-          category: p.category || 'Autres',
-          rating: 4.5 + Math.random() * 0.5,
-          image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
-          isAuction: p.is_auction || false,
-          isVerified: p.is_verified || false,
-          interestCount: 0,
-        }));
+        .map(p => {
+          // Pick translated name based on current language
+          const lang = i18n.language;
+          let displayName = p.name; // default: French
+          if (lang === 'en' && (p as any).name_en) displayName = (p as any).name_en;
+          if (lang === 'zh' && (p as any).name_zh) displayName = (p as any).name_zh;
+
+          return {
+            id: p.id,
+            name: displayName,
+            price: Number(p.price),
+            originalPrice: p.original_price ? Number(p.original_price) : undefined,
+            category: p.category || 'Autres',
+            rating: 4.5 + Math.random() * 0.5,
+            image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
+            isAuction: p.is_auction || false,
+            isVerified: p.is_verified || false,
+            interestCount: 0,
+          };
+        });
 
       productCache.data = products;
       productCache.timestamp = Date.now();
       setAllProducts(products);
     }
     isFetchingRef.current = false;
-  }, []);
+  }, [i18n.language]);
 
   // Fetch user activity scores - OPTIMIZED: only user's own data, limited
   const fetchActivityScores = useCallback(async () => {
@@ -160,7 +170,8 @@ export const useSmartProducts = (): SmartProductsResult => {
         setIsLoading(true);
       }
       
-      await fetchProducts(refreshKey > 0);
+      // Force refresh when language changes
+      await fetchProducts(refreshKey > 0 || true);
       setIsLoading(false);
       
       // Personalization in background - non-blocking
@@ -169,8 +180,10 @@ export const useSmartProducts = (): SmartProductsResult => {
       }
     };
 
+    // Invalidate cache when language changes
+    productCache.timestamp = 0;
     loadData();
-  }, [user?.id, refreshKey, fetchProducts, fetchActivityScores, fetchAIRecommendations]);
+  }, [user?.id, refreshKey, i18n.language, fetchProducts, fetchActivityScores, fetchAIRecommendations]);
 
   // Smart product ordering algorithm
   const smartProducts = useMemo(() => {
