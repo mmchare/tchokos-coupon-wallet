@@ -57,7 +57,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, original_price, category, images, is_auction, auction_end_date, is_verified')
+      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
