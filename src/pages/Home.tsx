@@ -333,7 +333,7 @@ const Home = () => {
               <span className="w-7 h-7 sm:w-9 sm:h-9 border-2 border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10">
                 <span className="text-jinbao-gold text-base sm:text-xl font-black" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>金</span>
               </span>
-              <span className="text-primary">Jin</span><span className="text-jinbao-gold">Bao</span>
+              <span className="text-jinbao-gold">Jin</span><span className="text-primary">Bao</span>
             </span>
             <span>Smart Market</span>
           </h1>
@@ -357,17 +357,18 @@ const Home = () => {
                 />
               </div>
             )}
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <input 
-              ref={searchInputRef}
-              type="text"
-              placeholder={useAIMode ? t('common.searchAI') : t('common.search')}
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
-              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              className="w-full pl-10 pr-28 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary text-sm"
+            <div className="relative w-full">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <input 
+                ref={searchInputRef}
+                type="text"
+                placeholder={useAIMode ? t('common.searchAI') : t('common.search')}
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => setShowSearchSuggestions(searchQuery.length === 0 && history.length > 0)}
+                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+                className="w-full pl-10 pr-28 py-2.5 bg-input border border-border rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary text-sm"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
               {searchQuery && (
@@ -424,6 +425,7 @@ const Home = () => {
               onClearAll={clearHistory}
               isVisible={showSearchSuggestions}
             />
+            </div>
           </div>
 
           {/* AI / Image Search Interpretation */}
