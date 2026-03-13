@@ -69,18 +69,26 @@ export const useSmartProducts = (): SmartProductsResult => {
           if (!p.auction_end_date) return true;
           return new Date(p.auction_end_date) > currentTime;
         })
-        .map(p => ({
-          id: p.id,
-          name: p.name,
-          price: Number(p.price),
-          originalPrice: p.original_price ? Number(p.original_price) : undefined,
-          category: p.category || 'Autres',
-          rating: 4.5 + Math.random() * 0.5,
-          image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
-          isAuction: p.is_auction || false,
-          isVerified: p.is_verified || false,
-          interestCount: 0,
-        }));
+        .map(p => {
+          // Pick translated name based on current language
+          const lang = i18n.language;
+          let displayName = p.name; // default: French
+          if (lang === 'en' && (p as any).name_en) displayName = (p as any).name_en;
+          if (lang === 'zh' && (p as any).name_zh) displayName = (p as any).name_zh;
+
+          return {
+            id: p.id,
+            name: displayName,
+            price: Number(p.price),
+            originalPrice: p.original_price ? Number(p.original_price) : undefined,
+            category: p.category || 'Autres',
+            rating: 4.5 + Math.random() * 0.5,
+            image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
+            isAuction: p.is_auction || false,
+            isVerified: p.is_verified || false,
+            interestCount: 0,
+          };
+        });
 
       productCache.data = products;
       productCache.timestamp = Date.now();
