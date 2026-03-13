@@ -333,7 +333,7 @@ const Home = () => {
               <span className="w-7 h-7 sm:w-9 sm:h-9 border-2 border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10">
                 <span className="text-jinbao-gold text-base sm:text-xl font-black" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>金</span>
               </span>
-              <span className="text-primary">Jin</span><span className="text-jinbao-gold">Bao</span>
+              <span className="text-jinbao-gold">Jin</span><span className="text-primary">Bao</span>
             </span>
             <span>Smart Market</span>
           </h1>
