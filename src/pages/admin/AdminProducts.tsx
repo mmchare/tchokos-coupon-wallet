@@ -376,16 +376,32 @@ const AdminProducts = () => {
 
       toast({ title: "Succès", description: "Produit modifié" });
     } else {
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('products')
-        .insert(productData);
+        .insert(productData)
+        .select('id')
+        .single();
 
       if (error) {
         toast({ title: "Erreur", description: "Impossible de créer le produit", variant: "destructive" });
         return;
       }
 
-      toast({ title: "Succès", description: "Produit créé" });
+      toast({ title: "Succès", description: "Produit créé. Traduction en cours..." });
+
+      // Trigger automatic translation (fire-and-forget)
+      if (insertedData?.id) {
+        supabase.functions.invoke('translate-product', {
+          body: { productId: insertedData.id }
+        }).then(({ error: translateError }) => {
+          if (translateError) {
+            console.error('Translation error:', translateError);
+            toast({ title: "⚠️ Traduction", description: "La traduction automatique a échoué. Vous pouvez réessayer.", variant: "destructive" });
+          } else {
+            toast({ title: "🌍 Traduction terminée", description: "Le produit est maintenant disponible en FR, EN et ZH" });
+          }
+        });
+      }
     }
 
     setIsDialogOpen(false);
