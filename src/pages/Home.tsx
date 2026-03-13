@@ -339,7 +339,17 @@ const Home = () => {
         <div className={`sticky z-30 transition-all duration-300 ${
           isScrolled ? 'top-0 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm' : 'top-auto mb-4'
         }`}>
-          <div className="max-w-md mx-auto relative">
+          <div className={`mx-auto relative flex items-center gap-2 ${isScrolled ? 'max-w-lg' : 'max-w-md'}`}>
+            {/* Mascot avatar - appears when scrolled */}
+            {isScrolled && (
+              <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-primary/50 shadow-md animate-fade-in">
+                <img
+                  src={mascotImage}
+                  alt="JinBao"
+                  className="w-full h-full object-cover object-top scale-125"
+                />
+              </div>
+            )}
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input 
               ref={searchInputRef}
