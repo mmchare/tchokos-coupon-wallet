@@ -36,6 +36,7 @@ const productCache = {
 
 export const useSmartProducts = (): SmartProductsResult => {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
   const [allProducts, setAllProducts] = useState<Product[]>(productCache.data || []);
   const [aiScores, setAiScores] = useState<Map<string, number>>(new Map());
   const [activityScores, setActivityScores] = useState<Map<string, number>>(new Map());
