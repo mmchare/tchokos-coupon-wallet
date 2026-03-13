@@ -344,8 +344,22 @@ const Home = () => {
 
         {/* Sticky Search Bar - Always visible */}
         <div className={`sticky z-30 transition-all duration-300 ${
-          isScrolled ? 'top-0 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm' : 'top-auto mb-4'
+          isScrolled ? 'top-0 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/95 backdrop-blur-sm shadow-sm' : 'top-auto mb-4'
         }`}>
+          {/* Chinese decorative border when scrolled */}
+          {isScrolled && (
+            <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-jinbao-gold/60 to-transparent" />
+          )}
+          {isScrolled && (
+            <>
+              <div className="absolute top-0 left-2 text-jinbao-gold/20 text-[10px] font-bold tracking-widest select-none animate-fade-in" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                ◆ 金 ◆
+              </div>
+              <div className="absolute top-0 right-2 text-jinbao-gold/20 text-[10px] font-bold tracking-widest select-none animate-fade-in" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                ◆ 宝 ◆
+              </div>
+            </>
+          )}
           <div className={`mx-auto relative flex items-center gap-2 ${isScrolled ? 'max-w-lg' : 'max-w-md'}`}>
             {/* Mascot avatar - appears when scrolled */}
             {isScrolled && (
