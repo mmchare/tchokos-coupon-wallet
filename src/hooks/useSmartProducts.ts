@@ -170,7 +170,8 @@ export const useSmartProducts = (): SmartProductsResult => {
         setIsLoading(true);
       }
       
-      await fetchProducts(refreshKey > 0);
+      // Force refresh when language changes
+      await fetchProducts(refreshKey > 0 || true);
       setIsLoading(false);
       
       // Personalization in background - non-blocking
@@ -179,8 +180,10 @@ export const useSmartProducts = (): SmartProductsResult => {
       }
     };
 
+    // Invalidate cache when language changes
+    productCache.timestamp = 0;
     loadData();
-  }, [user?.id, refreshKey, fetchProducts, fetchActivityScores, fetchAIRecommendations]);
+  }, [user?.id, refreshKey, i18n.language, fetchProducts, fetchActivityScores, fetchAIRecommendations]);
 
   // Smart product ordering algorithm
   const smartProducts = useMemo(() => {
