@@ -328,8 +328,14 @@ const Home = () => {
         <section className={`text-center mb-4 animate-fade-in px-2 transition-all duration-300 overflow-hidden ${
           isScrolled ? 'max-h-0 opacity-0 mb-0 py-0' : 'max-h-40 opacity-100'
         }`}>
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
-            <span className="text-primary">JinBao</span> Smart Market
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1">
+              <span className="w-7 h-7 sm:w-9 sm:h-9 border-2 border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10">
+                <span className="text-jinbao-gold text-base sm:text-xl font-black" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>金</span>
+              </span>
+              <span className="text-primary">Jin</span><span className="text-jinbao-gold">Bao</span>
+            </span>
+            <span>Smart Market</span>
           </h1>
           <p className="text-sm text-muted-foreground mb-2 max-w-xl mx-auto">
             {t('home.tagline')}
