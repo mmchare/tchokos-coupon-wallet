@@ -95,7 +95,7 @@ export const useSmartProducts = (): SmartProductsResult => {
       setAllProducts(products);
     }
     isFetchingRef.current = false;
-  }, []);
+  }, [i18n.language]);
 
   // Fetch user activity scores - OPTIMIZED: only user's own data, limited
   const fetchActivityScores = useCallback(async () => {
