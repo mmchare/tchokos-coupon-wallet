@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.translate-product]
 verify_jwt = false
+
+[functions.batch-translate-products]
+verify_jwt = false

@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles, icons } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles, Languages, icons } from 'lucide-react';
 import { useCategories, useCreateCategory, AVAILABLE_ICONS, AVAILABLE_COLORS, Category } from '@/hooks/useCategories';
 
 // Dynamic icon component
@@ -60,6 +60,7 @@ const AdminProducts = () => {
   const [magicImportMode, setMagicImportMode] = useState(false);
   const [magicImportUrl, setMagicImportUrl] = useState('');
   const [isMagicImporting, setIsMagicImporting] = useState(false);
+  const [isTranslatingAll, setIsTranslatingAll] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -437,6 +438,52 @@ const AdminProducts = () => {
     p.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleBatchTranslate = async () => {
+    setIsTranslatingAll(true);
+    let totalTranslated = 0;
+    let totalErrors = 0;
+    
+    // Run multiple rounds of small batches
+    for (let round = 0; round < 10; round++) {
+      try {
+        const { data, error } = await supabase.functions.invoke('batch-translate-products', {
+          body: { limit: 2 }
+        });
+        
+        if (error) {
+          console.error('Batch translate error:', error);
+          break;
+        }
+        
+        if (data?.translated === 0 && (!data?.errors || data.errors.length === 0)) {
+          // All done
+          break;
+        }
+        
+        totalTranslated += (data?.translated || 0);
+        totalErrors += (data?.errors?.length || 0);
+        
+        if (data?.translated === 0) {
+          // All rate limited, wait longer
+          await new Promise(r => setTimeout(r, 15000));
+        } else {
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      } catch {
+        break;
+      }
+    }
+    
+    setIsTranslatingAll(false);
+    toast({
+      title: totalTranslated > 0 ? "✅ Traductions terminées" : "⚠️ Rate limit",
+      description: totalTranslated > 0 
+        ? `${totalTranslated} produits traduits.${totalErrors > 0 ? ` ${totalErrors} erreurs.` : ''}`
+        : "Le service de traduction est temporairement limité. Réessayez dans quelques minutes.",
+    });
+    fetchProducts();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -444,10 +491,20 @@ const AdminProducts = () => {
           <h1 className="text-2xl font-bold text-foreground">Produits</h1>
           <p className="text-muted-foreground">Gérez le catalogue de produits</p>
         </div>
-        <Button onClick={openCreateDialog} className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Nouveau produit
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleBatchTranslate} 
+            variant="outline" 
+            disabled={isTranslatingAll}
+          >
+            {isTranslatingAll ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Languages className="h-4 w-4 mr-2" />}
+            {isTranslatingAll ? 'Traduction...' : 'Traduire tout'}
+          </Button>
+          <Button onClick={openCreateDialog} className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau produit
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
