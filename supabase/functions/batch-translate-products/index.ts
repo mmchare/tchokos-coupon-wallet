@@ -99,9 +99,9 @@ Rules:
         else errors.push(r.reason?.message || "Unknown error");
       }
 
-      // Small delay between batches to respect rate limits
-      if (i + 3 < products.length) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Small delay between items
+      if (i + 1 < products.length) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
     }
 
