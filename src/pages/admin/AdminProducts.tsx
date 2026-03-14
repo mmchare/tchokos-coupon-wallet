@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles, icons } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, X, Image, Video, Link2, Wand2, Loader2, Sparkles, Languages, icons } from 'lucide-react';
 import { useCategories, useCreateCategory, AVAILABLE_ICONS, AVAILABLE_COLORS, Category } from '@/hooks/useCategories';
 
 // Dynamic icon component
