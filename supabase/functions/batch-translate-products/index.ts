@@ -23,7 +23,8 @@ serve(async (req) => {
       .from("products")
       .select("id, name, description")
       .is("name_en", null)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
     if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
     if (!products || products.length === 0) {
