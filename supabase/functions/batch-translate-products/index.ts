@@ -36,9 +36,9 @@ serve(async (req) => {
     let translated = 0;
     const errors: string[] = [];
 
-    // Process in batches of 3 to avoid rate limits
-    for (let i = 0; i < products.length; i += 3) {
-      const batch = products.slice(i, i + 3);
+    // Process one at a time to avoid rate limits and timeouts
+    for (let i = 0; i < products.length; i += 1) {
+      const batch = products.slice(i, i + 1);
       
       const results = await Promise.allSettled(
         batch.map(async (product) => {
