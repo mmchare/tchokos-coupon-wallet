@@ -60,6 +60,7 @@ const AdminProducts = () => {
   const [magicImportMode, setMagicImportMode] = useState(false);
   const [magicImportUrl, setMagicImportUrl] = useState('');
   const [isMagicImporting, setIsMagicImporting] = useState(false);
+  const [isTranslatingAll, setIsTranslatingAll] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
