@@ -6,6 +6,56 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function callAI(prompt: string, provider: "lovable" | "mistral", apiKey: string): Promise<string> {
+  const url = provider === "lovable"
+    ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+    : "https://api.mistral.ai/v1/chat/completions";
+
+  const model = provider === "lovable" ? "google/gemini-2.5-flash" : "mistral-small-latest";
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: "You are a precise translator for an e-commerce platform. Always return valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429 || response.status === 402) {
+      throw { rateLimited: true, provider, status: response.status };
+    }
+    throw new Error(`${provider} AI error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function translateWithFallback(prompt: string, lovableKey: string, mistralKey: string) {
+  const providers: Array<{ name: "lovable" | "mistral"; key: string }> = [];
+  if (lovableKey) providers.push({ name: "lovable", key: lovableKey });
+  if (mistralKey) providers.push({ name: "mistral", key: mistralKey });
+
+  for (const p of providers) {
+    try {
+      const content = await callAI(prompt, p.name, p.key);
+      return { content, provider: p.name };
+    } catch (e: any) {
+      if (e?.rateLimited) {
+        console.log(`${p.name} rate-limited (${e.status}), trying next...`);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("All AI providers rate-limited");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -13,13 +63,10 @@ serve(async (req) => {
     const { productId } = await req.json();
     if (!productId) throw new Error("productId is required");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const lovableKey = Deno.env.get("LOVABLE_API_KEY") || "";
+    const mistralKey = Deno.env.get("MISTRAL_API_KEY") || "";
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    // Fetch product
     const { data: product, error: fetchError } = await supabase
       .from("products")
       .select("id, name, description, category")
@@ -39,42 +86,16 @@ Rules:
 - For Chinese, use Simplified Chinese characters
 - Return ONLY the JSON object, no markdown, no explanation`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You are a precise translator for an e-commerce platform. Always return valid JSON only." },
-          { role: "user", content: prompt },
-        ],
-      }),
+    const { content, provider } = await translateWithFallback(prompt, lovableKey, mistralKey);
+
+    const cleaned = content.replace(/[\x00-\x1F\x7F]/g, (ch) => {
+      if (ch === '\n' || ch === '\r' || ch === '\t') return ch;
+      return '';
     });
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found in response");
+    const translations = JSON.parse(jsonMatch[0]);
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI gateway error:", aiResponse.status, errText);
-      throw new Error(`AI translation failed: ${aiResponse.status}`);
-    }
-
-    const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || "";
-
-    // Parse JSON from response (handle potential markdown wrapping)
-    let translations;
-    try {
-      const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("No JSON found in response");
-      translations = JSON.parse(jsonMatch[0]);
-    } catch (parseErr) {
-      console.error("Parse error:", rawContent);
-      throw new Error("Failed to parse AI translation response");
-    }
-
-    // Update product with translations
     const { error: updateError } = await supabase
       .from("products")
       .update({
@@ -87,7 +108,7 @@ Rules:
 
     if (updateError) throw new Error(`Update failed: ${updateError.message}`);
 
-    return new Response(JSON.stringify({ success: true, translations }), {
+    return new Response(JSON.stringify({ success: true, translations, provider }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
