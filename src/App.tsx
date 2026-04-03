@@ -89,6 +89,7 @@ const App = () => (
                   <Route path="/deals" element={<Deals />} />
                   <Route path="/estimate" element={<PriceEstimate />} />
                   <Route path="/custom-order" element={<CustomOrder />} />
+                  <Route path="/track/:token" element={<TrackOrder />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
