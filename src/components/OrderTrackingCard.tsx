@@ -16,6 +16,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import OrderEstimatedDelivery from './OrderEstimatedDelivery';
+import OrderStatusHistory from './OrderStatusHistory';
+import OrderShareButton from './OrderShareButton';
 
 interface OrderTrackingCardProps {
   order: {
@@ -40,33 +43,24 @@ interface OrderTrackingCardProps {
 const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) => {
   const [isCancelling, setIsCancelling] = useState(false);
 
-  // Check if order can be cancelled (within 2 hours and not shipped)
   const canCancelOrder = () => {
     if (order.status === 'cancelled' || order.status === 'delivered') return false;
     if (order.logistics_step >= 3) return false;
-    
     const orderDate = new Date(order.created_at);
     const now = new Date();
     const hoursDiff = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
-    
     return hoursDiff <= 2;
   };
 
-  // Get remaining time for cancellation
   const getRemainingTime = () => {
     const orderDate = new Date(order.created_at);
     const now = new Date();
     const minutesElapsed = (now.getTime() - orderDate.getTime()) / (1000 * 60);
     const minutesRemaining = 120 - minutesElapsed;
-    
     if (minutesRemaining <= 0) return null;
-    
     const hours = Math.floor(minutesRemaining / 60);
     const minutes = Math.floor(minutesRemaining % 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}min`;
-    }
+    if (hours > 0) return `${hours}h ${minutes}min`;
     return `${minutes}min`;
   };
 
@@ -78,13 +72,10 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
         toast.error('Vous devez être connecté');
         return;
       }
-
       const { data, error } = await supabase.functions.invoke('cancel-order', {
         body: { order_id: order.id, user_id: user.id }
       });
-
       if (error) throw error;
-
       if (data.success) {
         toast.success(`Commande annulée ! ${order.total_amount.toLocaleString()} FCFA remboursés`);
         onOrderCancelled?.();
@@ -98,31 +89,12 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
       setIsCancelling(false);
     }
   };
+
   const steps = [
-    {
-      step: 1,
-      icon: CheckCircle,
-      title: "Commande confirmée",
-      description: "Paiement validé",
-    },
-    {
-      step: 2,
-      icon: Package,
-      title: "Préparation en Chine",
-      description: "Vérification & emballage",
-    },
-    {
-      step: 3,
-      icon: Plane,
-      title: "Expédition internationale",
-      description: "En route vers le Cameroun",
-    },
-    {
-      step: 4,
-      icon: Truck,
-      title: "Livraison locale",
-      description: "Remise en main propre",
-    },
+    { step: 1, icon: CheckCircle, title: "Confirmée", description: "Paiement validé" },
+    { step: 2, icon: Package, title: "Préparation", description: "Chine" },
+    { step: 3, icon: Plane, title: "Expédition", description: "Internationale" },
+    { step: 4, icon: Truck, title: "Livraison", description: "Locale" },
   ];
 
   const getStepStatus = (stepNumber: number) => {
@@ -165,7 +137,6 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
     window.open(`https://wa.me/237655852010?text=${message}`, '_blank');
   };
 
-  // Get the product name from either product_name field or joined product
   const displayProductName = order.product_name || order.product?.name || 'Produit';
   const displayProductImage = order.product_image || order.product?.images?.[0];
 
@@ -185,9 +156,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
               <CardTitle className="text-base text-foreground">
                 Commande #{order.id.slice(0, 8).toUpperCase()}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {displayProductName}
-              </p>
+              <p className="text-sm text-muted-foreground">{displayProductName}</p>
             </div>
           </div>
           {getStatusBadge()}
@@ -214,17 +183,21 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
           </div>
         </div>
 
+        {/* Estimated Delivery */}
+        <OrderEstimatedDelivery
+          logisticsStep={order.logistics_step}
+          createdAt={order.created_at}
+          status={order.status}
+        />
+
         {/* Timeline Progress */}
         <div className="relative pt-2">
           <div className="flex justify-between items-center">
-            {steps.map((step, index) => {
+            {steps.map((step) => {
               const Icon = step.icon;
               const status = getStepStatus(step.step);
-              const isLast = index === steps.length - 1;
-              
               return (
                 <div key={step.step} className="flex flex-col items-center relative z-10">
-                  {/* Icon */}
                   <div className={`
                     w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center
                     ${status === 'completed' ? 'bg-jinbao-blue text-white' : ''}
@@ -233,12 +206,10 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
                   `}>
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  
-                  {/* Label - Hidden on mobile for space */}
                   <p className={`
                     text-[10px] sm:text-xs mt-1 text-center max-w-16 sm:max-w-20
                     ${status === 'completed' ? 'text-jinbao-blue font-medium' : ''}
-                    ${status === 'current' ? 'text-jinbao-red font-medium' : ''}
+                    ${status === 'current' ? 'text-primary font-medium' : ''}
                     ${status === 'pending' ? 'text-muted-foreground' : ''}
                   `}>
                     {step.title}
@@ -247,8 +218,6 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
               );
             })}
           </div>
-          
-          {/* Progress Bar */}
           <div className="absolute top-5 sm:top-6 left-4 right-4 h-1 bg-muted rounded-full -z-0">
             <div 
               className="h-full bg-jinbao-blue rounded-full transition-all duration-500"
@@ -256,6 +225,9 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
             />
           </div>
         </div>
+
+        {/* Status History */}
+        <OrderStatusHistory orderId={order.id} />
 
         {/* Delivery Info */}
         <div className="bg-muted/50 rounded-lg p-3 text-sm">
@@ -268,7 +240,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
           </div>
         </div>
 
-        {/* Cancel Order Button - Only show if eligible */}
+        {/* Cancel Order Button */}
         {canCancelOrder() && (
           <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
             <div className="flex items-center justify-between gap-2">
@@ -280,11 +252,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    disabled={isCancelling}
-                  >
+                  <Button variant="destructive" size="sm" disabled={isCancelling}>
                     {isCancelling ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -318,15 +286,18 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
           </div>
         )}
 
-        {/* WhatsApp Contact */}
-        <Button 
-          onClick={openWhatsApp}
-          variant="outline"
-          className="w-full border-green-500 text-green-600 hover:bg-green-500/10"
-        >
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Contacter JinBao pour cette commande
-        </Button>
+        {/* Share + WhatsApp */}
+        <div className="space-y-2">
+          <OrderShareButton orderId={order.id} />
+          <Button 
+            onClick={openWhatsApp}
+            variant="outline"
+            className="w-full border-green-500 text-green-600 hover:bg-green-500/10"
+          >
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Contacter JinBao
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

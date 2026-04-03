@@ -72,6 +72,33 @@ const Orders = () => {
     fetchOrders();
   }, [user]);
 
+  // Realtime subscription for live order updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setOrders((prev) =>
+            prev.map((o) => (o.id === payload.new.id ? { ...o, ...payload.new } : o))
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const filterOrders = (status: string) => {
     if (status === 'all') return orders;
     if (status === 'active') return orders.filter(o => o.logistics_step < 4 && o.status !== 'cancelled');
