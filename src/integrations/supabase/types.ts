@@ -352,6 +352,82 @@ export type Database = {
           },
         ]
       }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_status: string | null
+          new_step: number | null
+          notes: string | null
+          order_id: string
+          previous_status: string | null
+          previous_step: number | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          new_step?: number | null
+          notes?: string | null
+          order_id: string
+          previous_status?: string | null
+          previous_step?: number | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          new_step?: number | null
+          notes?: string | null
+          order_id?: string
+          previous_status?: string | null
+          previous_step?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_tracking_shares: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          order_id: string
+          share_token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id: string
+          share_token?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id?: string
+          share_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_tracking_shares_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           city: string
