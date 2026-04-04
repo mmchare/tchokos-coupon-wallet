@@ -193,6 +193,9 @@ const TrackOrder = () => {
               </div>
             )}
 
+            {/* Shipping Map */}
+            <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
+
             {/* Timeline */}
             <div className="relative pt-2">
               <div className="flex justify-between items-center">
