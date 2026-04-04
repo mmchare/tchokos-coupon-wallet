@@ -28,6 +28,8 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
   };
   const progress = status === 'delivered' ? 1 : (progressMap[logisticsStep] ?? 0.05);
 
+  if (status === 'cancelled') return null;
+
   const stepLabels: Record<number, string> = {
     1: 'En attente à Guangzhou',
     2: 'Préparation en cours',
