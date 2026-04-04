@@ -7,8 +7,6 @@ interface OrderShippingMapProps {
 }
 
 const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
-  if (status === 'cancelled') return null;
-
   // Key points on the route: China (Guangzhou) → Indian Ocean → East Africa → Cameroon (Douala)
   const points = useMemo(() => [
     { x: 82, y: 28, label: 'Guangzhou', flag: '🇨🇳' },
