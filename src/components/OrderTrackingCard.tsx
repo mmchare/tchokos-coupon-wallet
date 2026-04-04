@@ -19,6 +19,7 @@ import {
 import OrderEstimatedDelivery from './OrderEstimatedDelivery';
 import OrderStatusHistory from './OrderStatusHistory';
 import OrderShareButton from './OrderShareButton';
+import OrderShippingMap from './OrderShippingMap';
 
 interface OrderTrackingCardProps {
   order: {
