@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import OrderShippingMap from '@/components/OrderShippingMap';
 
 const TrackOrder = () => {
   const { token } = useParams<{ token: string }>();
@@ -191,6 +192,9 @@ const TrackOrder = () => {
                 </div>
               </div>
             )}
+
+            {/* Shipping Map */}
+            <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
 
             {/* Timeline */}
             <div className="relative pt-2">

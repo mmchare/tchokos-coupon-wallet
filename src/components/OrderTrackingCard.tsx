@@ -19,6 +19,7 @@ import {
 import OrderEstimatedDelivery from './OrderEstimatedDelivery';
 import OrderStatusHistory from './OrderStatusHistory';
 import OrderShareButton from './OrderShareButton';
+import OrderShippingMap from './OrderShippingMap';
 
 interface OrderTrackingCardProps {
   order: {
@@ -225,6 +226,9 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
             />
           </div>
         </div>
+
+        {/* Shipping Map */}
+        <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
 
         {/* Status History */}
         <OrderStatusHistory orderId={order.id} />
