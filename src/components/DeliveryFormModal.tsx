@@ -361,7 +361,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
             <div className="mt-2">
               <div className="flex items-start gap-2 text-destructive text-xs mb-2">
                 <AlertCircle className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                <span>Solde insuffisant. Il vous manque {(total - walletBalance).toLocaleString()} F</span>
+                <span>Solde insuffisant. Il vous manque {(finalTotal - walletBalance).toLocaleString()} F</span>
               </div>
               <Button 
                 onClick={handleRecharge}
