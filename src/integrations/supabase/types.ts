@@ -438,6 +438,7 @@ export type Database = {
           product_id: string | null
           product_image: string | null
           product_name: string | null
+          shipping_mode: string
           status: string
           total_amount: number
           updated_at: string
@@ -453,6 +454,7 @@ export type Database = {
           product_id?: string | null
           product_image?: string | null
           product_name?: string | null
+          shipping_mode?: string
           status?: string
           total_amount: number
           updated_at?: string
@@ -468,6 +470,7 @@ export type Database = {
           product_id?: string | null
           product_image?: string | null
           product_name?: string | null
+          shipping_mode?: string
           status?: string
           total_amount?: number
           updated_at?: string
