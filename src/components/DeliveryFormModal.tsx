@@ -69,7 +69,11 @@ interface DeliveryFormModalProps {
   onSubmit: (data: DeliveryFormValues) => void;
   total: number;
   items?: CouponItem[];
+  productCategory?: string | null;
 }
+
+const CUSTOMS_TAX_RATE = 0.333; // 33.3%
+const PHONE_CATEGORIES = ['téléphones', 'phones', 'smartphones', 'tablettes', 'tablets', 'électronique', 'electronics'];
 
 const LABEL_ICONS: Record<string, React.ReactNode> = {
   'Maison': <Home className="h-4 w-4" />,
