@@ -135,6 +135,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
     if (!isOpen) {
       setSelectedAddressId(null);
       setShowManualForm(false);
+      setIncludeCustomsTax(false);
     }
   }, [isOpen]);
 
