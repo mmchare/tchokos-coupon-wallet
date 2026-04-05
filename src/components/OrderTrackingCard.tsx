@@ -33,6 +33,7 @@ interface OrderTrackingCardProps {
     created_at: string;
     product_name?: string | null;
     product_image?: string | null;
+    shipping_mode?: string;
     product?: {
       name: string;
       images: string[] | null;
@@ -228,7 +229,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
         </div>
 
         {/* Shipping Map */}
-        <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
+        <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} shippingMode={(order.shipping_mode as 'sea' | 'air') || 'sea'} />
 
         {/* Status History */}
         <OrderStatusHistory orderId={order.id} />

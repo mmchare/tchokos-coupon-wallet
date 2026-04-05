@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN shipping_mode text NOT NULL DEFAULT 'sea' CHECK (shipping_mode IN ('sea', 'air'));
