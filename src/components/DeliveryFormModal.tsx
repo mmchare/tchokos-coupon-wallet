@@ -194,7 +194,9 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
             price: item.price,
             quantity: item.quantity
           })),
-          total_amount: total,
+          total_amount: finalTotal,
+          includes_customs_tax: includeCustomsTax,
+          customs_tax_amount: includeCustomsTax ? customsTaxAmount : 0,
           city: data.city,
           delivery_address: data.address,
           whatsapp_number: data.phone
