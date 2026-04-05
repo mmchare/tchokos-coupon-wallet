@@ -33,6 +33,7 @@ interface OrderTrackingCardProps {
     created_at: string;
     product_name?: string | null;
     product_image?: string | null;
+    shipping_mode?: string;
     product?: {
       name: string;
       images: string[] | null;

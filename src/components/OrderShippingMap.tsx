@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Ship, Plane } from 'lucide-react';
 
 interface OrderShippingMapProps {
   logisticsStep: number;
   status: string;
+  shippingMode?: 'sea' | 'air';
 }
 
 interface RoutePoint {
@@ -15,10 +16,10 @@ interface RoutePoint {
   desc: string;
 }
 
-const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
+const OrderShippingMap = ({ logisticsStep, status, shippingMode = 'sea' }: OrderShippingMapProps) => {
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
 
-  const points: RoutePoint[] = useMemo(() => [
+  const seaPoints: RoutePoint[] = useMemo(() => [
     { x: 82, y: 28, label: 'Guangzhou', port: 'Port de Nansha', flag: '🇨🇳', desc: 'Point de départ — Chine' },
     { x: 68, y: 42, label: 'Singapour', port: 'Port de Singapour', flag: '🇸🇬', desc: 'Escale de transbordement' },
     { x: 45, y: 48, label: 'Colombo', port: 'Port de Colombo', flag: '🇱🇰', desc: 'Traversée Océan Indien' },
@@ -26,31 +27,28 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
     { x: 18, y: 52, label: 'Douala', port: 'Port Autonome', flag: '🇨🇲', desc: 'Destination finale' },
   ], []);
 
-  const pathD = `M ${points[0].x} ${points[0].y} C ${points[1].x} ${points[1].y + 10}, ${points[2].x} ${points[2].y + 5}, ${points[3].x} ${points[3].y} Q ${points[3].x - 5} ${points[3].y + 4}, ${points[4].x} ${points[4].y}`;
+  const airPoints: RoutePoint[] = useMemo(() => [
+    { x: 82, y: 28, label: 'Guangzhou', port: 'Aéroport Baiyun', flag: '🇨🇳', desc: 'Point de départ — Chine' },
+    { x: 50, y: 22, label: 'En vol', port: 'Vol direct', flag: '✈️', desc: 'Survol Asie-Afrique' },
+    { x: 18, y: 52, label: 'Douala', port: 'Aéroport Int. de Douala', flag: '🇨🇲', desc: 'Destination finale' },
+  ], []);
 
-  const progressMap: Record<number, number> = {
-    1: 0.05,
-    2: 0.15,
-    3: 0.55,
-    4: 0.95,
-  };
+  const points = shippingMode === 'air' ? airPoints : seaPoints;
+
+  const seaPathD = `M ${seaPoints[0].x} ${seaPoints[0].y} C ${seaPoints[1].x} ${seaPoints[1].y + 10}, ${seaPoints[2].x} ${seaPoints[2].y + 5}, ${seaPoints[3].x} ${seaPoints[3].y} Q ${seaPoints[3].x - 5} ${seaPoints[3].y + 4}, ${seaPoints[4].x} ${seaPoints[4].y}`;
+  const airPathD = `M ${airPoints[0].x} ${airPoints[0].y} Q ${airPoints[1].x} ${airPoints[1].y - 8}, ${airPoints[2].x} ${airPoints[2].y}`;
+  const pathD = shippingMode === 'air' ? airPathD : seaPathD;
+
+  const progressMap: Record<number, number> = shippingMode === 'air'
+    ? { 1: 0.05, 2: 0.15, 3: 0.6, 4: 0.95 }
+    : { 1: 0.05, 2: 0.15, 3: 0.55, 4: 0.95 };
   const progress = status === 'delivered' ? 1 : (progressMap[logisticsStep] ?? 0.05);
 
   if (status === 'cancelled') return null;
 
-  const stepLabels: Record<number, string> = {
-    1: 'En attente à Guangzhou',
-    2: 'Préparation en cours',
-    3: 'En transit maritime',
-    4: 'Arrivée au Cameroun',
-  };
-
-  // Tooltip positioning helpers
-  const getTooltipAnchor = (i: number) => {
-    if (i === 0) return 'start';
-    if (i === points.length - 1) return 'end';
-    return 'middle';
-  };
+  const stepLabels: Record<number, string> = shippingMode === 'air'
+    ? { 1: 'En attente à Guangzhou', 2: 'Préparation en cours', 3: 'En vol vers le Cameroun', 4: 'Arrivée au Cameroun' }
+    : { 1: 'En attente à Guangzhou', 2: 'Préparation en cours', 3: 'En transit maritime', 4: 'Arrivée au Cameroun' };
 
   const getTooltipX = (point: RoutePoint, i: number) => {
     if (i === 0) return point.x + 2;
@@ -63,8 +61,15 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
         <MapPin className="h-4 w-4 text-primary" />
         <span>Suivi géographique</span>
+        <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+          {shippingMode === 'air' ? (
+            <><Plane className="h-3 w-3" /> Avion</>
+          ) : (
+            <><Ship className="h-3 w-3" /> Bateau</>
+          )}
+        </span>
         {status === 'delivered' && (
-          <span className="text-xs text-green-600 ml-auto font-semibold">✓ Livré</span>
+          <span className="text-xs text-green-600 font-semibold">✓ Livré</span>
         )}
       </div>
 
@@ -86,7 +91,7 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
         ))}
 
         {/* Route background */}
-        <path d={pathD} fill="none" stroke="hsl(var(--primary) / 0.2)" strokeWidth="0.8" strokeDasharray="2 1.5" />
+        <path d={pathD} fill="none" stroke="hsl(var(--primary) / 0.2)" strokeWidth="0.8" strokeDasharray={shippingMode === 'air' ? '1.5 1' : '2 1.5'} />
 
         {/* Route progress */}
         <path
@@ -101,7 +106,7 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
           className="transition-all duration-1000 ease-in-out"
         />
 
-        {/* Port labels (always visible) */}
+        {/* Port labels */}
         {points.map((point, i) => {
           const isFirst = i === 0;
           const isLast = i === points.length - 1;
@@ -136,9 +141,7 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
               onTouchEnd={() => setTimeout(() => setHoveredPoint(null), 2000)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Invisible larger hit area */}
               <circle cx={point.x} cy={point.y} r="4" fill="transparent" />
-
               {isCurrent && (
                 <circle
                   cx={point.x} cy={point.y} r="2.5"
@@ -156,7 +159,6 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
                 className="transition-all duration-200"
               />
 
-              {/* Tooltip on hover */}
               {isHovered && (
                 <g>
                   <rect
@@ -195,10 +197,15 @@ const OrderShippingMap = ({ logisticsStep, status }: OrderShippingMapProps) => {
           );
         })}
 
-        {/* Ship icon for in-transit */}
-        {logisticsStep === 3 && (
-          <text x={points[2].x} y={points[2].y - 7} textAnchor="middle" fontSize="4" className="animate-bounce" style={{ animationDuration: '3s' }}>
+        {/* Transport icon */}
+        {logisticsStep === 3 && shippingMode === 'sea' && (
+          <text x={seaPoints[2].x} y={seaPoints[2].y - 7} textAnchor="middle" fontSize="4" className="animate-bounce" style={{ animationDuration: '3s' }}>
             🚢
+          </text>
+        )}
+        {logisticsStep === 3 && shippingMode === 'air' && (
+          <text x={airPoints[1].x} y={airPoints[1].y - 5} textAnchor="middle" fontSize="4" className="animate-bounce" style={{ animationDuration: '2s' }}>
+            ✈️
           </text>
         )}
       </svg>
