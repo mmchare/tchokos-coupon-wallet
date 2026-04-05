@@ -427,21 +427,37 @@ const AdminOrders = () => {
                       })()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Select
-                        value={order.logistics_step.toString()}
-                        onValueChange={(value) => updateOrderStep(order.id, parseInt(value))}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
-                            <SelectItem key={step.step} value={step.step.toString()}>
-                              Étape {step.step}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2 justify-end">
+                        {/* Shipping mode toggle */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs px-2"
+                          onClick={async () => {
+                            const newMode = (order as any).shipping_mode === 'air' ? 'sea' : 'air';
+                            await supabase.from('orders').update({ shipping_mode: newMode } as any).eq('id', order.id);
+                            fetchOrders();
+                          }}
+                          title="Changer le mode d'expédition"
+                        >
+                          {(order as any).shipping_mode === 'air' ? '✈️' : '🚢'}
+                        </Button>
+                        <Select
+                          value={order.logistics_step.toString()}
+                          onValueChange={(value) => updateOrderStep(order.id, parseInt(value))}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LOGISTICS_STEPS.filter(step => step.step !== 0).map(step => (
+                              <SelectItem key={step.step} value={step.step.toString()}>
+                                Étape {step.step}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

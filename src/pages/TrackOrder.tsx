@@ -194,7 +194,7 @@ const TrackOrder = () => {
             )}
 
             {/* Shipping Map */}
-            <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
+            <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} shippingMode={(order.shipping_mode as 'sea' | 'air') || 'sea'} />
 
             {/* Timeline */}
             <div className="relative pt-2">
