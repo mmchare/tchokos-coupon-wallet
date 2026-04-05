@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +28,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Wallet, Loader2, AlertCircle, Home, Briefcase, MapPinned, Check } from 'lucide-react';
+import { MapPin, Phone, Wallet, Loader2, AlertCircle, Home, Briefcase, MapPinned, Check, Info } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,7 +69,11 @@ interface DeliveryFormModalProps {
   onSubmit: (data: DeliveryFormValues) => void;
   total: number;
   items?: CouponItem[];
+  productCategory?: string | null;
 }
+
+const CUSTOMS_TAX_RATE = 0.333; // 33.3%
+const PHONE_CATEGORIES = ['téléphones', 'phones', 'smartphones', 'tablettes', 'tablets', 'électronique', 'electronics'];
 
 const LABEL_ICONS: Record<string, React.ReactNode> = {
   'Maison': <Home className="h-4 w-4" />,
@@ -76,14 +81,25 @@ const LABEL_ICONS: Record<string, React.ReactNode> = {
   'Autre': <MapPinned className="h-4 w-4" />,
 };
 
-const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: DeliveryFormModalProps) => {
+const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], productCategory }: DeliveryFormModalProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [includeCustomsTax, setIncludeCustomsTax] = useState(false);
   const isMobile = useIsMobile();
+
+  const isPhoneProduct = useMemo(() => {
+    if (!productCategory) return false;
+    return PHONE_CATEGORIES.some(cat => 
+      productCategory.toLowerCase().includes(cat.toLowerCase())
+    );
+  }, [productCategory]);
+
+  const customsTaxAmount = Math.round(total * CUSTOMS_TAX_RATE);
+  const finalTotal = includeCustomsTax ? total + customsTaxAmount : total;
   
   const { addresses, isLoading: isLoadingAddresses } = useDeliveryAddresses();
 
@@ -119,6 +135,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
     if (!isOpen) {
       setSelectedAddressId(null);
       setShowManualForm(false);
+      setIncludeCustomsTax(false);
     }
   }, [isOpen]);
 
@@ -143,7 +160,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
   const selectedCity = form.watch('city');
   const isFreeDelivery = FREE_DELIVERY_CITIES.includes(selectedCity);
   const walletBalance = profile?.wallet_balance || 0;
-  const hasEnoughBalance = walletBalance >= total;
+  const hasEnoughBalance = walletBalance >= finalTotal;
 
   const handleSubmit = async (data: DeliveryFormValues) => {
     if (!user) {
@@ -178,7 +195,9 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
             price: item.price,
             quantity: item.quantity
           })),
-          total_amount: total,
+          total_amount: finalTotal,
+          includes_customs_tax: includeCustomsTax,
+          customs_tax_amount: includeCustomsTax ? customsTaxAmount : 0,
           city: data.city,
           delivery_address: data.address,
           whatsapp_number: data.phone
@@ -266,9 +285,64 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
       {/* Total and Wallet Balance */}
       <div className="space-y-2">
         <div className="bg-jinbao-red/10 border border-jinbao-red/20 rounded-lg p-3">
-          <p className="text-xs text-muted-foreground mb-1">Montant total</p>
+          <p className="text-xs text-muted-foreground mb-1">Montant produit</p>
           <p className="text-xl font-bold text-jinbao-red">{total.toLocaleString()} F</p>
         </div>
+
+        {/* Customs Tax Checkbox for phone products */}
+        {isPhoneProduct && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 space-y-2">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="customs-tax"
+                checked={includeCustomsTax}
+                onCheckedChange={(checked) => setIncludeCustomsTax(checked === true)}
+                className="mt-0.5"
+                disabled={isProcessing}
+              />
+              <label htmlFor="customs-tax" className="cursor-pointer flex-1">
+                <p className="text-sm font-medium text-foreground leading-tight">
+                  Ajouter les frais de douane (+33,3%)
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Dédouanement officiel CAMCIS — IMEI enregistré pour utilisation au Cameroun
+                </p>
+              </label>
+            </div>
+            {includeCustomsTax && (
+              <div className="bg-background/60 rounded-md p-2 text-xs space-y-1 ml-7">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Prix produit</span>
+                  <span>{total.toLocaleString()} F</span>
+                </div>
+                <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                  <span>Droits de douane (33,3%)</span>
+                  <span>+{customsTaxAmount.toLocaleString()} F</span>
+                </div>
+                <div className="flex justify-between font-bold text-foreground border-t border-border pt-1">
+                  <span>Total TTC</span>
+                  <span>{finalTotal.toLocaleString()} F</span>
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate('/customs-tax')}
+              className="flex items-center gap-1 text-[10px] text-primary hover:underline ml-7"
+            >
+              <Info className="h-3 w-3" />
+              En savoir plus sur cette taxe
+            </button>
+          </div>
+        )}
+
+        {/* Updated total if tax included */}
+        {includeCustomsTax && isPhoneProduct && (
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+            <p className="text-xs text-muted-foreground mb-1">Montant total à payer</p>
+            <p className="text-xl font-bold text-primary">{finalTotal.toLocaleString()} F</p>
+          </div>
+        )}
 
         <div className={`rounded-lg p-3 border ${
           hasEnoughBalance 
@@ -288,7 +362,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
             <div className="mt-2">
               <div className="flex items-start gap-2 text-destructive text-xs mb-2">
                 <AlertCircle className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                <span>Solde insuffisant. Il vous manque {(total - walletBalance).toLocaleString()} F</span>
+                <span>Solde insuffisant. Il vous manque {(finalTotal - walletBalance).toLocaleString()} F</span>
               </div>
               <Button 
                 onClick={handleRecharge}
@@ -521,7 +595,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: Del
               ) : (
                 <>
                   <Wallet className="h-4 w-4 mr-2" />
-                  Payer {total.toLocaleString()} F
+                  Payer {finalTotal.toLocaleString()} F
                 </>
               )}
             </Button>

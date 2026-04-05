@@ -32,6 +32,7 @@ const Deals = lazy(() => import("./pages/Deals"));
 const PriceEstimate = lazy(() => import("./pages/PriceEstimate"));
 const CustomOrder = lazy(() => import("./pages/CustomOrder"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder"));
+const CustomsTaxInfo = lazy(() => import("./pages/CustomsTaxInfo"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -90,6 +91,7 @@ const App = () => (
                   <Route path="/estimate" element={<PriceEstimate />} />
                   <Route path="/custom-order" element={<CustomOrder />} />
                   <Route path="/track/:token" element={<TrackOrder />} />
+                  <Route path="/customs-tax" element={<CustomsTaxInfo />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
