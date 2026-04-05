@@ -81,14 +81,25 @@ const LABEL_ICONS: Record<string, React.ReactNode> = {
   'Autre': <MapPinned className="h-4 w-4" />,
 };
 
-const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [] }: DeliveryFormModalProps) => {
+const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], productCategory }: DeliveryFormModalProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [includeCustomsTax, setIncludeCustomsTax] = useState(false);
   const isMobile = useIsMobile();
+
+  const isPhoneProduct = useMemo(() => {
+    if (!productCategory) return false;
+    return PHONE_CATEGORIES.some(cat => 
+      productCategory.toLowerCase().includes(cat.toLowerCase())
+    );
+  }, [productCategory]);
+
+  const customsTaxAmount = Math.round(total * CUSTOMS_TAX_RATE);
+  const finalTotal = includeCustomsTax ? total + customsTaxAmount : total;
   
   const { addresses, isLoading: isLoadingAddresses } = useDeliveryAddresses();
 
