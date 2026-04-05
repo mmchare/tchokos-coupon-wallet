@@ -32,6 +32,7 @@ const Deals = lazy(() => import("./pages/Deals"));
 const PriceEstimate = lazy(() => import("./pages/PriceEstimate"));
 const CustomOrder = lazy(() => import("./pages/CustomOrder"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder"));
+const CustomsTaxInfo = lazy(() => import("./pages/CustomsTaxInfo"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
