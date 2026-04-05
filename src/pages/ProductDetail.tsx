@@ -701,6 +701,7 @@ ${t('product.moreInfo')}`;
           image: product.images[0],
           quantity: 1
         }]}
+        productCategory={product.category}
       />
 
       {/* Purchase Confirmation Modal */}
