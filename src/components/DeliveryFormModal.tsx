@@ -284,9 +284,64 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
       {/* Total and Wallet Balance */}
       <div className="space-y-2">
         <div className="bg-jinbao-red/10 border border-jinbao-red/20 rounded-lg p-3">
-          <p className="text-xs text-muted-foreground mb-1">Montant total</p>
+          <p className="text-xs text-muted-foreground mb-1">Montant produit</p>
           <p className="text-xl font-bold text-jinbao-red">{total.toLocaleString()} F</p>
         </div>
+
+        {/* Customs Tax Checkbox for phone products */}
+        {isPhoneProduct && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 space-y-2">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="customs-tax"
+                checked={includeCustomsTax}
+                onCheckedChange={(checked) => setIncludeCustomsTax(checked === true)}
+                className="mt-0.5"
+                disabled={isProcessing}
+              />
+              <label htmlFor="customs-tax" className="cursor-pointer flex-1">
+                <p className="text-sm font-medium text-foreground leading-tight">
+                  Ajouter les frais de douane (+33,3%)
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Dédouanement officiel CAMCIS — IMEI enregistré pour utilisation au Cameroun
+                </p>
+              </label>
+            </div>
+            {includeCustomsTax && (
+              <div className="bg-background/60 rounded-md p-2 text-xs space-y-1 ml-7">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Prix produit</span>
+                  <span>{total.toLocaleString()} F</span>
+                </div>
+                <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                  <span>Droits de douane (33,3%)</span>
+                  <span>+{customsTaxAmount.toLocaleString()} F</span>
+                </div>
+                <div className="flex justify-between font-bold text-foreground border-t border-border pt-1">
+                  <span>Total TTC</span>
+                  <span>{finalTotal.toLocaleString()} F</span>
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate('/customs-tax')}
+              className="flex items-center gap-1 text-[10px] text-primary hover:underline ml-7"
+            >
+              <Info className="h-3 w-3" />
+              En savoir plus sur cette taxe
+            </button>
+          </div>
+        )}
+
+        {/* Updated total if tax included */}
+        {includeCustomsTax && isPhoneProduct && (
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+            <p className="text-xs text-muted-foreground mb-1">Montant total à payer</p>
+            <p className="text-xl font-bold text-primary">{finalTotal.toLocaleString()} F</p>
+          </div>
+        )}
 
         <div className={`rounded-lg p-3 border ${
           hasEnoughBalance 
