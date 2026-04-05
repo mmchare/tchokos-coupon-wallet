@@ -159,7 +159,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
   const selectedCity = form.watch('city');
   const isFreeDelivery = FREE_DELIVERY_CITIES.includes(selectedCity);
   const walletBalance = profile?.wallet_balance || 0;
-  const hasEnoughBalance = walletBalance >= total;
+  const hasEnoughBalance = walletBalance >= finalTotal;
 
   const handleSubmit = async (data: DeliveryFormValues) => {
     if (!user) {
