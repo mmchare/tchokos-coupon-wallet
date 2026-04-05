@@ -594,7 +594,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
               ) : (
                 <>
                   <Wallet className="h-4 w-4 mr-2" />
-                  Payer {total.toLocaleString()} F
+                  Payer {finalTotal.toLocaleString()} F
                 </>
               )}
             </Button>
