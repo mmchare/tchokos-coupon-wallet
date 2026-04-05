@@ -229,7 +229,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
         </div>
 
         {/* Shipping Map */}
-        <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} />
+        <OrderShippingMap logisticsStep={order.logistics_step} status={order.status} shippingMode={(order.shipping_mode as 'sea' | 'air') || 'sea'} />
 
         {/* Status History */}
         <OrderStatusHistory orderId={order.id} />
