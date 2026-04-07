@@ -139,13 +139,41 @@ const AdminProducts = () => {
       });
 
       if (error) {
-        throw new Error(error.message);
+        // Edge function returned an error status - parse the body
+        const errorBody = typeof error === 'object' && error.context ? 
+          JSON.parse(error.context?.body || '{}') : null;
+        
+        if (errorBody?.needsManual || errorBody?.duplicate) {
+          if (errorBody.duplicate) {
+            toast({ title: "Produit existant", description: errorBody.error, variant: "destructive" });
+          } else {
+            // Pre-fill the source link for manual entry
+            setFormData(prev => ({ ...prev, source_link: magicImportUrl.trim() }));
+            setMagicImportMode(false);
+            toast({ 
+              title: "⚠️ Import partiel", 
+              description: "Le site est protégé. Le lien source est pré-rempli, complétez les infos manuellement.",
+              variant: "default"
+            });
+          }
+          return;
+        }
+        throw new Error(error.message || 'Erreur inconnue');
       }
 
-      if (!data.success) {
+      if (!data?.success) {
+        if (data?.needsManual) {
+          setFormData(prev => ({ ...prev, source_link: magicImportUrl.trim() }));
+          setMagicImportMode(false);
+          toast({ 
+            title: "⚠️ Import partiel", 
+            description: data.error || "Complétez les infos manuellement. Le lien source est pré-rempli.",
+          });
+          return;
+        }
         toast({ 
-          title: data.duplicate ? "Produit existant" : "Erreur", 
-          description: data.error, 
+          title: data?.duplicate ? "Produit existant" : "Erreur", 
+          description: data?.error || 'Erreur inconnue', 
           variant: "destructive" 
         });
         return;
@@ -178,10 +206,13 @@ const AdminProducts = () => {
 
     } catch (error) {
       console.error('Magic import error:', error);
+      // Even on error, pre-fill source link so user can continue manually
+      setFormData(prev => ({ ...prev, source_link: magicImportUrl.trim() }));
+      setMagicImportMode(false);
       toast({ 
-        title: "Erreur d'import", 
-        description: error instanceof Error ? error.message : "Erreur inconnue. Veuillez remplir manuellement.", 
-        variant: "destructive" 
+        title: "⚠️ Import échoué", 
+        description: "Le lien source est pré-rempli. Complétez les infos du produit manuellement.", 
+        variant: "default" 
       });
     } finally {
       setIsMagicImporting(false);
