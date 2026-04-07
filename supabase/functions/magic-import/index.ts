@@ -256,7 +256,7 @@ const scrapeWithWebScraper = async (url: string, apifyKey: string, platform: str
   console.log(`Starting Apify Web Scraper for ${platform}...`);
   
   const response = await fetch(
-    `https://api.apify.com/v2/acts/apify~web-scraper/run-sync-get-dataset-items?token=${apifyKey}&timeout=60`,
+    `https://api.apify.com/v2/acts/apify~web-scraper/run-sync-get-dataset-items?token=${apifyKey}&timeout=45`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
