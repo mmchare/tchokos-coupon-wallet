@@ -323,6 +323,20 @@ const Profile = () => {
             </CardContent>
           </Card>
 
+          {/* Devenir Vendeur */}
+          <Card className="bg-card border-primary/20 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate('/become-seller')}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-foreground">Devenir Vendeur 🇨🇳</p>
+                <p className="text-xs text-muted-foreground">Résidant en Chine ? Vendez directement sur JinBao</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </CardContent>
+          </Card>
+
           {/* Informations personnelles */}
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
