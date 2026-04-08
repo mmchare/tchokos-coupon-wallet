@@ -633,6 +633,7 @@ export type Database = {
           name_zh: string | null
           original_price: number | null
           price: number
+          seller_id: string | null
           source_link: string | null
           stock_available: number
           updated_at: string
@@ -654,6 +655,7 @@ export type Database = {
           name_zh?: string | null
           original_price?: number | null
           price?: number
+          seller_id?: string | null
           source_link?: string | null
           stock_available?: number
           updated_at?: string
@@ -675,12 +677,21 @@ export type Database = {
           name_zh?: string | null
           original_price?: number | null
           price?: number
+          seller_id?: string | null
           source_link?: string | null
           stock_available?: number
           updated_at?: string
           video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -920,6 +931,152 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_escrow: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          order_id: string
+          released_at: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["escrow_status"]
+        }
+        Insert: {
+          commission_amount: number
+          commission_rate?: number
+          created_at?: string
+          gross_amount: number
+          id?: string
+          net_amount: number
+          order_id: string
+          released_at?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["escrow_status"]
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          order_id?: string
+          released_at?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["escrow_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_escrow_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_escrow_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_profiles: {
+        Row: {
+          chinese_phone: string
+          chinese_phone_verified: boolean
+          created_at: string
+          id: string
+          rating: number
+          rejection_reason: string | null
+          residence_document_url: string | null
+          shop_description: string | null
+          shop_name: string | null
+          total_sales: number
+          updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["seller_status"]
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          chinese_phone: string
+          chinese_phone_verified?: boolean
+          created_at?: string
+          id?: string
+          rating?: number
+          rejection_reason?: string | null
+          residence_document_url?: string | null
+          shop_description?: string | null
+          shop_name?: string | null
+          total_sales?: number
+          updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["seller_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          chinese_phone?: string
+          chinese_phone_verified?: boolean
+          created_at?: string
+          id?: string
+          rating?: number
+          rejection_reason?: string | null
+          residence_document_url?: string | null
+          shop_description?: string | null
+          shop_name?: string | null
+          total_sales?: number
+          updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["seller_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      seller_wallets: {
+        Row: {
+          available_balance: number
+          created_at: string
+          id: string
+          pending_balance: number
+          seller_id: string
+          total_earned: number
+          updated_at: string
+        }
+        Insert: {
+          available_balance?: number
+          created_at?: string
+          id?: string
+          pending_balance?: number
+          seller_id: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          available_balance?: number
+          created_at?: string
+          id?: string
+          pending_balance?: number
+          seller_id?: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_wallets_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: true
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_coupons: {
         Row: {
           code: string
@@ -1084,6 +1241,7 @@ export type Database = {
       }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      is_verified_seller: { Args: { p_user_id?: string }; Returns: boolean }
       log_admin_action: {
         Args: {
           p_action: string
@@ -1104,7 +1262,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      escrow_status: "held" | "released" | "refunded"
+      seller_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1231,6 +1390,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      escrow_status: ["held", "released", "refunded"],
+      seller_status: ["pending", "verified", "rejected"],
+    },
   },
 } as const
