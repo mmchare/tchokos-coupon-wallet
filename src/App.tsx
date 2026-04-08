@@ -33,6 +33,8 @@ const PriceEstimate = lazy(() => import("./pages/PriceEstimate"));
 const CustomOrder = lazy(() => import("./pages/CustomOrder"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder"));
 const CustomsTaxInfo = lazy(() => import("./pages/CustomsTaxInfo"));
+const BecomeSeller = lazy(() => import("./pages/BecomeSeller"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -45,6 +47,7 @@ const AdminFinance = lazy(() => import("./pages/admin/AdminFinance"));
 const AdminModeration = lazy(() => import("./pages/admin/AdminModeration"));
 const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns"));
 const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
+const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 
 // Optimized React Query configuration for better caching
 const queryClient = new QueryClient({
@@ -92,6 +95,8 @@ const App = () => (
                   <Route path="/custom-order" element={<CustomOrder />} />
                   <Route path="/track/:token" element={<TrackOrder />} />
                   <Route path="/customs-tax" element={<CustomsTaxInfo />} />
+                  <Route path="/become-seller" element={<BecomeSeller />} />
+                  <Route path="/seller" element={<SellerDashboard />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
@@ -104,6 +109,7 @@ const App = () => (
                     <Route path="moderation" element={<AdminModeration />} />
                     <Route path="campaigns" element={<AdminCampaigns />} />
                     <Route path="logs" element={<AdminLogs />} />
+                    <Route path="sellers" element={<AdminSellers />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
