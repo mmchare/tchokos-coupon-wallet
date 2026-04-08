@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   ArrowLeft,
-  Send
+  Send,
+  Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/admin/moderation', icon: MessageSquare, label: 'Modération' },
   { path: '/admin/finance', icon: DollarSign, label: 'Finance' },
   { path: '/admin/campaigns', icon: Send, label: 'Campagnes' },
+  { path: '/admin/sellers', icon: Store, label: 'Vendeurs' },
   { path: '/admin/logs', icon: FileText, label: 'Journal d\'audit' },
 ];
 
