@@ -19,6 +19,7 @@ import AuctionBidPanel from '@/components/AuctionBidPanel';
 import DeliveryFormModal from '@/components/DeliveryFormModal';
 import ReviewPhotoUpload from '@/components/ReviewPhotoUpload';
 import { ExpandableDescription } from '@/components/ExpandableDescription';
+import { ProductSellerCard } from '@/components/ProductSellerCard';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Review {
@@ -55,6 +56,7 @@ interface Product {
   auctionEndDate?: Date;
   startingPrice?: number;
   bids?: Bid[];
+  sellerId?: string;
 }
 
 const ProductDetail = () => {
@@ -158,7 +160,8 @@ const ProductDetail = () => {
           isAuction: data.is_auction || false,
           auctionEndDate: data.auction_end_date ? new Date(data.auction_end_date) : undefined,
           startingPrice: Number(data.price),
-          bids: []
+          bids: [],
+          sellerId: (data as any).seller_id || undefined
         };
 
         // Fetch bids if auction
@@ -489,6 +492,11 @@ ${t('product.moreInfo')}`;
           description={product.description} 
           title={t('product.description')} 
         />
+
+        {/* Seller Card (marketplace sellers only) */}
+        {product.sellerId && (
+          <ProductSellerCard productId={product.id} sellerId={product.sellerId} />
+        )}
 
         {/* Auction Panel */}
         {product.isAuction && product.auctionEndDate && (

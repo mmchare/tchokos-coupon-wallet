@@ -171,6 +171,33 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          id: string
+          last_message_at: string
+          product_id: string | null
+          seller_id: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          product_id?: string | null
+          seller_id: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          product_id?: string | null
+          seller_id?: string
+        }
+        Relationships: []
+      }
       custom_orders: {
         Row: {
           admin_response: string | null
@@ -303,6 +330,50 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          content_translated: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_read: boolean
+          original_language: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          content_translated?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_read?: boolean
+          original_language?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          content_translated?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_read?: boolean
+          original_language?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]

@@ -323,6 +323,20 @@ const Profile = () => {
             </CardContent>
           </Card>
 
+          {/* Messages */}
+          <Card className="bg-card border-border cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate('/messages')}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-foreground">Messages</p>
+                <p className="text-xs text-muted-foreground">Conversations avec acheteurs et vendeurs</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </CardContent>
+          </Card>
+
           {/* Devenir Vendeur */}
           <Card className="bg-card border-primary/20 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate('/become-seller')}>
             <CardContent className="p-4 flex items-center gap-3">
