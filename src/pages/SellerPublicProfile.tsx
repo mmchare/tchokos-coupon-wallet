@@ -156,7 +156,17 @@ const SellerPublicProfile = () => {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {products.map((p) => (
-              <MasonryProductCard key={p.id} product={p} />
+              <MasonryProductCard
+                key={p.id}
+                id={p.id}
+                image={p.images?.[0] || ''}
+                name={p.name}
+                price={Number(p.price)}
+                originalPrice={p.original_price ? Number(p.original_price) : undefined}
+                rating={0}
+                isAuction={p.is_auction}
+                isVerified={p.is_verified}
+              />
             ))}
           </div>
         )}
