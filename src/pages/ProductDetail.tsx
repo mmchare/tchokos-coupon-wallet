@@ -55,6 +55,7 @@ interface Product {
   auctionEndDate?: Date;
   startingPrice?: number;
   bids?: Bid[];
+  sellerId?: string;
 }
 
 const ProductDetail = () => {
@@ -158,7 +159,8 @@ const ProductDetail = () => {
           isAuction: data.is_auction || false,
           auctionEndDate: data.auction_end_date ? new Date(data.auction_end_date) : undefined,
           startingPrice: Number(data.price),
-          bids: []
+          bids: [],
+          sellerId: (data as any).seller_id || undefined
         };
 
         // Fetch bids if auction
