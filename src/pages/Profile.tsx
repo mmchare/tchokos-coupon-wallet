@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AdminPasswordModal from '@/components/AdminPasswordModal';
 import AddressManager from '@/components/AddressManager';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import JinBaoChat from '@/components/JinBaoChat';
 import mascotImage from '@/assets/jinbao-mascot.jpg';
 
@@ -324,18 +325,7 @@ const Profile = () => {
           </Card>
 
           {/* Messages */}
-          <Card className="bg-card border-border cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate('/messages')}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-blue-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-foreground">Messages</p>
-                <p className="text-xs text-muted-foreground">Conversations avec acheteurs et vendeurs</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+          <MessagesCard onClick={() => navigate('/messages')} />
 
           {/* Devenir Vendeur */}
           <Card className="bg-card border-primary/20 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate('/become-seller')}>
@@ -596,6 +586,31 @@ const Profile = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+const MessagesCard = ({ onClick }: { onClick: () => void }) => {
+  const { unreadCount } = useUnreadMessages();
+  return (
+    <Card className="bg-card border-border cursor-pointer hover:bg-accent/50 transition-colors" onClick={onClick}>
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="relative w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+          <MessageCircle className="w-5 h-5 text-blue-500" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </div>
+        <div className="flex-1">
+          <p className="font-bold text-foreground">Messages</p>
+          <p className="text-xs text-muted-foreground">
+            {unreadCount > 0 ? `${unreadCount} message${unreadCount > 1 ? 's' : ''} non lu${unreadCount > 1 ? 's' : ''}` : 'Conversations avec acheteurs et vendeurs'}
+          </p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      </CardContent>
+    </Card>
   );
 };
 
