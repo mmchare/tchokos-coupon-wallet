@@ -38,6 +38,7 @@ const Messages = () => {
     const channel = supabase
       .channel('conv-list')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => loadConversations())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => loadConversations())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user]);
@@ -62,13 +63,20 @@ const Messages = () => {
       convs.map(async (c) => {
         const { data: lastMsg } = await supabase
           .from('messages')
-          .select('content')
+          .select('content, image_url')
           .eq('conversation_id', c.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
+        const { count: unread } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', c.id)
+          .eq('is_read', false)
+          .neq('sender_id', user.id);
         const otherId = c.buyer_id === user.id ? c.seller_id : c.buyer_id;
-        return { ...c, other_name: nameMap.get(otherId) || 'Utilisateur', last_preview: lastMsg?.content || '' };
+        const preview = lastMsg?.content || (lastMsg?.image_url ? '📷 Photo' : '');
+        return { ...c, other_name: nameMap.get(otherId) || 'Utilisateur', last_preview: preview, unread_count: unread || 0 };
       })
     );
     setConversations(enriched);
