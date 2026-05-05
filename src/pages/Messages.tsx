@@ -16,6 +16,7 @@ interface ConvRow {
   last_message_at: string;
   other_name?: string;
   last_preview?: string;
+  unread_count?: number;
 }
 
 const Messages = () => {
