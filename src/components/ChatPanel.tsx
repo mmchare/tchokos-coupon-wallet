@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send, Languages } from 'lucide-react';
+import { Loader2, Send, Languages, Paperclip, X, Check, CheckCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -14,6 +14,8 @@ interface Message {
   content: string;
   content_translated: string | null;
   original_language: string | null;
+  image_url: string | null;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -30,6 +32,9 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showTranslated, setShowTranslated] = useState<Record<string, boolean>>({});
+  const [pendingImage, setPendingImage] = useState<{ file: File; preview: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,13 +47,15 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
+          const newMsg = payload.new as Message;
           setMessages((prev) => {
-            if (prev.find((m) => m.id === (payload.new as Message).id)) return prev;
-            return [...prev, payload.new as Message];
+            if (prev.find((m) => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
           });
-          // Auto-translate if not from us
-          if ((payload.new as Message).sender_id !== user?.id) {
-            translateIfNeeded(payload.new as Message);
+          if (newMsg.sender_id !== user?.id) {
+            translateIfNeeded(newMsg);
+            // Mark immediately as read since chat is open
+            supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
           }
         }
       )
@@ -77,19 +84,20 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
-    setMessages(data || []);
+    setMessages((data as Message[]) || []);
     setLoading(false);
 
-    // Mark as read
+    // Mark unread incoming messages as read
     await supabase
       .from('messages')
       .update({ is_read: true })
       .eq('conversation_id', conversationId)
+      .eq('is_read', false)
       .neq('sender_id', user?.id || '');
   };
 
   const translateIfNeeded = async (msg: Message) => {
-    if (msg.content_translated) return;
+    if (msg.content_translated || !msg.content) return;
     try {
       const { data } = await supabase.functions.invoke('translate-message', {
         body: { text: msg.content, targetLang: 'fr' },
@@ -105,23 +113,69 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Format invalide', description: 'Seules les images sont acceptées', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image trop lourde', description: 'Maximum 5 Mo', variant: 'destructive' });
+      return;
+    }
+    setPendingImage({ file, preview: URL.createObjectURL(file) });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `chat/${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('product-media').upload(path, file, { contentType: file.type });
+    if (error) {
+      console.error(error);
+      toast({ title: 'Erreur upload', description: error.message, variant: 'destructive' });
+      return null;
+    }
+    return supabase.storage.from('product-media').getPublicUrl(path).data.publicUrl;
+  };
+
   const send = async () => {
-    if (!input.trim() || !user) return;
+    if ((!input.trim() && !pendingImage) || !user) return;
     setSending(true);
     const text = input.trim();
+    const imageToSend = pendingImage;
     setInput('');
+    setPendingImage(null);
+
+    let imageUrl: string | null = null;
+    if (imageToSend) {
+      setUploading(true);
+      imageUrl = await uploadImage(imageToSend.file);
+      setUploading(false);
+      if (!imageUrl) {
+        setSending(false);
+        setInput(text);
+        setPendingImage(imageToSend);
+        return;
+      }
+    }
 
     const { data: inserted, error } = await supabase
       .from('messages')
-      .insert({ conversation_id: conversationId, sender_id: user.id, content: text })
+      .insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: text,
+        image_url: imageUrl,
+      })
       .select()
       .single();
 
     if (error) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
       setInput(text);
-    } else if (inserted) {
-      // Translate our message in background (so the recipient sees both)
+    } else if (inserted && text) {
       try {
         const { data } = await supabase.functions.invoke('translate-message', {
           body: { text },
@@ -165,16 +219,33 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
                       mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
                     }`}
                   >
-                    <div className="whitespace-pre-wrap break-words">{display}</div>
-                    {m.content_translated && (
-                      <button
-                        onClick={() => setShowTranslated((s) => ({ ...s, [m.id]: !s[m.id] }))}
-                        className="flex items-center gap-1 text-[10px] opacity-70 hover:opacity-100 mt-1"
-                      >
-                        <Languages className="w-3 h-3" />
-                        {isTranslated ? 'Voir original' : 'Voir traduction'}
-                      </button>
+                    {m.image_url && (
+                      <a href={m.image_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={m.image_url}
+                          alt="pièce jointe"
+                          className="rounded-lg mb-1 max-h-60 object-cover"
+                          loading="lazy"
+                        />
+                      </a>
                     )}
+                    {display && <div className="whitespace-pre-wrap break-words">{display}</div>}
+                    <div className="flex items-center justify-end gap-2 mt-1">
+                      {m.content_translated && (
+                        <button
+                          onClick={() => setShowTranslated((s) => ({ ...s, [m.id]: !s[m.id] }))}
+                          className="flex items-center gap-1 text-[10px] opacity-70 hover:opacity-100"
+                        >
+                          <Languages className="w-3 h-3" />
+                          {isTranslated ? 'Original' : 'Traduction'}
+                        </button>
+                      )}
+                      {mine && (
+                        <span className="opacity-70" title={m.is_read ? 'Lu' : 'Envoyé'}>
+                          {m.is_read ? <CheckCheck className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -183,7 +254,39 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
           </div>
         )}
       </ScrollArea>
-      <div className="border-t border-border p-3 flex gap-2">
+
+      {pendingImage && (
+        <div className="border-t border-border p-2 flex items-center gap-2 bg-muted/30">
+          <div className="relative">
+            <img src={pendingImage.preview} alt="aperçu" className="h-16 w-16 object-cover rounded-md" />
+            <button
+              onClick={() => setPendingImage(null)}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <span className="text-xs text-muted-foreground">Photo prête à envoyer</span>
+        </div>
+      )}
+
+      <div className="border-t border-border p-3 flex gap-2 items-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sending || uploading}
+        >
+          <Paperclip className="w-4 h-4" />
+        </Button>
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -191,8 +294,8 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
           placeholder="Écrivez en français ou en chinois..."
           disabled={sending}
         />
-        <Button onClick={send} disabled={sending || !input.trim()} size="icon">
-          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        <Button onClick={send} disabled={sending || (!input.trim() && !pendingImage)} size="icon">
+          {sending || uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
       </div>
     </div>

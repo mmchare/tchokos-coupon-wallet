@@ -16,6 +16,7 @@ interface ConvRow {
   last_message_at: string;
   other_name?: string;
   last_preview?: string;
+  unread_count?: number;
 }
 
 const Messages = () => {
@@ -37,6 +38,7 @@ const Messages = () => {
     const channel = supabase
       .channel('conv-list')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => loadConversations())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => loadConversations())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user]);
@@ -61,13 +63,20 @@ const Messages = () => {
       convs.map(async (c) => {
         const { data: lastMsg } = await supabase
           .from('messages')
-          .select('content')
+          .select('content, image_url')
           .eq('conversation_id', c.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
+        const { count: unread } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', c.id)
+          .eq('is_read', false)
+          .neq('sender_id', user.id);
         const otherId = c.buyer_id === user.id ? c.seller_id : c.buyer_id;
-        return { ...c, other_name: nameMap.get(otherId) || 'Utilisateur', last_preview: lastMsg?.content || '' };
+        const preview = lastMsg?.content || (lastMsg?.image_url ? '📷 Photo' : '');
+        return { ...c, other_name: nameMap.get(otherId) || 'Utilisateur', last_preview: preview, unread_count: unread || 0 };
       })
     );
     setConversations(enriched);
@@ -104,13 +113,22 @@ const Messages = () => {
                   activeId === c.id ? 'bg-muted' : ''
                 }`}
               >
-                <div className="flex justify-between items-baseline">
-                  <div className="font-medium truncate">{c.other_name}</div>
-                  <div className="text-[10px] text-muted-foreground">
+                <div className="flex justify-between items-baseline gap-2">
+                  <div className={`truncate ${c.unread_count ? 'font-bold' : 'font-medium'}`}>{c.other_name}</div>
+                  <div className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{c.last_preview || 'Nouvelle conversation'}</div>
+                <div className="flex justify-between items-center gap-2">
+                  <div className={`text-xs truncate ${c.unread_count ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                    {c.last_preview || 'Nouvelle conversation'}
+                  </div>
+                  {!!c.unread_count && (
+                    <span className="shrink-0 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center">
+                      {c.unread_count}
+                    </span>
+                  )}
+                </div>
               </button>
             ))
           )}
