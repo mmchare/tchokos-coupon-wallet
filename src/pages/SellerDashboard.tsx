@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatBalance } from '@/lib/formatBalance';
+import { SellerStats } from '@/components/SellerStats';
+import { WithdrawalsPanel } from '@/components/WithdrawalsPanel';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -173,9 +175,11 @@ const SellerDashboard = () => {
       </div>
 
       <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full">
-          <TabsTrigger value="products" className="flex-1">Produits ({products.length})</TabsTrigger>
-          <TabsTrigger value="escrow" className="flex-1">Séquestre ({escrows.length})</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-4">
+          <TabsTrigger value="products">Produits</TabsTrigger>
+          <TabsTrigger value="stats">Stats</TabsTrigger>
+          <TabsTrigger value="wallet">Retrait</TabsTrigger>
+          <TabsTrigger value="escrow">Séquestre</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="space-y-3 mt-3">
@@ -219,6 +223,20 @@ const SellerDashboard = () => {
               <p>Aucun produit pour le moment</p>
               <p className="text-sm">Ajoutez votre premier article !</p>
             </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="stats" className="mt-3">
+          {sellerProfile && <SellerStats sellerId={sellerProfile.id} />}
+        </TabsContent>
+
+        <TabsContent value="wallet" className="mt-3">
+          {sellerProfile && (
+            <WithdrawalsPanel
+              sellerId={sellerProfile.id}
+              availableBalance={Number(wallet?.available_balance || 0)}
+              onSuccess={loadData}
+            />
           )}
         </TabsContent>
 

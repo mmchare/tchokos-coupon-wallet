@@ -1234,6 +1234,56 @@ export type Database = {
           },
         ]
       }
+      seller_withdrawals: {
+        Row: {
+          amount: number
+          created_at: string
+          failure_reason: string | null
+          id: string
+          notchpay_reference: string | null
+          payment_method: string
+          phone_number: string
+          processed_at: string | null
+          seller_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          notchpay_reference?: string | null
+          payment_method: string
+          phone_number: string
+          processed_at?: string | null
+          seller_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          notchpay_reference?: string | null
+          payment_method?: string
+          phone_number?: string
+          processed_at?: string | null
+          seller_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_withdrawals_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_coupons: {
         Row: {
           code: string
@@ -1396,6 +1446,10 @@ export type Database = {
         Args: { p_code: string; p_phone: string }
         Returns: string
       }
+      debit_seller_wallet: {
+        Args: { p_amount: number; p_seller_id: string }
+        Returns: boolean
+      }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_verified_seller: { Args: { p_user_id?: string }; Returns: boolean }
@@ -1407,6 +1461,10 @@ export type Database = {
           p_target_type: string
         }
         Returns: string
+      }
+      refund_seller_wallet: {
+        Args: { p_amount: number; p_seller_id: string }
+        Returns: undefined
       }
       validate_referral_code: { Args: { p_code: string }; Returns: string }
       verify_admin_password: {
