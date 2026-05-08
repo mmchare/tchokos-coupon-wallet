@@ -930,6 +930,45 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string
@@ -1062,6 +1101,7 @@ export type Database = {
           chinese_phone_verified: boolean
           created_at: string
           id: string
+          is_suspended: boolean
           rating: number
           rejection_reason: string | null
           residence_document_url: string | null
@@ -1079,6 +1119,7 @@ export type Database = {
           chinese_phone_verified?: boolean
           created_at?: string
           id?: string
+          is_suspended?: boolean
           rating?: number
           rejection_reason?: string | null
           residence_document_url?: string | null
@@ -1096,6 +1137,7 @@ export type Database = {
           chinese_phone_verified?: boolean
           created_at?: string
           id?: string
+          is_suspended?: boolean
           rating?: number
           rejection_reason?: string | null
           residence_document_url?: string | null
@@ -1109,6 +1151,50 @@ export type Database = {
           verified_by?: string | null
         }
         Relationships: []
+      }
+      seller_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          photos: string[] | null
+          rating: number
+          reviewer_id: string
+          reviewer_name: string | null
+          seller_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          photos?: string[] | null
+          rating: number
+          reviewer_id: string
+          reviewer_name?: string | null
+          seller_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          photos?: string[] | null
+          rating?: number
+          reviewer_id?: string
+          reviewer_name?: string | null
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_reviews_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_wallets: {
         Row: {

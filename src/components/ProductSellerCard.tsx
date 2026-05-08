@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Store, Star, MessageCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ReportDialog } from '@/components/ReportDialog';
 
 interface Props {
   productId: string;
@@ -79,10 +80,13 @@ export const ProductSellerCard = ({ productId, sellerId }: Props) => {
           </div>
         </button>
         {seller.user_id !== user?.id && (
-          <Button size="sm" onClick={startChat} disabled={starting} className="gap-1">
-            {starting ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-            Contacter
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button size="sm" onClick={startChat} disabled={starting} className="gap-1">
+              {starting ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+              Contacter
+            </Button>
+            <ReportDialog targetType="product" targetId={productId} />
+          </div>
         )}
       </div>
     </Card>

@@ -50,6 +50,7 @@ const AdminModeration = lazy(() => import("./pages/admin/AdminModeration"));
 const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns"));
 const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
 const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 
 // Optimized React Query configuration for better caching
 const queryClient = new QueryClient({
@@ -114,6 +115,7 @@ const App = () => (
                     <Route path="campaigns" element={<AdminCampaigns />} />
                     <Route path="logs" element={<AdminLogs />} />
                     <Route path="sellers" element={<AdminSellers />} />
+                    <Route path="reports" element={<AdminReports />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
