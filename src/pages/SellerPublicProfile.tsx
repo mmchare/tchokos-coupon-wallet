@@ -117,9 +117,12 @@ const SellerPublicProfile = () => {
             {(seller.shop_name || 'S').charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h2 className="text-xl font-bold truncate">{seller.shop_name || 'Boutique JinBao'}</h2>
               <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
+              {Number(seller.rating || 0) >= 4.5 && (seller.total_sales || 0) >= 10 && (
+                <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">⭐ Top Vendeur</Badge>
+              )}
             </div>
             {seller.shop_description && (
               <p className="text-sm text-muted-foreground line-clamp-2">{seller.shop_description}</p>
@@ -173,6 +176,10 @@ const SellerPublicProfile = () => {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="p-3">
+        <SellerReviewsSection sellerId={seller.id} />
       </div>
     </div>
   );
