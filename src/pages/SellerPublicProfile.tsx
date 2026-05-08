@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Store, Star, Package, MessageCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MasonryProductCard from '@/components/MasonryProductCard';
+import { SellerReviewsSection } from '@/components/SellerReviewsSection';
+import { ReportDialog } from '@/components/ReportDialog';
 
 const SellerPublicProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +106,8 @@ const SellerPublicProfile = () => {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-semibold truncate">{seller.shop_name || 'Boutique'}</h1>
+        <h1 className="font-semibold truncate flex-1">{seller.shop_name || 'Boutique'}</h1>
+        {!isOwner && <ReportDialog targetType="seller" targetId={seller.id} />}
       </header>
 
       {/* Hero */}
