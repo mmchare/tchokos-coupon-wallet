@@ -20,9 +20,11 @@ interface Order {
   delivery_address: string;
   whatsapp_number: string;
   created_at: string;
+  current_step_started_at?: string | null;
   product_id: string | null;
   product_name: string | null;
   product_image: string | null;
+  shipping_mode?: string;
   product?: {
     name: string;
     images: string[] | null;
