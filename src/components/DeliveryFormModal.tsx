@@ -98,8 +98,11 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
     );
   }, [productCategory]);
 
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const customsTaxAmount = Math.round(total * CUSTOMS_TAX_RATE);
-  const finalTotal = includeCustomsTax ? total + customsTaxAmount : total;
+  const subTotal = includeCustomsTax ? total + customsTaxAmount : total;
+  const promoDiscount = appliedPromo?.discount_amount || 0;
+  const finalTotal = Math.max(0, subTotal - promoDiscount);
   
   const { addresses, isLoading: isLoadingAddresses } = useDeliveryAddresses();
 
