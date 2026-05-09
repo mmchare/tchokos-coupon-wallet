@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Package, ShoppingBag, Loader2, Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import OrderTrackingCard from '@/components/OrderTrackingCard';
+import TrackingJinBaoCard from '@/components/TrackingJinBaoCard';
 import NotificationsList from '@/components/NotificationsList';
 import { useNotifications } from '@/hooks/useNotifications';
 
