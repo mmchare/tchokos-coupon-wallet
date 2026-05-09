@@ -204,7 +204,7 @@ const Orders = () => {
           ) : (
             <TabsContent value={activeTab} className="space-y-4 mt-0">
               {filteredOrders.map((order) => (
-                <OrderTrackingCard 
+                <TrackingJinBaoCard 
                   key={order.id} 
                   order={order} 
                   onOrderCancelled={fetchOrders}
