@@ -140,6 +140,7 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
       setSelectedAddressId(null);
       setShowManualForm(false);
       setIncludeCustomsTax(false);
+      setAppliedPromo(null);
     }
   }, [isOpen]);
 
@@ -202,6 +203,8 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
           total_amount: finalTotal,
           includes_customs_tax: includeCustomsTax,
           customs_tax_amount: includeCustomsTax ? customsTaxAmount : 0,
+          promo_code_id: appliedPromo?.promo_code_id || null,
+          promo_discount: appliedPromo?.discount_amount || 0,
           city: data.city,
           delivery_address: data.address,
           whatsapp_number: data.phone
