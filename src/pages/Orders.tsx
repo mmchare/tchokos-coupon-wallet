@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Package, ShoppingBag, Loader2, Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import OrderTrackingCard from '@/components/OrderTrackingCard';
+import TrackingJinBaoCard from '@/components/TrackingJinBaoCard';
 import NotificationsList from '@/components/NotificationsList';
 import { useNotifications } from '@/hooks/useNotifications';
 
@@ -20,9 +20,11 @@ interface Order {
   delivery_address: string;
   whatsapp_number: string;
   created_at: string;
+  current_step_started_at?: string | null;
   product_id: string | null;
   product_name: string | null;
   product_image: string | null;
+  shipping_mode?: string;
   product?: {
     name: string;
     images: string[] | null;
@@ -204,7 +206,7 @@ const Orders = () => {
           ) : (
             <TabsContent value={activeTab} className="space-y-4 mt-0">
               {filteredOrders.map((order) => (
-                <OrderTrackingCard 
+                <TrackingJinBaoCard 
                   key={order.id} 
                   order={order} 
                   onOrderCancelled={fetchOrders}
