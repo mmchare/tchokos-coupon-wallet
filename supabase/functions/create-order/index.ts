@@ -22,6 +22,8 @@ interface OrderRequest {
   city: string;
   delivery_address: string;
   whatsapp_number: string;
+  promo_code_id?: string | null;
+  promo_discount?: number;
 }
 
 serve(async (req: Request) => {
@@ -42,7 +44,7 @@ serve(async (req: Request) => {
     const orderData: OrderRequest = await req.json();
     console.log('Order request received:', orderData);
 
-    const { user_id, product_id, items, total_amount, city, delivery_address, whatsapp_number } = orderData;
+    const { user_id, product_id, items, total_amount, city, delivery_address, whatsapp_number, promo_code_id, promo_discount } = orderData;
 
     // Rate limiting by user_id + IP
     const rateLimitKey = `create-order:${user_id || clientIp}`;
@@ -189,6 +191,21 @@ serve(async (req: Request) => {
     }
 
     console.log('Order created:', order.id);
+
+    // Consume promo code if provided (revalidates server-side)
+    if (promo_code_id && promo_discount && promo_discount > 0) {
+      const { error: promoError } = await supabase.rpc('consume_promo_code', {
+        p_promo_code_id: promo_code_id,
+        p_user_id: user_id,
+        p_order_id: order.id,
+        p_discount_amount: promo_discount,
+      });
+      if (promoError) {
+        console.error('Promo consume error (non-blocking):', promoError);
+      } else {
+        console.log(`Promo code consumed: ${promo_code_id} -${promo_discount} F`);
+      }
+    }
 
     // Deduct from wallet balance
     const newBalance = profile.wallet_balance - total_amount;
