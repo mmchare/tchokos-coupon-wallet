@@ -794,6 +794,100 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_uses: {
+        Row: {
+          created_at: string
+          discount_amount: number
+          id: string
+          order_id: string | null
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount: number
+          id?: string
+          order_id?: string | null
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          order_id?: string | null
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_uses_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          max_uses_per_user: number
+          min_order_amount: number
+          seller_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          max_uses_per_user?: number
+          min_order_amount?: number
+          seller_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          max_uses_per_user?: number
+          min_order_amount?: number
+          seller_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_codes_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -1445,6 +1539,15 @@ export type Database = {
     Functions: {
       check_referral_code_exists: { Args: { p_code: string }; Returns: boolean }
       cleanup_expired_otps: { Args: never; Returns: undefined }
+      consume_promo_code: {
+        Args: {
+          p_discount_amount: number
+          p_order_id: string
+          p_promo_code_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       create_otp_code: {
         Args: { p_code: string; p_phone: string }
         Returns: string
@@ -1468,6 +1571,10 @@ export type Database = {
       refund_seller_wallet: {
         Args: { p_amount: number; p_seller_id: string }
         Returns: undefined
+      }
+      validate_promo_code: {
+        Args: { p_code: string; p_order_total: number; p_user_id: string }
+        Returns: Json
       }
       validate_referral_code: { Args: { p_code: string }; Returns: string }
       verify_admin_password: {
