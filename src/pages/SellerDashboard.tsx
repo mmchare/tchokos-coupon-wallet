@@ -15,6 +15,7 @@ import { formatBalance } from '@/lib/formatBalance';
 import { SellerStats } from '@/components/SellerStats';
 import { WithdrawalsPanel } from '@/components/WithdrawalsPanel';
 import SellerPromoCodesPanel from '@/components/SellerPromoCodesPanel';
+import SponsorProductButton from '@/components/SponsorProductButton';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -196,15 +197,27 @@ const SellerDashboard = () => {
                   <img src={product.images[0]} alt="" className="w-16 h-16 rounded-lg object-cover" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{product.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-sm truncate">{product.name}</p>
+                    {product.sponsored_until && new Date(product.sponsored_until) > new Date() && (
+                      <Badge className="text-[9px] bg-jinbao-gold text-black px-1.5 py-0">★ Sponso</Badge>
+                    )}
+                  </div>
                   <p className="text-primary font-bold text-sm">{formatBalance(product.price)}</p>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     {product.is_verified ? (
                       <Badge variant="outline" className="text-xs border-green-500 text-green-500">Vérifié</Badge>
                     ) : (
                       <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">En révision</Badge>
                     )}
                     <span className="text-xs text-muted-foreground">Stock: {product.stock_available}</span>
+                  </div>
+                  <div className="mt-2">
+                    <SponsorProductButton
+                      productId={product.id}
+                      sponsoredUntil={product.sponsored_until}
+                      onUpdated={loadData}
+                    />
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
