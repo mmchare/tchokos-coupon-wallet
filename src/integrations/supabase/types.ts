@@ -503,6 +503,7 @@ export type Database = {
         Row: {
           city: string
           created_at: string
+          current_step_started_at: string
           delivery_address: string
           id: string
           logistics_step: number
@@ -519,6 +520,7 @@ export type Database = {
         Insert: {
           city: string
           created_at?: string
+          current_step_started_at?: string
           delivery_address: string
           id?: string
           logistics_step?: number
@@ -535,6 +537,7 @@ export type Database = {
         Update: {
           city?: string
           created_at?: string
+          current_step_started_at?: string
           delivery_address?: string
           id?: string
           logistics_step?: number
