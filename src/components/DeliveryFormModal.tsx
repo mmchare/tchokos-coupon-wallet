@@ -343,11 +343,31 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
           </div>
         )}
 
-        {/* Updated total if tax included */}
-        {includeCustomsTax && isPhoneProduct && (
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
-            <p className="text-xs text-muted-foreground mb-1">Montant total à payer</p>
-            <p className="text-xl font-bold text-primary">{finalTotal.toLocaleString()} F</p>
+        {/* Promo code input */}
+        <PromoCodeInput
+          userId={user?.id}
+          orderTotal={subTotal}
+          applied={appliedPromo}
+          onApply={setAppliedPromo}
+        />
+
+        {/* Final total breakdown */}
+        {(includeCustomsTax && isPhoneProduct || appliedPromo) && (
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 space-y-1 text-sm">
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <span>Sous-total</span>
+              <span>{subTotal.toLocaleString()} F</span>
+            </div>
+            {appliedPromo && (
+              <div className="flex justify-between text-green-600 dark:text-green-400 text-xs">
+                <span>Code {appliedPromo.code}</span>
+                <span>-{appliedPromo.discount_amount.toLocaleString()} F</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-primary border-t border-primary/20 pt-1">
+              <span>Total à payer</span>
+              <span>{finalTotal.toLocaleString()} F</span>
+            </div>
           </div>
         )}
 
