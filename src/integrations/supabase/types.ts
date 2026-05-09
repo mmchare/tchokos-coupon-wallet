@@ -709,6 +709,7 @@ export type Database = {
           price: number
           seller_id: string | null
           source_link: string | null
+          sponsored_until: string | null
           stock_available: number
           updated_at: string
           video_url: string | null
@@ -731,6 +732,7 @@ export type Database = {
           price?: number
           seller_id?: string | null
           source_link?: string | null
+          sponsored_until?: string | null
           stock_available?: number
           updated_at?: string
           video_url?: string | null
@@ -753,6 +755,7 @@ export type Database = {
           price?: number
           seller_id?: string | null
           source_link?: string | null
+          sponsored_until?: string | null
           stock_available?: number
           updated_at?: string
           video_url?: string | null
@@ -1571,6 +1574,10 @@ export type Database = {
       refund_seller_wallet: {
         Args: { p_amount: number; p_seller_id: string }
         Returns: undefined
+      }
+      sponsor_product: {
+        Args: { p_days: number; p_product_id: string }
+        Returns: Json
       }
       validate_promo_code: {
         Args: { p_code: string; p_order_total: number; p_user_id: string }
