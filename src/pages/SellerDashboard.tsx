@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatBalance } from '@/lib/formatBalance';
 import { SellerStats } from '@/components/SellerStats';
 import { WithdrawalsPanel } from '@/components/WithdrawalsPanel';
+import SellerPromoCodesPanel from '@/components/SellerPromoCodesPanel';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -175,8 +176,9 @@ const SellerDashboard = () => {
       </div>
 
       <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="products">Produits</TabsTrigger>
+          <TabsTrigger value="promos">Promos</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="wallet">Retrait</TabsTrigger>
           <TabsTrigger value="escrow">Séquestre</TabsTrigger>
@@ -224,6 +226,10 @@ const SellerDashboard = () => {
               <p className="text-sm">Ajoutez votre premier article !</p>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="promos" className="mt-3">
+          {sellerProfile && <SellerPromoCodesPanel sellerProfileId={sellerProfile.id} />}
         </TabsContent>
 
         <TabsContent value="stats" className="mt-3">
