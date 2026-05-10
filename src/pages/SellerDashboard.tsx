@@ -16,6 +16,8 @@ import { SellerStats } from '@/components/SellerStats';
 import { WithdrawalsPanel } from '@/components/WithdrawalsPanel';
 import SellerPromoCodesPanel from '@/components/SellerPromoCodesPanel';
 import SponsorProductButton from '@/components/SponsorProductButton';
+import SellerSubscriptionPanel from '@/components/SellerSubscriptionPanel';
+import { Crown } from 'lucide-react';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
