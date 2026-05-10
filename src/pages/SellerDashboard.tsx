@@ -16,6 +16,8 @@ import { SellerStats } from '@/components/SellerStats';
 import { WithdrawalsPanel } from '@/components/WithdrawalsPanel';
 import SellerPromoCodesPanel from '@/components/SellerPromoCodesPanel';
 import SponsorProductButton from '@/components/SponsorProductButton';
+import SellerSubscriptionPanel from '@/components/SellerSubscriptionPanel';
+import { Crown } from 'lucide-react';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -177,12 +179,15 @@ const SellerDashboard = () => {
       </div>
 
       <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full grid grid-cols-5">
+        <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="products">Produits</TabsTrigger>
           <TabsTrigger value="promos">Promos</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="wallet">Retrait</TabsTrigger>
           <TabsTrigger value="escrow">Séquestre</TabsTrigger>
+          <TabsTrigger value="premium" className="data-[state=active]:bg-jinbao-gold data-[state=active]:text-black">
+            <Crown className="w-3 h-3 mr-1" />Premium
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="space-y-3 mt-3">
@@ -278,7 +283,7 @@ const SellerDashboard = () => {
                   <span>{formatBalance(escrow.gross_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Commission (20%)</span>
+                  <span className="text-muted-foreground">Commission ({Math.round(Number(escrow.commission_rate || 0.20) * 100)}%)</span>
                   <span className="text-destructive">-{formatBalance(escrow.commission_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold border-t border-border pt-1">
@@ -293,6 +298,16 @@ const SellerDashboard = () => {
               <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>Aucune transaction pour le moment</p>
             </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="premium" className="mt-3">
+          {sellerProfile && (
+            <SellerSubscriptionPanel
+              sellerProfile={sellerProfile}
+              walletBalance={Number(wallet?.available_balance || 0)}
+              onUpdated={loadData}
+            />
           )}
         </TabsContent>
       </Tabs>

@@ -28,6 +28,7 @@ interface TrackingJinBaoCardProps {
     whatsapp_number: string;
     created_at: string;
     current_step_started_at?: string | null;
+    estimated_delivery_at?: string | null;
     product_name?: string | null;
     product_image?: string | null;
     shipping_mode?: string;
@@ -178,7 +179,14 @@ const TrackingJinBaoCard = ({ order, onOrderCancelled }: TrackingJinBaoCardProps
             />
           </div>
           <p className="text-[10px] mt-1 opacity-90">{Math.round(overallProgress)}% du parcours</p>
-        </div>
+        {order.estimated_delivery_at && (
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] bg-white/15 backdrop-blur-sm rounded px-2 py-1">
+            {shippingMode === 'air' ? <Plane className="h-3 w-3" /> : <Ship className="h-3 w-3" />}
+            <span className="opacity-90">Livraison estimée :</span>
+            <strong>{new Date(order.estimated_delivery_at).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</strong>
+          </div>
+        )}
+      </div>
       </div>
 
       <CardHeader className="pb-3 pt-3">
