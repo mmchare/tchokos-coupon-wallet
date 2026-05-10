@@ -90,7 +90,15 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
   const [includeCustomsTax, setIncludeCustomsTax] = useState(false);
+  const [shippingMode, setShippingMode] = useState<'sea' | 'air'>('sea');
   const isMobile = useIsMobile();
+
+  const etaDays = shippingMode === 'air' ? 7 : 21;
+  const etaDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + etaDays);
+    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  }, [etaDays]);
 
   const isPhoneProduct = useMemo(() => {
     if (!productCategory) return false;
