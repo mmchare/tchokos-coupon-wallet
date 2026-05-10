@@ -179,12 +179,15 @@ const SellerDashboard = () => {
       </div>
 
       <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full grid grid-cols-5">
+        <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="products">Produits</TabsTrigger>
           <TabsTrigger value="promos">Promos</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="wallet">Retrait</TabsTrigger>
           <TabsTrigger value="escrow">Séquestre</TabsTrigger>
+          <TabsTrigger value="premium" className="data-[state=active]:bg-jinbao-gold data-[state=active]:text-black">
+            <Crown className="w-3 h-3 mr-1" />Premium
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="space-y-3 mt-3">
