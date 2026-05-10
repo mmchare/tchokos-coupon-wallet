@@ -283,7 +283,7 @@ const SellerDashboard = () => {
                   <span>{formatBalance(escrow.gross_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Commission (20%)</span>
+                  <span className="text-muted-foreground">Commission ({Math.round(Number(escrow.commission_rate || 0.20) * 100)}%)</span>
                   <span className="text-destructive">-{formatBalance(escrow.commission_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold border-t border-border pt-1">
