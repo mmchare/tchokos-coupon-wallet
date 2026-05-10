@@ -248,6 +248,49 @@ serve(async (req: Request) => {
       }
     }
 
+    // Create escrow records for items sold by marketplace sellers (commission tier-based)
+    for (const item of items) {
+      if (!isValidUUID(item.id)) continue;
+      const { data: prod } = await supabase
+        .from('products')
+        .select('seller_id')
+        .eq('id', item.id)
+        .maybeSingle();
+      if (!prod?.seller_id) continue;
+
+      const { data: rateData } = await supabase.rpc('get_seller_commission_rate', { p_seller_id: prod.seller_id });
+      const commissionRate = Number(rateData ?? 0.20);
+      const gross = Number(item.price) * Number(item.quantity || 1);
+      const commission = Math.round(gross * commissionRate);
+      const net = gross - commission;
+
+      const { error: escrowError } = await supabase.from('seller_escrow').insert({
+        seller_id: prod.seller_id,
+        order_id: order.id,
+        gross_amount: gross,
+        commission_rate: commissionRate,
+        commission_amount: commission,
+        net_amount: net,
+        status: 'held',
+      });
+      if (escrowError) {
+        console.error('Escrow insert error (non-blocking):', escrowError);
+      } else {
+        const { data: w } = await supabase
+          .from('seller_wallets')
+          .select('pending_balance')
+          .eq('seller_id', prod.seller_id)
+          .maybeSingle();
+        if (w) {
+          await supabase
+            .from('seller_wallets')
+            .update({ pending_balance: Number(w.pending_balance || 0) + net })
+            .eq('seller_id', prod.seller_id);
+        }
+        console.log(`Escrow created: seller=${prod.seller_id} gross=${gross} rate=${commissionRate} net=${net}`);
+      }
+    }
+
     // Track PURCHASE activity for recommendation engine
     for (const item of items) {
       if (!isValidUUID(item.id)) continue;
