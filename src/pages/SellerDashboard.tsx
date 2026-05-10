@@ -300,7 +300,6 @@ const SellerDashboard = () => {
             </div>
           )}
         </TabsContent>
-      </Tabs>
 
         <TabsContent value="premium" className="mt-3">
           {sellerProfile && (
