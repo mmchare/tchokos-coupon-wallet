@@ -413,6 +413,53 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
         </div>
       </div>
 
+      {/* Shipping mode selector */}
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium text-foreground">Mode d'expédition</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setShippingMode('sea')}
+            disabled={isProcessing}
+            className={`p-2.5 rounded-lg border text-left transition-all ${
+              shippingMode === 'sea'
+                ? 'border-jinbao-red bg-jinbao-red/10'
+                : 'border-border bg-background hover:border-jinbao-red/50'
+            }`}
+          >
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Ship className={`h-4 w-4 ${shippingMode === 'sea' ? 'text-jinbao-red' : 'text-muted-foreground'}`} />
+              <span className="text-xs font-bold">Maritime</span>
+              <span className="ml-auto text-[10px] text-green-600 font-medium">Inclus</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground">≈ 21 jours</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShippingMode('air')}
+            disabled={isProcessing}
+            className={`p-2.5 rounded-lg border text-left transition-all ${
+              shippingMode === 'air'
+                ? 'border-jinbao-red bg-jinbao-red/10'
+                : 'border-border bg-background hover:border-jinbao-red/50'
+            }`}
+          >
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Plane className={`h-4 w-4 ${shippingMode === 'air' ? 'text-jinbao-red' : 'text-muted-foreground'}`} />
+              <span className="text-xs font-bold">Aérien</span>
+              <span className="ml-auto text-[10px] text-amber-600 font-medium">Express</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground">≈ 7 jours</p>
+          </button>
+        </div>
+        <div className="bg-primary/5 border border-primary/20 rounded-md px-2 py-1.5 flex items-center gap-1.5">
+          <Info className="h-3 w-3 text-primary flex-shrink-0" />
+          <p className="text-[11px] text-foreground">
+            Livraison estimée : <strong className="text-primary">{etaDate}</strong>
+          </p>
+        </div>
+      </div>
+
       {/* Saved Addresses Selection */}
       {hasAddresses && !showManualForm && (
         <div className="space-y-2">
