@@ -215,7 +215,8 @@ const DeliveryFormModal = ({ isOpen, onClose, onSubmit, total, items = [], produ
           promo_discount: appliedPromo?.discount_amount || 0,
           city: data.city,
           delivery_address: data.address,
-          whatsapp_number: data.phone
+          whatsapp_number: data.phone,
+          shipping_mode: shippingMode,
         }
       });
 
