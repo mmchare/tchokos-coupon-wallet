@@ -179,7 +179,8 @@ serve(async (req: Request) => {
         delivery_address,
         whatsapp_number,
         status: 'confirmed',
-        logistics_step: 1
+        logistics_step: 1,
+        shipping_mode: finalShippingMode,
       })
       .select()
       .single();
