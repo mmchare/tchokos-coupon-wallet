@@ -302,6 +302,17 @@ const SellerDashboard = () => {
         </TabsContent>
       </Tabs>
 
+        <TabsContent value="premium" className="mt-3">
+          {sellerProfile && (
+            <SellerSubscriptionPanel
+              sellerProfile={sellerProfile}
+              walletBalance={Number(wallet?.available_balance || 0)}
+              onUpdated={loadData}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+
       {/* Add Product Dialog */}
       <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
