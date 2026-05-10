@@ -45,7 +45,8 @@ serve(async (req: Request) => {
     const orderData: OrderRequest = await req.json();
     console.log('Order request received:', orderData);
 
-    const { user_id, product_id, items, total_amount, city, delivery_address, whatsapp_number, promo_code_id, promo_discount } = orderData;
+    const { user_id, product_id, items, total_amount, city, delivery_address, whatsapp_number, promo_code_id, promo_discount, shipping_mode } = orderData;
+    const finalShippingMode: 'sea' | 'air' = shipping_mode === 'air' ? 'air' : 'sea';
 
     // Rate limiting by user_id + IP
     const rateLimitKey = `create-order:${user_id || clientIp}`;
