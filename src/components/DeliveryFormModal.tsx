@@ -29,7 +29,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Wallet, Loader2, AlertCircle, Home, Briefcase, MapPinned, Check, Info } from 'lucide-react';
+import { MapPin, Phone, Wallet, Loader2, AlertCircle, Home, Briefcase, MapPinned, Check, Info, Ship, Plane } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
