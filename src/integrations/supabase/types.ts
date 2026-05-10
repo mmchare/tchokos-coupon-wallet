@@ -505,6 +505,7 @@ export type Database = {
           created_at: string
           current_step_started_at: string
           delivery_address: string
+          estimated_delivery_at: string | null
           id: string
           logistics_step: number
           product_id: string | null
@@ -522,6 +523,7 @@ export type Database = {
           created_at?: string
           current_step_started_at?: string
           delivery_address: string
+          estimated_delivery_at?: string | null
           id?: string
           logistics_step?: number
           product_id?: string | null
@@ -539,6 +541,7 @@ export type Database = {
           created_at?: string
           current_step_started_at?: string
           delivery_address?: string
+          estimated_delivery_at?: string | null
           id?: string
           logistics_step?: number
           product_id?: string | null
@@ -1207,6 +1210,8 @@ export type Database = {
           residence_document_url: string | null
           shop_description: string | null
           shop_name: string | null
+          subscription_expires_at: string | null
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           total_sales: number
           updated_at: string
           user_id: string
@@ -1225,6 +1230,8 @@ export type Database = {
           residence_document_url?: string | null
           shop_description?: string | null
           shop_name?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           total_sales?: number
           updated_at?: string
           user_id: string
@@ -1243,6 +1250,8 @@ export type Database = {
           residence_document_url?: string | null
           shop_description?: string | null
           shop_name?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           total_sales?: number
           updated_at?: string
           user_id?: string
@@ -1295,6 +1304,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seller_subscriptions: {
+        Row: {
+          amount: number
+          auto_renew: boolean
+          created_at: string
+          expires_at: string
+          id: string
+          notes: string | null
+          payment_method: string
+          seller_id: string
+          starts_at: string
+          status: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          auto_renew?: boolean
+          created_at?: string
+          expires_at: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          seller_id: string
+          starts_at?: string
+          status?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          auto_renew?: boolean
+          created_at?: string
+          expires_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          seller_id?: string
+          starts_at?: string
+          status?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       seller_wallets: {
         Row: {
@@ -1540,6 +1597,7 @@ export type Database = {
       }
     }
     Functions: {
+      cancel_premium_auto_renew: { Args: never; Returns: Json }
       check_referral_code_exists: { Args: { p_code: string }; Returns: boolean }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       consume_promo_code: {
@@ -1560,6 +1618,14 @@ export type Database = {
         Returns: boolean
       }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
+      get_seller_commission_rate: {
+        Args: { p_seller_id: string }
+        Returns: number
+      }
+      get_seller_tier: {
+        Args: { p_seller_id: string }
+        Returns: Database["public"]["Enums"]["subscription_tier"]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_verified_seller: { Args: { p_user_id?: string }; Returns: boolean }
       log_admin_action: {
@@ -1575,8 +1641,13 @@ export type Database = {
         Args: { p_amount: number; p_seller_id: string }
         Returns: undefined
       }
+      renew_premium_subscriptions: { Args: never; Returns: Json }
       sponsor_product: {
         Args: { p_days: number; p_product_id: string }
+        Returns: Json
+      }
+      subscribe_seller_premium: {
+        Args: { p_auto_renew?: boolean }
         Returns: Json
       }
       validate_promo_code: {
@@ -1596,6 +1667,7 @@ export type Database = {
     Enums: {
       escrow_status: "held" | "released" | "refunded"
       seller_status: "pending" | "verified" | "rejected"
+      subscription_tier: "free" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1725,6 +1797,7 @@ export const Constants = {
     Enums: {
       escrow_status: ["held", "released", "refunded"],
       seller_status: ["pending", "verified", "rejected"],
+      subscription_tier: ["free", "premium"],
     },
   },
 } as const
