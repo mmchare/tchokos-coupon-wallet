@@ -28,6 +28,7 @@ interface TrackingJinBaoCardProps {
     whatsapp_number: string;
     created_at: string;
     current_step_started_at?: string | null;
+    estimated_delivery_at?: string | null;
     product_name?: string | null;
     product_image?: string | null;
     shipping_mode?: string;
