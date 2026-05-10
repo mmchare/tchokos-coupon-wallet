@@ -24,6 +24,7 @@ interface OrderRequest {
   whatsapp_number: string;
   promo_code_id?: string | null;
   promo_discount?: number;
+  shipping_mode?: 'sea' | 'air';
 }
 
 serve(async (req: Request) => {
