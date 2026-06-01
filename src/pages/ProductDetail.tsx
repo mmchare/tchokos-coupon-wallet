@@ -21,6 +21,7 @@ import ReviewPhotoUpload from '@/components/ReviewPhotoUpload';
 import { ExpandableDescription } from '@/components/ExpandableDescription';
 import { ProductSellerCard } from '@/components/ProductSellerCard';
 import { supabase } from '@/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 interface Review {
   id: string;
@@ -355,8 +356,43 @@ ${t('product.moreInfo')}`;
     }
   };
 
+  const seoDesc = product
+    ? `${product.name} à ${product.price.toLocaleString('fr-FR')} FCFA sur JinBao. ${(product.description || '').slice(0, 140)}`
+    : 'Découvrez ce produit sur JinBao, la marketplace Chine-Cameroun.';
+
   return (
     <div className="min-h-screen bg-background pb-24 overflow-y-auto overflow-x-hidden">
+      {product && (
+        <SEO
+          title={product.name}
+          description={seoDesc}
+          image={product.images?.[0]}
+          path={`/product/${product.id}`}
+          type="product"
+          jsonLd={{
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            description: product.description,
+            image: product.images,
+            category: product.category,
+            offers: {
+              '@type': 'Offer',
+              price: product.price,
+              priceCurrency: 'XAF',
+              availability: product.isUniqueStock
+                ? 'https://schema.org/LimitedAvailability'
+                : 'https://schema.org/InStock',
+              url: `https://jimbao.lovable.app/product/${product.id}`,
+            },
+            aggregateRating: product.reviews.length > 0 ? {
+              '@type': 'AggregateRating',
+              ratingValue: product.rating.toFixed(1),
+              reviewCount: product.reviews.length,
+            } : undefined,
+          }}
+        /> 
+      )}
       {/* Floating Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
         <Button

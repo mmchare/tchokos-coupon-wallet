@@ -25,6 +25,7 @@ import { useSmartProducts } from '@/hooks/useSmartProducts';
 import { useAISearch } from '@/hooks/useAISearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useOfflineProducts } from '@/hooks/useOfflineProducts';
+import SEO from '@/components/SEO';
 
 // Lazy-loaded non-critical components
 const LoadCouponModal = lazy(() => import('@/components/LoadCouponModal'));
@@ -313,6 +314,11 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="JinBao — Marketplace Chine-Cameroun | Gadgets tech & livraison fiable"
+        description="Achetez en Chine depuis le Cameroun : smartphones, tablettes, gadgets tech vérifiés. Paiement Mobile Money (MoMo, Orange), livraison 7-21 jours avec suivi JinBao 6 étapes."
+        path="/"
+      />
       {/* Offline Indicator */}
       <OfflineIndicator isOnline={isOnline} cachedProductsCount={offlineProducts.length} />
       
