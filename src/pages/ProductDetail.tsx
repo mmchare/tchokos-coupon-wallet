@@ -710,6 +710,7 @@ ${t('product.moreInfo')}`;
             onClick={handleAddToCoupon}
             variant="outline"
             size="icon"
+            aria-label="Ajouter au coupon"
             className="h-12 w-12 flex-shrink-0 border-primary text-primary hover:bg-primary hover:text-white"
           >
             <ShoppingBag className="h-5 w-5" />
