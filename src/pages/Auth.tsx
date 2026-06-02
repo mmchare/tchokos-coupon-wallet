@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, ArrowRight, CheckCircle, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import SEO from '@/components/SEO';
 
 type AuthStep = 'email' | 'profile' | 'magic-link-sent';
 
