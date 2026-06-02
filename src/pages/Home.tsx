@@ -315,8 +315,8 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="JinBao — Marketplace Chine-Cameroun | Gadgets tech & livraison fiable"
-        description="Achetez en Chine depuis le Cameroun : smartphones, tablettes, gadgets tech vérifiés. Paiement Mobile Money (MoMo, Orange), livraison 7-21 jours avec suivi JinBao 6 étapes."
+        title="JinBao — Marketplace Chine-Cameroun"
+        description="Achetez en Chine depuis le Cameroun : gadgets tech vérifiés, paiement Mobile Money, livraison 7-21 jours avec suivi en 6 étapes."
         path="/"
       />
       {/* Offline Indicator */}
@@ -372,7 +372,7 @@ const Home = () => {
               <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-primary/50 shadow-md animate-fade-in">
                 <img
                   src={mascotImage}
-                  alt="JinBao"
+                  alt="JinBao mascot logo"
                   className="w-full h-full object-cover object-top scale-125"
                 />
               </div>
@@ -394,6 +394,7 @@ const Home = () => {
               {searchQuery && (
                 <button
                   onClick={handleClearSearch}
+                  aria-label="Effacer la recherche"
                   className="p-1 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />

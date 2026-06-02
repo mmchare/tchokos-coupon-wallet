@@ -3,12 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import SEO from '@/components/SEO';
+
+const FAQ = [
+  {
+    q: "Comment vérifier le statut IMEI de mon téléphone ?",
+    a: "Composez *#06# sur votre téléphone pour obtenir votre code IMEI, puis vérifiez-le sur le site officiel mpie.camcis.cm.",
+  },
+  {
+    q: "Mon ancien téléphone sera-t-il bloqué ?",
+    a: "Non. Les téléphones déjà connectés aux réseaux avant le 1er avril 2026 bénéficient d'une amnistie fiscale et sont considérés comme conformes.",
+  },
+  {
+    q: "Combien coûtent les droits de douane ?",
+    a: "Les droits de douane représentent environ 33,3% de la valeur en douane du téléphone (incluant la TVA à l'importation de 19,25%). Sur JinBao, vous pouvez ajouter ces frais directement lors de l'achat.",
+  },
+  {
+    q: "Que se passe-t-il si je n'ajoute pas les frais de douane ?",
+    a: "Vous recevrez votre téléphone normalement mais vous devrez vous-même effectuer la procédure de dédouanement auprès des services de la douane camerounaise pour que l'IMEI soit enregistré et que l'appareil fonctionne sur les réseaux locaux.",
+  },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
 
 const CustomsTaxInfo = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Taxe douanière téléphones Cameroun — JinBao"
+        description="Réforme CAMCIS, code IMEI et droits de douane (33,3%) sur les téléphones importés au Cameroun : ce qu'il faut savoir avant d'acheter."
+        path="/customs-tax"
+        jsonLd={faqJsonLd}
+      />
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-3 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>

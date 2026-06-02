@@ -2,15 +2,21 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import SEO from '@/components/SEO';
 
 const TermsOfService = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Conditions générales d'utilisation — JinBao"
+        description="CGU de la marketplace JinBao : règles d'achat, vente, escrow, livraison et résolution de litiges entre la Chine et le Cameroun."
+        path="/terms"
+      />
       <header className="sticky top-0 z-50 bg-card border-b border-border">
         <div className="flex items-center gap-3 p-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Retour">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-bold">Conditions Générales d'Utilisation</h1>
@@ -18,6 +24,7 @@ const TermsOfService = () => {
       </header>
 
       <main className="p-4 pb-8 max-w-4xl mx-auto space-y-6">
+        <h2 className="sr-only">Détails de nos conditions générales</h2>
         <Card>
           <CardHeader>
             <CardTitle className="text-xl text-jinbao-red">1. Objet</CardTitle>

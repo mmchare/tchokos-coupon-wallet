@@ -10,6 +10,7 @@ import { ArrowLeft, Store, Phone, FileCheck, ShieldCheck, Upload, Loader2, Check
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 const BecomeSeller = () => {
   const { t } = useTranslation();
@@ -237,6 +238,11 @@ const BecomeSeller = () => {
   // Application form
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Devenir vendeur — JinBao"
+        description="Vendez vos trouvailles chinoises à des acheteurs camerounais sur JinBao : vérification OTP, escrow sécurisé et commissions transparentes."
+        path="/become-seller"
+      />
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="w-5 h-5" /></Button>
         <h1 className="text-lg font-bold">Devenir Vendeur</h1>

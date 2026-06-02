@@ -421,6 +421,7 @@ ${t('product.moreInfo')}`;
             variant="ghost"
             size="icon"
             onClick={handleShare}
+            aria-label="Partager le produit"
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
             <Share2 className="h-5 w-5" />
@@ -429,6 +430,7 @@ ${t('product.moreInfo')}`;
             variant="ghost"
             size="icon"
             onClick={() => product && toggleFavorite(product.id)}
+            aria-label={isProductFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
             <Heart className={`h-5 w-5 ${isProductFavorite ? 'fill-primary text-primary' : ''}`} />
@@ -549,6 +551,8 @@ ${t('product.moreInfo')}`;
           </div>
         )}
 
+        {/* Avis et discussions */}
+        <h2 className="sr-only">Avis et discussions</h2>
         {/* Reviews Section */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3">
           <div 
@@ -632,6 +636,7 @@ ${t('product.moreInfo')}`;
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  aria-label="Choisir un emoji"
                   className="absolute right-2 top-2 h-8 w-8"
                 >
                   <Smile className="h-4 w-4" />
@@ -707,6 +712,7 @@ ${t('product.moreInfo')}`;
             onClick={handleAddToCoupon}
             variant="outline"
             size="icon"
+            aria-label="Ajouter au coupon"
             className="h-12 w-12 flex-shrink-0 border-primary text-primary hover:bg-primary hover:text-white"
           >
             <ShoppingBag className="h-5 w-5" />

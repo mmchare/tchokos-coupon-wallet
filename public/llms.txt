@@ -1,0 +1,20 @@
+# JinBao Smart Market
+
+> Marketplace intelligente qui connecte les vendeurs chinois (Xianyu, Taobao) aux acheteurs camerounais : gadgets tech vérifiés, paiement Mobile Money (MTN MoMo, Orange Money) et livraison suivie en 6 étapes (7 à 21 jours).
+
+JinBao gère la sourcing, le dédouanement CAMCIS, l'escrow vendeur et le suivi logistique (maritime et aérien) entre la Chine et le Cameroun. Les prix sont calculés en FCFA selon la formule `(Yuan × 85) + 2000 FCFA`.
+
+## Pages
+
+- [Accueil](/): Catalogue produits, recherche IA et recherche par image.
+- [Bons plans](/deals): Sélection quotidienne de produits en promotion.
+- [Vente rapide](/quick-sale): Articles à liquider à prix réduit.
+- [Estimation de prix](/estimate): Estime le prix d'un produit chinois en FCFA.
+- [Commande sur mesure](/custom-order): Demande personnalisée pour un produit non listé.
+- [Taxe douanière téléphones](/customs-tax): Réforme CAMCIS, IMEI et droits de douane camerounais.
+- [Devenir vendeur](/become-seller): Rejoindre JinBao comme vendeur (vérification OTP, escrow).
+
+## Optional
+
+- [Conditions d'utilisation](/terms): CGU de la plateforme.
+- [Politique de confidentialité](/privacy): Traitement des données personnelles.

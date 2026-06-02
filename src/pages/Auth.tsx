@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, ArrowRight, CheckCircle, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import SEO from '@/components/SEO';
 
 type AuthStep = 'email' | 'profile' | 'magic-link-sent';
 
@@ -161,6 +162,12 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEO
+        title="Connexion — JinBao"
+        description="Connectez-vous à JinBao par lien magique pour suivre vos commandes et gérer votre portefeuille Mobile Money."
+        path="/auth"
+        noindex
+      />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
