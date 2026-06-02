@@ -551,6 +551,8 @@ ${t('product.moreInfo')}`;
           </div>
         )}
 
+        {/* Avis et discussions */}
+        <h2 className="sr-only">Avis et discussions</h2>
         {/* Reviews Section */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-4 mt-3">
           <div 
