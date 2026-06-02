@@ -421,6 +421,7 @@ ${t('product.moreInfo')}`;
             variant="ghost"
             size="icon"
             onClick={handleShare}
+            aria-label="Partager le produit"
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
             <Share2 className="h-5 w-5" />
@@ -429,6 +430,7 @@ ${t('product.moreInfo')}`;
             variant="ghost"
             size="icon"
             onClick={() => product && toggleFavorite(product.id)}
+            aria-label={isProductFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm text-foreground hover:bg-background"
           >
             <Heart className={`h-5 w-5 ${isProductFavorite ? 'fill-primary text-primary' : ''}`} />
@@ -632,6 +634,7 @@ ${t('product.moreInfo')}`;
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  aria-label="Choisir un emoji"
                   className="absolute right-2 top-2 h-8 w-8"
                 >
                   <Smile className="h-4 w-4" />
