@@ -461,7 +461,16 @@ const Home = () => {
           ) : null}
         </div>
 
-        {/* Collapsible sections - New Drops, Categories, Quick Services */}
+        {/* Desktop layout: sidebar + main */}
+        <div className="lg:flex lg:gap-5 lg:items-start">
+          <DesktopCategorySidebar
+            categories={categories}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+
+          <div className="flex-1 min-w-0">
+        {/* Collapsible sections - New Drops, Categories (mobile), Quick Services */}
         <div className={`transition-all duration-300 overflow-hidden ${
           isScrolled ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
         }`}>
@@ -491,16 +500,20 @@ const Home = () => {
               </Button>
             </div>
             
-            <CategoryFilter 
-              categories={categories}
-              activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
-            />
+            {/* Mobile/tablet only — desktop uses the left sidebar */}
+            <div className="lg:hidden">
+              <CategoryFilter 
+                categories={categories}
+                activeCategory={activeCategory}
+                onCategoryChange={setActiveCategory}
+              />
+            </div>
 
             {/* Quick Services */}
             <QuickServices />
           </section>
         </div>
+
 
         {/* Loading State - Skeleton Grid */}
         {isLoading && (
