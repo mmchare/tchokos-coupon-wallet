@@ -272,12 +272,14 @@ const Home = () => {
     return () => observer.disconnect();
   }, [hasMore, displayProducts.length]);
 
-  // Masonry breakpoints
+  // Masonry breakpoints — dense Xianyu-style grid on desktop
   const breakpointColumns = {
-    default: 3,
-    1024: 3,
+    default: 6,
+    1536: 6,
+    1280: 5,
+    1024: 4,
     768: 2,
-    480: 2
+    480: 2,
   };
 
   const handleRemoveFromCoupon = (productId: string) => {
