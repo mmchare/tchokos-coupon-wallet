@@ -698,9 +698,10 @@ ${t('product.moreInfo')}`;
       </div>
 
 
-      {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40">
+      {/* Action Bar — fixed bottom on mobile, hidden on desktop (desktop CTA below) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 lg:hidden">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
+
           {/* WhatsApp Button */}
           <Button
             onClick={handleWhatsAppClick}
