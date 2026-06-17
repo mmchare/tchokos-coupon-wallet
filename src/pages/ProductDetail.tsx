@@ -394,7 +394,7 @@ ${t('product.moreInfo')}`;
         /> 
       )}
       {/* Floating Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent lg:bg-background/95 lg:bg-none lg:backdrop-blur lg:border-b lg:border-border lg:px-6">
         <Button
           variant="ghost"
           size="icon"
