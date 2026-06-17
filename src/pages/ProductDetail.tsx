@@ -438,21 +438,24 @@ ${t('product.moreInfo')}`;
         </div>
       </header>
 
-      {/* Full-Width Image Gallery */}
-      <div className="w-full">
-        <ProductImageGallery
-          images={product.images}
-          videoUrl={product.videoUrl}
-          productName={product.name}
-          category={product.category}
-          discount={discount}
-          isVerified={product.isVerified}
-          isUniqueStock={product.isUniqueStock}
-        />
-      </div>
+      {/* Desktop 2-column layout (gallery left, info right). Mobile keeps stacked layout. */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 lg:pt-20 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-8">
+        {/* Full-Width Image Gallery */}
+        <div className="w-full lg:sticky lg:top-20 lg:self-start lg:rounded-2xl lg:overflow-hidden lg:bg-card lg:border lg:border-border">
+          <ProductImageGallery
+            images={product.images}
+            videoUrl={product.videoUrl}
+            productName={product.name}
+            category={product.category}
+            discount={discount}
+            isVerified={product.isVerified}
+            isUniqueStock={product.isUniqueStock}
+          />
+        </div>
 
       {/* Product Info Section */}
-      <div className="px-4 -mt-4 relative z-10">
+      <div className="px-4 -mt-4 relative z-10 lg:px-0 lg:mt-0">
+
         {/* Price Card - Xianyu Style */}
         <div className="bg-card rounded-2xl shadow-lg border border-border p-4 space-y-4">
           {/* Price Row */}
