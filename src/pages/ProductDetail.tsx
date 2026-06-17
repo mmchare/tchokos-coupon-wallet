@@ -688,12 +688,15 @@ ${t('product.moreInfo')}`;
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
         </div>
-
-        {/* Similar Products */}
-        <div className="mt-6">
-          <SimilarProducts currentProductId={product.id} category={product.category} />
-        </div>
       </div>
+      </div>
+      {/* end lg grid */}
+
+      {/* Similar Products — full-width below */}
+      <div className="px-4 mt-6 lg:max-w-7xl lg:mx-auto lg:px-6 lg:mt-10">
+        <SimilarProducts currentProductId={product.id} category={product.category} />
+      </div>
+
 
       {/* Fixed Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40">
