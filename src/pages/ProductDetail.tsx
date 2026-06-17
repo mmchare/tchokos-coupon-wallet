@@ -361,7 +361,7 @@ ${t('product.moreInfo')}`;
     : 'Découvrez ce produit sur JinBao, la marketplace Chine-Cameroun.';
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-y-auto overflow-x-hidden">
+    <div className="min-h-screen bg-background pb-24 lg:pb-12 overflow-y-auto overflow-x-hidden">
       {product && (
         <SEO
           title={product.name}
