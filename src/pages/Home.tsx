@@ -568,7 +568,10 @@ const Home = () => {
             </p>
           </div>
         )}
+          </div>
+        </div>
       </main>
+
 
       {/* Coupon Sheet */}
       <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
