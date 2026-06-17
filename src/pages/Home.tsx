@@ -10,6 +10,7 @@ import Masonry from 'react-masonry-css';
 import Header from '@/components/Header';
 import MasonryProductCard from '@/components/MasonryProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
+import DesktopCategorySidebar from '@/components/DesktopCategorySidebar';
 import QuickServices from '@/components/QuickServices';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import OfflineIndicator from '@/components/OfflineIndicator';
@@ -271,12 +272,14 @@ const Home = () => {
     return () => observer.disconnect();
   }, [hasMore, displayProducts.length]);
 
-  // Masonry breakpoints
+  // Masonry breakpoints — dense Xianyu-style grid on desktop
   const breakpointColumns = {
-    default: 3,
-    1024: 3,
+    default: 6,
+    1536: 6,
+    1280: 5,
+    1024: 4,
     768: 2,
-    480: 2
+    480: 2,
   };
 
   const handleRemoveFromCoupon = (productId: string) => {
@@ -366,7 +369,7 @@ const Home = () => {
               </div>
             </>
           )}
-          <div className={`mx-auto relative flex items-center gap-2 ${isScrolled ? 'max-w-lg' : 'max-w-md'}`}>
+          <div className={`mx-auto relative flex items-center gap-2 ${isScrolled ? 'max-w-lg lg:max-w-3xl' : 'max-w-md lg:max-w-3xl'}`}>
             {/* Mascot avatar - appears when scrolled */}
             {isScrolled && (
               <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-primary/50 shadow-md animate-fade-in">
@@ -458,7 +461,16 @@ const Home = () => {
           ) : null}
         </div>
 
-        {/* Collapsible sections - New Drops, Categories, Quick Services */}
+        {/* Desktop layout: sidebar + main */}
+        <div className="lg:flex lg:gap-5 lg:items-start">
+          <DesktopCategorySidebar
+            categories={categories}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+
+          <div className="flex-1 min-w-0">
+        {/* Collapsible sections - New Drops, Categories (mobile), Quick Services */}
         <div className={`transition-all duration-300 overflow-hidden ${
           isScrolled ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
         }`}>
@@ -488,16 +500,20 @@ const Home = () => {
               </Button>
             </div>
             
-            <CategoryFilter 
-              categories={categories}
-              activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
-            />
+            {/* Mobile/tablet only — desktop uses the left sidebar */}
+            <div className="lg:hidden">
+              <CategoryFilter 
+                categories={categories}
+                activeCategory={activeCategory}
+                onCategoryChange={setActiveCategory}
+              />
+            </div>
 
             {/* Quick Services */}
             <QuickServices />
           </section>
         </div>
+
 
         {/* Loading State - Skeleton Grid */}
         {isLoading && (
@@ -552,7 +568,10 @@ const Home = () => {
             </p>
           </div>
         )}
+          </div>
+        </div>
       </main>
+
 
       {/* Coupon Sheet */}
       <Sheet open={isCouponOpen} onOpenChange={setIsCouponOpen}>
