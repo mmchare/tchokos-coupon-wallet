@@ -325,18 +325,12 @@ const Home = () => {
       {/* Offline Indicator */}
       <OfflineIndicator isOnline={isOnline} cachedProductsCount={offlineProducts.length} />
       
-      {/* Header - Collapses on scroll */}
-      <div className={`transition-all duration-300 overflow-hidden ${
-        isScrolled ? 'max-h-0 opacity-0' : 'max-h-20 opacity-100'
-      }`}>
-        <Header />
-      </div>
+      {/* Header */}
+      <Header />
 
       <main className={`container mx-auto px-3 sm:px-4 py-4 sm:py-6 ${!isOnline ? 'pt-16' : ''}`}>
-        {/* Hero Section - Collapses on scroll */}
-        <section className={`text-center mb-4 animate-fade-in px-2 transition-all duration-300 overflow-hidden ${
-          isScrolled ? 'max-h-0 opacity-0 mb-0 py-0' : 'max-h-40 opacity-100'
-        }`}>
+        {/* Hero Section */}
+        <section className="text-center mb-4 animate-fade-in px-2">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight flex items-center justify-center gap-2">
             <span className="inline-flex items-center gap-1">
               <span className="w-7 h-7 sm:w-9 sm:h-9 border-2 border-jinbao-gold rounded-sm flex items-center justify-center bg-jinbao-gold/10">
@@ -351,10 +345,11 @@ const Home = () => {
           </p>
         </section>
 
-        {/* Sticky Search Bar - Always visible */}
-        <div className={`sticky z-30 transition-all duration-300 ${
-          isScrolled ? 'top-0 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/95 backdrop-blur-sm shadow-sm' : 'top-auto mb-4'
+        {/* Sticky Search Bar */}
+        <div className={`sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-4 transition-shadow duration-200 ${
+          isScrolled ? 'bg-background/95 backdrop-blur-sm shadow-sm' : 'bg-background'
         }`}>
+
           {/* Chinese decorative border when scrolled */}
           {isScrolled && (
             <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-jinbao-gold/60 to-transparent" />
