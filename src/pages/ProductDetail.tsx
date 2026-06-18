@@ -439,9 +439,9 @@ ${t('product.moreInfo')}`;
       </header>
 
       {/* Desktop 2-column layout (gallery left, info right). Mobile keeps stacked layout. */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 lg:pt-20 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-8">
-        {/* Full-Width Image Gallery */}
-        <div className="w-full lg:sticky lg:top-20 lg:self-start lg:rounded-2xl lg:overflow-hidden lg:bg-card lg:border lg:border-border">
+      <div className="lg:max-w-6xl lg:mx-auto lg:px-6 lg:pt-20 lg:grid lg:grid-cols-[480px_minmax(0,1fr)] lg:gap-8">
+        {/* Image Gallery — constrained on desktop to match Xianyu standards */}
+        <div className="w-full lg:sticky lg:top-20 lg:self-start lg:rounded-2xl lg:overflow-hidden lg:bg-card lg:border lg:border-border lg:max-w-[480px]">
           <ProductImageGallery
             images={product.images}
             videoUrl={product.videoUrl}
