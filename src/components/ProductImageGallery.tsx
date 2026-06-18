@@ -61,17 +61,17 @@ const ProductImageGallery = ({
           {images.map((image, index) => (
             <div 
               key={index} 
-              className="relative aspect-[4/5] sm:aspect-[4/3] min-w-0 flex-[0_0_100%] bg-muted"
+              className="relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-square min-w-0 flex-[0_0_100%] bg-muted"
             >
               <img
                 src={image}
                 alt={`${productName} - Image ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover lg:object-contain"
               />
             </div>
           ))}
           {videoUrl && (
-            <div className="relative aspect-[4/5] sm:aspect-[4/3] min-w-0 flex-[0_0_100%] bg-muted">
+            <div className="relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-square min-w-0 flex-[0_0_100%] bg-muted">
               {isVideoPlaying ? (
                 <video
                   src={videoUrl}
