@@ -206,11 +206,17 @@ export type Database = {
           created_at: string
           details: string | null
           id: string
+          images: string[] | null
+          order_id: string | null
           product_link: string | null
           product_name: string
+          quote_amount: number | null
+          quote_delay_days: number | null
+          quoted_at: string | null
           status: string
           updated_at: string
           user_id: string
+          whatsapp_number: string | null
         }
         Insert: {
           admin_response?: string | null
@@ -219,11 +225,17 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          images?: string[] | null
+          order_id?: string | null
           product_link?: string | null
           product_name: string
+          quote_amount?: number | null
+          quote_delay_days?: number | null
+          quoted_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          whatsapp_number?: string | null
         }
         Update: {
           admin_response?: string | null
@@ -232,13 +244,27 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          images?: string[] | null
+          order_id?: string | null
           product_link?: string | null
           product_name?: string
+          quote_amount?: number | null
+          quote_delay_days?: number | null
+          quoted_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          whatsapp_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       delivery_addresses: {
         Row: {
