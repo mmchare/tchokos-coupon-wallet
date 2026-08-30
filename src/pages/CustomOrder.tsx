@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Package, Globe, Truck, CheckCircle2, ImagePlus, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Package, Globe, Truck, CheckCircle2, ImagePlus, X, Loader2, MessageCircle } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
