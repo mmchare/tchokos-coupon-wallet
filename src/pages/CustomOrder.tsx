@@ -45,6 +45,7 @@ const CustomOrder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const { openSupportChat, opening } = useSupportChat();
 
   const [productLink, setProductLink] = useState('');
   const [productName, setProductName] = useState('');
