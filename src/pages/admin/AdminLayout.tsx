@@ -16,7 +16,8 @@ import {
   ArrowLeft,
   Send,
   Store,
-  Flag
+  Flag,
+  ClipboardList
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
