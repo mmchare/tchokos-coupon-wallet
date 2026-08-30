@@ -29,6 +29,7 @@ const navItems = [
   { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
   { path: '/admin/moderation', icon: MessageSquare, label: 'Modération' },
   { path: '/admin/reports', icon: Flag, label: 'Signalements' },
+  { path: '/admin/custom-orders', icon: ClipboardList, label: 'Sur mesure' },
   { path: '/admin/finance', icon: DollarSign, label: 'Finance' },
   { path: '/admin/campaigns', icon: Send, label: 'Campagnes' },
   { path: '/admin/sellers', icon: Store, label: 'Vendeurs' },
