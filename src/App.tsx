@@ -51,6 +51,7 @@ const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns"));
 const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
 const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
+const AdminCustomOrders = lazy(() => import("./pages/admin/AdminCustomOrders"));
 
 // Optimized React Query configuration for better caching
 const queryClient = new QueryClient({
