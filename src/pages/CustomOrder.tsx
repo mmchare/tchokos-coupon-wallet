@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Package, Globe, Truck, CheckCircle2, ImagePlus, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Package, Globe, Truck, CheckCircle2, ImagePlus, X, Loader2, MessageCircle } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useSupportChat } from '@/hooks/useSupportChat';
 
 const schema = z.object({
   product_name: z.string().trim().min(3, 'Décrivez le produit (3 caractères min)').max(150),
@@ -44,6 +45,7 @@ const CustomOrder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const { openSupportChat, opening } = useSupportChat();
 
   const [productLink, setProductLink] = useState('');
   const [productName, setProductName] = useState('');
