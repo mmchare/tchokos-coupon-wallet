@@ -1644,6 +1644,7 @@ export type Database = {
         Returns: boolean
       }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
+      get_or_create_support_conversation: { Args: never; Returns: string }
       get_seller_commission_rate: {
         Args: { p_seller_id: string }
         Returns: number
