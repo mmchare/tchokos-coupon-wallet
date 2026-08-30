@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useSupportChat } from '@/hooks/useSupportChat';
 
 const schema = z.object({
   product_name: z.string().trim().min(3, 'Décrivez le produit (3 caractères min)').max(150),
