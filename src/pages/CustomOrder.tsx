@@ -292,11 +292,36 @@ const CustomOrder = () => {
                       </div>
                     </div>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    disabled={opening}
+                    onClick={() =>
+                      openSupportChat(
+                        `Bonjour, je souhaite discuter de ma demande sur mesure : "${r.product_name}".`
+                      )
+                    }
+                  >
+                    {opening ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MessageCircle className="h-4 w-4 mr-1" />}
+                    Discuter avec un responsable
+                  </Button>
                 </div>
               );
             })}
           </div>
         )}
+
+        <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Besoin d'aide ?</p>
+            <p className="text-xs text-muted-foreground">Parlez directement à un responsable JinBao</p>
+          </div>
+          <Button size="sm" disabled={opening} onClick={() => openSupportChat()}>
+            <MessageCircle className="h-4 w-4 mr-1" />
+            Chat
+          </Button>
+        </div>
 
         <p className="text-xs text-muted-foreground text-center px-4">
           🔒 Paiement sécurisé · Vous ne payez qu'après validation du devis
