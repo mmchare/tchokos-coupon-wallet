@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChatPanel } from '@/components/ChatPanel';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageCircle, LifeBuoy } from 'lucide-react';
+import { useSupportChat } from '@/hooks/useSupportChat';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
