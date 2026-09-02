@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send, Languages, Paperclip, X, Check, CheckCheck } from 'lucide-react';
+import { Loader2, Send, Languages, Paperclip, X, Check, CheckCheck, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -15,6 +15,10 @@ interface Message {
   content_translated: string | null;
   original_language: string | null;
   image_url: string | null;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
+
   is_read: boolean;
   created_at: string;
 }
@@ -116,20 +120,17 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Format invalide', description: 'Seules les images sont acceptées', variant: 'destructive' });
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'Fichier trop lourd', description: 'Maximum 10 Mo', variant: 'destructive' });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Image trop lourde', description: 'Maximum 5 Mo', variant: 'destructive' });
-      return;
-    }
-    setPendingImage({ file, preview: URL.createObjectURL(file) });
+    const isImage = file.type.startsWith('image/');
+    setPendingImage({ file, preview: isImage ? URL.createObjectURL(file) : '' });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const ext = file.name.split('.').pop() || 'jpg';
+    const ext = file.name.split('.').pop() || 'bin';
     const path = `chat/${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from('product-media').upload(path, file, { contentType: file.type });
     if (error) {
@@ -148,12 +149,13 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
     setInput('');
     setPendingImage(null);
 
-    let imageUrl: string | null = null;
+    let uploadedUrl: string | null = null;
+    const isImage = !!imageToSend?.file.type.startsWith('image/');
     if (imageToSend) {
       setUploading(true);
-      imageUrl = await uploadImage(imageToSend.file);
+      uploadedUrl = await uploadImage(imageToSend.file);
       setUploading(false);
-      if (!imageUrl) {
+      if (!uploadedUrl) {
         setSending(false);
         setInput(text);
         setPendingImage(imageToSend);
@@ -167,8 +169,11 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
         conversation_id: conversationId,
         sender_id: user.id,
         content: text,
-        image_url: imageUrl,
-      })
+        image_url: isImage ? uploadedUrl : null,
+        ...(imageToSend && !isImage
+          ? { file_url: uploadedUrl, file_name: imageToSend.file.name, file_type: imageToSend.file.type }
+          : {}),
+      } as any)
       .select()
       .single();
 
@@ -192,6 +197,7 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
     }
     setSending(false);
   };
+
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -229,6 +235,18 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
                         />
                       </a>
                     )}
+                    {m.file_url && (
+                      <a
+                        href={m.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 rounded-lg bg-background/20 px-2 py-1.5 mb-1 underline-offset-2 hover:underline"
+                      >
+                        <FileText className="w-4 h-4 shrink-0" />
+                        <span className="truncate max-w-[180px]">{m.file_name || 'Fichier joint'}</span>
+                      </a>
+                    )}
+
                     {display && <div className="whitespace-pre-wrap break-words">{display}</div>}
                     <div className="flex items-center justify-end gap-2 mt-1">
                       {m.content_translated && (
@@ -258,7 +276,13 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
       {pendingImage && (
         <div className="border-t border-border p-2 flex items-center gap-2 bg-muted/30">
           <div className="relative">
-            <img src={pendingImage.preview} alt="aperçu" className="h-16 w-16 object-cover rounded-md" />
+            {pendingImage.preview ? (
+              <img src={pendingImage.preview} alt="aperçu" className="h-16 w-16 object-cover rounded-md" />
+            ) : (
+              <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
+                <FileText className="w-6 h-6 text-muted-foreground" />
+              </div>
+            )}
             <button
               onClick={() => setPendingImage(null)}
               className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center"
@@ -266,7 +290,9 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
               <X className="w-3 h-3" />
             </button>
           </div>
-          <span className="text-xs text-muted-foreground">Photo prête à envoyer</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {pendingImage.preview ? 'Photo prête à envoyer' : pendingImage.file.name}
+          </span>
         </div>
       )}
 
@@ -274,10 +300,11 @@ export const ChatPanel = ({ conversationId, otherUserName }: ChatPanelProps) => 
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
           className="hidden"
           onChange={handleFileSelect}
         />
+
         <Button
           type="button"
           variant="ghost"
