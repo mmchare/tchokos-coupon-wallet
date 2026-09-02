@@ -175,28 +175,48 @@ export type Database = {
         Row: {
           buyer_id: string
           created_at: string
+          custom_order_id: string | null
           id: string
+          is_resolved: boolean
           last_message_at: string
           product_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           seller_id: string
         }
         Insert: {
           buyer_id: string
           created_at?: string
+          custom_order_id?: string | null
           id?: string
+          is_resolved?: boolean
           last_message_at?: string
           product_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           seller_id: string
         }
         Update: {
           buyer_id?: string
           created_at?: string
+          custom_order_id?: string | null
           id?: string
+          is_resolved?: boolean
           last_message_at?: string
           product_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           seller_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_custom_order_id_fkey"
+            columns: ["custom_order_id"]
+            isOneToOne: false
+            referencedRelation: "custom_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_orders: {
         Row: {
@@ -366,6 +386,9 @@ export type Database = {
           content_translated: string | null
           conversation_id: string
           created_at: string
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
           id: string
           image_url: string | null
           is_read: boolean
@@ -377,6 +400,9 @@ export type Database = {
           content_translated?: string | null
           conversation_id: string
           created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean
@@ -388,6 +414,9 @@ export type Database = {
           content_translated?: string | null
           conversation_id?: string
           created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean
@@ -1644,7 +1673,9 @@ export type Database = {
         Returns: boolean
       }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
-      get_or_create_support_conversation: { Args: never; Returns: string }
+      get_or_create_support_conversation:
+        | { Args: never; Returns: string }
+        | { Args: { p_custom_order_id?: string }; Returns: string }
       get_seller_commission_rate: {
         Args: { p_seller_id: string }
         Returns: number
@@ -1669,6 +1700,10 @@ export type Database = {
         Returns: undefined
       }
       renew_premium_subscriptions: { Args: never; Returns: Json }
+      set_conversation_resolved: {
+        Args: { p_conversation_id: string; p_resolved: boolean }
+        Returns: Json
+      }
       sponsor_product: {
         Args: { p_days: number; p_product_id: string }
         Returns: Json
