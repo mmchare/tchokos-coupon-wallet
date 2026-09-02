@@ -299,9 +299,11 @@ const CustomOrder = () => {
                     disabled={opening}
                     onClick={() =>
                       openSupportChat(
-                        `Bonjour, je souhaite discuter de ma demande sur mesure : "${r.product_name}".`
+                        `Bonjour, je souhaite discuter de ma demande sur mesure : "${r.product_name}".`,
+                        r.id
                       )
                     }
+
                   >
                     {opening ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <MessageCircle className="h-4 w-4 mr-1" />}
                     Discuter avec un responsable
