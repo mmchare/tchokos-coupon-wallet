@@ -91,7 +91,13 @@ const Messages = () => {
         <Button variant="ghost" size="icon" onClick={() => (activeId ? setParams({}) : navigate(-1))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-semibold">{active ? active.other_name : 'Messages'}</h1>
+        <h1 className="font-semibold flex-1">{active ? active.other_name : 'Messages'}</h1>
+        {!active && (
+          <Button size="sm" variant="outline" disabled={opening} onClick={() => openSupportChat()}>
+            <LifeBuoy className="w-4 h-4 mr-1" />
+            Support
+          </Button>
+        )}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
@@ -100,9 +106,13 @@ const Messages = () => {
           {loading ? (
             <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin" /></div>
           ) : conversations.length === 0 ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
+            <div className="p-6 text-center text-sm text-muted-foreground space-y-3">
               <MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              Aucune conversation pour le moment
+              <p>Aucune conversation pour le moment</p>
+              <Button size="sm" disabled={opening} onClick={() => openSupportChat()}>
+                <LifeBuoy className="w-4 h-4 mr-1" />
+                Contacter un responsable
+              </Button>
             </div>
           ) : (
             conversations.map((c) => (
