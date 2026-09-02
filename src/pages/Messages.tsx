@@ -25,6 +25,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const activeId = params.get('c');
+  const { openSupportChat, opening } = useSupportChat();
 
   const [conversations, setConversations] = useState<ConvRow[]>([]);
   const [loading, setLoading] = useState(true);
