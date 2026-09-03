@@ -120,10 +120,48 @@ const AdminSupport = () => {
     load();
   };
 
-  const filtered = convs.filter((c) =>
-    filter === 'all' ? true : filter === 'open' ? !c.is_resolved : c.is_resolved
-  );
+  // Recherche par mot-clé dans les messages (débounce)
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setMsgMatchIds(null);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .ilike('content', `%${q}%`)
+        .limit(500);
+      setMsgMatchIds(Array.from(new Set((data || []).map((m: any) => m.conversation_id))));
+      setSearching(false);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const q = search.trim().toLowerCase();
+  const matchesSearch = (c: SupportConv) => {
+    if (!q) return true;
+    return (
+      (c.buyer_name || '').toLowerCase().includes(q) ||
+      (c.buyer_phone || '').toLowerCase().includes(q) ||
+      (c.custom_order_id || '').toLowerCase().includes(q) ||
+      (c.custom_order_name || '').toLowerCase().includes(q) ||
+      (c.last_preview || '').toLowerCase().includes(q) ||
+      (msgMatchIds?.includes(c.id) ?? false)
+    );
+  };
+
+  const filtered = convs
+    .filter((c) => (filter === 'all' ? true : filter === 'open' ? !c.is_resolved : c.is_resolved))
+    .filter(matchesSearch);
+
   const active = convs.find((c) => c.id === activeId);
+  const totalUnread = convs.reduce((s, c) => s + (c.unread_count || 0), 0);
+  const openCount = convs.filter((c) => !c.is_resolved).length;
+  const isActiveNow = (iso: string) => Date.now() - new Date(iso).getTime() < 15 * 60 * 1000;
+  const activeNowCount = convs.filter((c) => !c.is_resolved && isActiveNow(c.last_message_at)).length;
 
   return (
     <div className="p-4 lg:p-6 space-y-4">
