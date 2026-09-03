@@ -172,13 +172,54 @@ const AdminSupport = () => {
         </p>
       </div>
 
-      <div className="flex gap-2">
-        {(['open', 'resolved', 'all'] as Filter[]).map((f) => (
-          <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}>
-            {f === 'open' ? 'À traiter' : f === 'resolved' ? 'Résolues' : 'Toutes'}
-          </Button>
-        ))}
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="secondary" className="gap-1">
+          <MessageCircle className="w-3 h-3" /> {openCount} à traiter
+        </Badge>
+        <Badge variant={totalUnread ? 'destructive' : 'secondary'} className="gap-1">
+          {totalUnread} non lus
+        </Badge>
+        <Badge variant="secondary" className="gap-1">
+          <Circle className={`w-2 h-2 ${activeNowCount ? 'fill-green-500 text-green-500' : 'fill-muted-foreground text-muted-foreground'}`} />
+          {activeNowCount} actives (15 min)
+        </Badge>
       </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nom, téléphone, ID demande, mot-clé du message…"
+            className="pl-9 pr-9"
+            aria-label="Rechercher une conversation support"
+          />
+          {(search || searching) && (
+            <button
+              type="button"
+              aria-label="Effacer la recherche"
+              onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {(['open', 'resolved', 'all'] as Filter[]).map((f) => (
+            <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}>
+              {f === 'open' ? 'À traiter' : f === 'resolved' ? 'Résolues' : 'Toutes'}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {!!q && (
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} résultat{filtered.length > 1 ? 's' : ''} pour « {search} »
+        </p>
+      )}
 
       <div className="grid lg:grid-cols-[340px_1fr] gap-4 h-[70vh]">
         <div className="border border-border rounded-xl overflow-y-auto bg-card">
