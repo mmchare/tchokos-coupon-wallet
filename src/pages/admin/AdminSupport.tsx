@@ -242,11 +242,17 @@ const AdminSupport = () => {
                 }`}
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <span className={`truncate ${c.unread_count ? 'font-bold' : 'font-medium'}`}>{c.buyer_name}</span>
+                  <span className={`truncate flex items-center gap-1.5 ${c.unread_count ? 'font-bold' : 'font-medium'}`}>
+                    {!c.is_resolved && isActiveNow(c.last_message_at) && (
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" title="Actif récemment" />
+                    )}
+                    <span className="truncate">{c.buyer_name}</span>
+                  </span>
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </span>
                 </div>
+                {c.buyer_phone && <div className="text-[10px] text-muted-foreground">{c.buyer_phone}</div>}
                 {c.custom_order_name && (
                   <Badge variant="secondary" className="mt-1 text-[10px] gap-1">
                     <ClipboardList className="w-3 h-3" />
