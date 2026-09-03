@@ -67,8 +67,9 @@ const AdminSupport = () => {
     }
 
     const buyerIds = Array.from(new Set(rows.map((c) => c.buyer_id)));
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', buyerIds);
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name, phone').in('id', buyerIds);
     const nameMap = new Map((profiles || []).map((p) => [p.id, p.full_name]));
+    const phoneMap = new Map((profiles || []).map((p) => [p.id, p.phone]));
 
     const orderIds = rows.map((c) => c.custom_order_id).filter(Boolean) as string[];
     let orderMap = new Map<string, string>();
