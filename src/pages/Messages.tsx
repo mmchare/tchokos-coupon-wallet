@@ -14,7 +14,10 @@ interface ConvRow {
   buyer_id: string;
   seller_id: string;
   product_id: string | null;
+  custom_order_id?: string | null;
+  is_resolved?: boolean;
   last_message_at: string;
+  custom_order_name?: string | null;
   other_name?: string;
   last_preview?: string;
   unread_count?: number;
@@ -60,6 +63,13 @@ const Messages = () => {
     const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', otherIds);
     const nameMap = new Map((profiles || []).map((p) => [p.id, p.full_name]));
 
+    const orderIds = convs.map((c: any) => c.custom_order_id).filter(Boolean) as string[];
+    let orderMap = new Map<string, string>();
+    if (orderIds.length) {
+      const { data: cos } = await supabase.from('custom_orders').select('id, product_name').in('id', orderIds);
+      orderMap = new Map((cos || []).map((o) => [o.id, o.product_name]));
+    }
+
     // last message preview
     const enriched: ConvRow[] = await Promise.all(
       convs.map(async (c) => {
@@ -78,7 +88,13 @@ const Messages = () => {
           .neq('sender_id', user.id);
         const otherId = c.buyer_id === user.id ? c.seller_id : c.buyer_id;
         const preview = lastMsg?.content || (lastMsg?.image_url ? '📷 Photo' : '');
-        return { ...c, other_name: nameMap.get(otherId) || 'Utilisateur', last_preview: preview, unread_count: unread || 0 };
+        return {
+          ...c,
+          other_name: nameMap.get(otherId) || 'Utilisateur',
+          custom_order_name: (c as any).custom_order_id ? orderMap.get((c as any).custom_order_id) || 'Demande sur mesure' : null,
+          last_preview: preview,
+          unread_count: unread || 0,
+        };
       })
     );
     setConversations(enriched);
@@ -131,6 +147,9 @@ const Messages = () => {
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </div>
                 </div>
+                {c.custom_order_name && (
+                  <div className="text-[10px] text-primary truncate">📋 {c.custom_order_name}</div>
+                )}
                 <div className="flex justify-between items-center gap-2">
                   <div className={`text-xs truncate ${c.unread_count ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                     {c.last_preview || 'Nouvelle conversation'}
