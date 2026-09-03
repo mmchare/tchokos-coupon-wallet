@@ -151,7 +151,12 @@ const Messages = () => {
                 }`}
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <div className={`truncate ${c.unread_count ? 'font-bold' : 'font-medium'}`}>{c.other_name}</div>
+                  <div className={`truncate flex items-center gap-1.5 ${c.unread_count ? 'font-bold' : 'font-medium'}`}>
+                    {isActiveNow(c.last_message_at) && (
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" title="Actif récemment" />
+                    )}
+                    <span className="truncate">{c.other_name}</span>
+                  </div>
                   <div className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </div>
