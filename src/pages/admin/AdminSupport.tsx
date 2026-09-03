@@ -5,7 +5,8 @@ import { ChatPanel } from '@/components/ChatPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, RotateCcw, ClipboardList, MessageCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, RotateCcw, ClipboardList, MessageCircle, Search, X, Circle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
