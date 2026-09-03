@@ -96,6 +96,7 @@ const AdminSupport = () => {
         return {
           ...c,
           buyer_name: nameMap.get(c.buyer_id) || 'Utilisateur',
+          buyer_phone: phoneMap.get(c.buyer_id) || null,
           custom_order_name: c.custom_order_id ? orderMap.get(c.custom_order_id) || 'Demande sur mesure' : null,
           last_preview: lastMsg?.content || (lastMsg?.image_url ? '📷 Photo' : ''),
           unread_count: count || 0,
