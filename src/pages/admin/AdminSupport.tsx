@@ -34,6 +34,9 @@ const AdminSupport = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('open');
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [msgMatchIds, setMsgMatchIds] = useState<string[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     load();
