@@ -109,7 +109,14 @@ const Messages = () => {
         <Button variant="ghost" size="icon" onClick={() => (activeId ? setParams({}) : navigate(-1))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-semibold flex-1">{active ? active.other_name : 'Messages'}</h1>
+        <h1 className="font-semibold flex-1 flex items-center gap-2">
+          {active ? active.other_name : 'Messages'}
+          {!active && totalUnread > 0 && (
+            <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center">
+              {totalUnread}
+            </span>
+          )}
+        </h1>
         {!active && (
           <Button size="sm" variant="outline" disabled={opening} onClick={() => openSupportChat()}>
             <LifeBuoy className="w-4 h-4 mr-1" />
