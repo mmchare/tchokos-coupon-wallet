@@ -102,6 +102,8 @@ const Messages = () => {
   };
 
   const active = conversations.find((c) => c.id === activeId);
+  const totalUnread = conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
+  const isActiveNow = (iso: string) => Date.now() - new Date(iso).getTime() < 15 * 60 * 1000;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -109,7 +111,14 @@ const Messages = () => {
         <Button variant="ghost" size="icon" onClick={() => (activeId ? setParams({}) : navigate(-1))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-semibold flex-1">{active ? active.other_name : 'Messages'}</h1>
+        <h1 className="font-semibold flex-1 flex items-center gap-2">
+          {active ? active.other_name : 'Messages'}
+          {!active && totalUnread > 0 && (
+            <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center">
+              {totalUnread}
+            </span>
+          )}
+        </h1>
         {!active && (
           <Button size="sm" variant="outline" disabled={opening} onClick={() => openSupportChat()}>
             <LifeBuoy className="w-4 h-4 mr-1" />
@@ -142,7 +151,12 @@ const Messages = () => {
                 }`}
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <div className={`truncate ${c.unread_count ? 'font-bold' : 'font-medium'}`}>{c.other_name}</div>
+                  <div className={`truncate flex items-center gap-1.5 ${c.unread_count ? 'font-bold' : 'font-medium'}`}>
+                    {isActiveNow(c.last_message_at) && (
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" title="Actif récemment" />
+                    )}
+                    <span className="truncate">{c.other_name}</span>
+                  </div>
                   <div className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </div>

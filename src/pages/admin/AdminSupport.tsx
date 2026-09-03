@@ -5,7 +5,8 @@ import { ChatPanel } from '@/components/ChatPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, RotateCcw, ClipboardList, MessageCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, RotateCcw, ClipboardList, MessageCircle, Search, X, Circle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -18,6 +19,7 @@ interface SupportConv {
   last_message_at: string;
   is_resolved: boolean;
   buyer_name?: string;
+  buyer_phone?: string | null;
   custom_order_name?: string | null;
   last_preview?: string;
   unread_count?: number;
@@ -32,6 +34,9 @@ const AdminSupport = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('open');
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [msgMatchIds, setMsgMatchIds] = useState<string[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     load();
@@ -62,8 +67,9 @@ const AdminSupport = () => {
     }
 
     const buyerIds = Array.from(new Set(rows.map((c) => c.buyer_id)));
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', buyerIds);
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name, phone').in('id', buyerIds);
     const nameMap = new Map((profiles || []).map((p) => [p.id, p.full_name]));
+    const phoneMap = new Map((profiles || []).map((p) => [p.id, p.phone]));
 
     const orderIds = rows.map((c) => c.custom_order_id).filter(Boolean) as string[];
     let orderMap = new Map<string, string>();
@@ -90,6 +96,7 @@ const AdminSupport = () => {
         return {
           ...c,
           buyer_name: nameMap.get(c.buyer_id) || 'Utilisateur',
+          buyer_phone: phoneMap.get(c.buyer_id) || null,
           custom_order_name: c.custom_order_id ? orderMap.get(c.custom_order_id) || 'Demande sur mesure' : null,
           last_preview: lastMsg?.content || (lastMsg?.image_url ? '📷 Photo' : ''),
           unread_count: count || 0,
@@ -113,10 +120,48 @@ const AdminSupport = () => {
     load();
   };
 
-  const filtered = convs.filter((c) =>
-    filter === 'all' ? true : filter === 'open' ? !c.is_resolved : c.is_resolved
-  );
+  // Recherche par mot-clé dans les messages (débounce)
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setMsgMatchIds(null);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .ilike('content', `%${q}%`)
+        .limit(500);
+      setMsgMatchIds(Array.from(new Set((data || []).map((m: any) => m.conversation_id))));
+      setSearching(false);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const q = search.trim().toLowerCase();
+  const matchesSearch = (c: SupportConv) => {
+    if (!q) return true;
+    return (
+      (c.buyer_name || '').toLowerCase().includes(q) ||
+      (c.buyer_phone || '').toLowerCase().includes(q) ||
+      (c.custom_order_id || '').toLowerCase().includes(q) ||
+      (c.custom_order_name || '').toLowerCase().includes(q) ||
+      (c.last_preview || '').toLowerCase().includes(q) ||
+      (msgMatchIds?.includes(c.id) ?? false)
+    );
+  };
+
+  const filtered = convs
+    .filter((c) => (filter === 'all' ? true : filter === 'open' ? !c.is_resolved : c.is_resolved))
+    .filter(matchesSearch);
+
   const active = convs.find((c) => c.id === activeId);
+  const totalUnread = convs.reduce((s, c) => s + (c.unread_count || 0), 0);
+  const openCount = convs.filter((c) => !c.is_resolved).length;
+  const isActiveNow = (iso: string) => Date.now() - new Date(iso).getTime() < 15 * 60 * 1000;
+  const activeNowCount = convs.filter((c) => !c.is_resolved && isActiveNow(c.last_message_at)).length;
 
   return (
     <div className="p-4 lg:p-6 space-y-4">
@@ -127,13 +172,54 @@ const AdminSupport = () => {
         </p>
       </div>
 
-      <div className="flex gap-2">
-        {(['open', 'resolved', 'all'] as Filter[]).map((f) => (
-          <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}>
-            {f === 'open' ? 'À traiter' : f === 'resolved' ? 'Résolues' : 'Toutes'}
-          </Button>
-        ))}
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="secondary" className="gap-1">
+          <MessageCircle className="w-3 h-3" /> {openCount} à traiter
+        </Badge>
+        <Badge variant={totalUnread ? 'destructive' : 'secondary'} className="gap-1">
+          {totalUnread} non lus
+        </Badge>
+        <Badge variant="secondary" className="gap-1">
+          <Circle className={`w-2 h-2 ${activeNowCount ? 'fill-green-500 text-green-500' : 'fill-muted-foreground text-muted-foreground'}`} />
+          {activeNowCount} actives (15 min)
+        </Badge>
       </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nom, téléphone, ID demande, mot-clé du message…"
+            className="pl-9 pr-9"
+            aria-label="Rechercher une conversation support"
+          />
+          {(search || searching) && (
+            <button
+              type="button"
+              aria-label="Effacer la recherche"
+              onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {(['open', 'resolved', 'all'] as Filter[]).map((f) => (
+            <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}>
+              {f === 'open' ? 'À traiter' : f === 'resolved' ? 'Résolues' : 'Toutes'}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {!!q && (
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} résultat{filtered.length > 1 ? 's' : ''} pour « {search} »
+        </p>
+      )}
 
       <div className="grid lg:grid-cols-[340px_1fr] gap-4 h-[70vh]">
         <div className="border border-border rounded-xl overflow-y-auto bg-card">
@@ -156,11 +242,17 @@ const AdminSupport = () => {
                 }`}
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <span className={`truncate ${c.unread_count ? 'font-bold' : 'font-medium'}`}>{c.buyer_name}</span>
+                  <span className={`truncate flex items-center gap-1.5 ${c.unread_count ? 'font-bold' : 'font-medium'}`}>
+                    {!c.is_resolved && isActiveNow(c.last_message_at) && (
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" title="Actif récemment" />
+                    )}
+                    <span className="truncate">{c.buyer_name}</span>
+                  </span>
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true, locale: fr })}
                   </span>
                 </div>
+                {c.buyer_phone && <div className="text-[10px] text-muted-foreground">{c.buyer_phone}</div>}
                 {c.custom_order_name && (
                   <Badge variant="secondary" className="mt-1 text-[10px] gap-1">
                     <ClipboardList className="w-3 h-3" />
