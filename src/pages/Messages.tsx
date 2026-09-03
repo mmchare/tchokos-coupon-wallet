@@ -102,6 +102,8 @@ const Messages = () => {
   };
 
   const active = conversations.find((c) => c.id === activeId);
+  const totalUnread = conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
+  const isActiveNow = (iso: string) => Date.now() - new Date(iso).getTime() < 15 * 60 * 1000;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
