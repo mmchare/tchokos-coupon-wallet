@@ -19,6 +19,7 @@ interface SupportConv {
   last_message_at: string;
   is_resolved: boolean;
   buyer_name?: string;
+  buyer_phone?: string | null;
   custom_order_name?: string | null;
   last_preview?: string;
   unread_count?: number;
