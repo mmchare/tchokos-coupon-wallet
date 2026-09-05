@@ -1456,6 +1456,8 @@ export type Database = {
           payment_method: string
           phone_number: string
           processed_at: string | null
+          provider: string | null
+          provider_reference: string | null
           seller_id: string
           status: string
           user_id: string
@@ -1469,6 +1471,8 @@ export type Database = {
           payment_method: string
           phone_number: string
           processed_at?: string | null
+          provider?: string | null
+          provider_reference?: string | null
           seller_id: string
           status?: string
           user_id: string
@@ -1482,6 +1486,8 @@ export type Database = {
           payment_method?: string
           phone_number?: string
           processed_at?: string | null
+          provider?: string | null
+          provider_reference?: string | null
           seller_id?: string
           status?: string
           user_id?: string
@@ -1573,6 +1579,8 @@ export type Database = {
           description: string | null
           id: string
           payment_method: string | null
+          provider: string | null
+          provider_reference: string | null
           status: string
           type: string
           user_id: string
@@ -1583,6 +1591,8 @@ export type Database = {
           description?: string | null
           id?: string
           payment_method?: string | null
+          provider?: string | null
+          provider_reference?: string | null
           status?: string
           type: string
           user_id: string
@@ -1593,6 +1603,8 @@ export type Database = {
           description?: string | null
           id?: string
           payment_method?: string | null
+          provider?: string | null
+          provider_reference?: string | null
           status?: string
           type?: string
           user_id?: string
