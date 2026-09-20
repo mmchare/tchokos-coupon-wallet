@@ -319,7 +319,7 @@ const AdminFinance = () => {
             <DialogHeader>
               <DialogTitle>Réconcilier une transaction</DialogTitle>
               <DialogDescription>
-                Recherchez une transaction par ID ou référence Notchpay pour la débloquer manuellement
+                Recherchez une transaction par ID ou référence SasPay pour la débloquer manuellement
               </DialogDescription>
             </DialogHeader>
             
@@ -327,7 +327,7 @@ const AdminFinance = () => {
               {/* Search Input */}
               <div className="flex gap-2">
                 <Input
-                  placeholder="ID transaction ou référence Notchpay..."
+                  placeholder="ID transaction ou référence SasPay..."
                   value={searchRef}
                   onChange={(e) => setSearchRef(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchTransaction()}

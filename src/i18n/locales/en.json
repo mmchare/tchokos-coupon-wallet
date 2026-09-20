@@ -297,7 +297,7 @@
     "actionRequired": "Action required",
     "pressToValidate": "Press 'Open payment page' to validate.",
     "vpnWarningTitle": "Important - VPN & Location",
-    "vpnWarningDesc": "NotchPay payments only work from Central and West Africa.",
+    "vpnWarningDesc": "SasPay payments only work from Central and West Africa.",
     "disableVpn": "Disable your VPN",
     "disableVpnDesc": "before making a payment to avoid blocking.",
     "rechargeType": "Recharge",

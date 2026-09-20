@@ -56,3 +56,12 @@ verify_jwt = false
 
 [functions.batch-translate-products]
 verify_jwt = false
+
+[functions.saspay-payment]
+verify_jwt = false
+
+[functions.saspay-webhook]
+verify_jwt = false
+
+[functions.saspay-verify]
+verify_jwt = false
