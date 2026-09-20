@@ -80,39 +80,44 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: wErr.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Note: Notchpay payout (disbursement) endpoint requires merchant approval.
-    // For now we record the request as 'processing' and admin can mark it completed
-    // after manual MoMo transfer, OR you can integrate Notchpay Disbursements API later.
-    if (NOTCHPAY_PRIVATE_KEY) {
+    // SasPay payout (disbursement). If it fails, we keep the withdrawal in
+    // 'processing' so an admin can reconcile it manually.
+    if (SASPAY_SECRET_KEY) {
       try {
         let formattedPhone = phone_number.replace(/\s/g, '').replace(/^\+/, '');
         if (!formattedPhone.startsWith('237')) formattedPhone = '237' + formattedPhone;
 
-        const payoutRes = await fetch('https://api.notchpay.co/transfers', {
+        const payoutRes = await fetch('https://api.saspay.me/api/v1/payouts/initialize/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': NOTCHPAY_PRIVATE_KEY,
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${SASPAY_SECRET_KEY}`,
+            'Idempotency-Key': `payout-${withdrawal.id}`,
           },
           body: JSON.stringify({
             amount,
             currency: 'XAF',
-            recipient: { phone: '+' + formattedPhone, channel: payment_method === 'momo' ? 'cm.mtn' : 'cm.orange' },
-            description: `Retrait JinBao - ${withdrawal.id}`,
+            country: 'CM',
+            method: payment_method === 'momo' ? 'mtn_cm' : 'orange_cm',
             reference: withdrawal.id,
+            description: `Retrait JinBao - ${withdrawal.id}`,
+            recipient: { msisdn: '+' + formattedPhone, name: 'Vendeur JinBao' },
+            metadata: { withdrawal_id: withdrawal.id, seller_id: seller.id },
           }),
         });
         const payoutData = await payoutRes.json();
         if (payoutRes.ok) {
+          const d = payoutData?.data ?? payoutData;
           await admin.from('seller_withdrawals').update({
-            notchpay_reference: payoutData?.transfer?.reference || payoutData?.reference || null,
+            provider_reference: d?.payout_id || d?.id || d?.reference || null,
           }).eq('id', withdrawal.id);
         } else {
-          console.error('Notchpay payout error', payoutData);
+          console.error('SasPay payout error', payoutData);
           // Keep status processing — admin will reconcile
         }
       } catch (e) {
-        console.error('Notchpay transfer call failed', e);
+        console.error('SasPay payout call failed', e);
       }
     }
 
