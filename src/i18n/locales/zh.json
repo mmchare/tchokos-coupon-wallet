@@ -297,7 +297,7 @@
     "actionRequired": "需要操作",
     "pressToValidate": "按'打开支付页面'验证。",
     "vpnWarningTitle": "重要 - VPN和位置",
-    "vpnWarningDesc": "NotchPay支付仅在中非和西非地区有效。",
+    "vpnWarningDesc": "SasPay支付仅在中非和西非地区有效。",
     "disableVpn": "关闭您的VPN",
     "disableVpnDesc": "在支付前关闭以避免阻止。",
     "rechargeType": "充值",
