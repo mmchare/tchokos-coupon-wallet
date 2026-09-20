@@ -551,7 +551,7 @@ const Recharge = () => {
                       <span>{parseInt(amount).toLocaleString()} F</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Frais Notchpay</span>
+                      <span>Frais SasPay</span>
                       <span>0 F</span>
                     </div>
                     <div className="h-px bg-border my-2" />
