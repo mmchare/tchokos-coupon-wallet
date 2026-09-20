@@ -12,7 +12,7 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const NOTCHPAY_PRIVATE_KEY = Deno.env.get('NOTCHPAY_PRIVATE_KEY');
+    const SASPAY_SECRET_KEY = Deno.env.get('SASPAY_SECRET_KEY');
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -68,6 +68,7 @@ serve(async (req) => {
         amount,
         phone_number,
         payment_method,
+        provider: 'saspay',
         status: 'processing',
       })
       .select()
