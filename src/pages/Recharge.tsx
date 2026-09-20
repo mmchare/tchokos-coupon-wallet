@@ -228,10 +228,10 @@ const Recharge = () => {
         return;
       }
 
-      // If Notchpay provides an authorization URL, open it
-      if (data?.authorization_url) {
-        setPaymentUrl(data.authorization_url);
-        const opened = window.open(data.authorization_url, '_blank', 'noopener,noreferrer');
+      // Some networks require a redirect to the payment page
+      if (data?.checkout_url) {
+        setPaymentUrl(data.checkout_url);
+        const opened = window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
         if (!opened) {
           toast({
             title: t('recharge.actionRequired'),
