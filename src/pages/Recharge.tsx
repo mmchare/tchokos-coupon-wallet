@@ -100,6 +100,18 @@ const Recharge = () => {
         return;
       }
 
+      // Fallback: ask the gateway directly every other attempt in case the
+      // webhook has not arrived yet.
+      if (tx.status === 'pending' && attempts > 0 && attempts % 2 === 0) {
+        try {
+          await supabase.functions.invoke('saspay-verify', {
+            body: { transaction_id: transactionId },
+          });
+        } catch (e) {
+          console.error('Verify fallback failed:', e);
+        }
+      }
+
       if (tx.status === 'completed') {
         setPaymentStatus('success');
         await refreshProfile();
@@ -184,12 +196,11 @@ const Recharge = () => {
     setPaymentUrl(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('notchpay-payment', {
+      const { data, error } = await supabase.functions.invoke('saspay-payment', {
         body: {
           amount: parseInt(amount),
           phone_number: phoneNumber,
           payment_method: selectedMethod,
-          user_id: user.id,
           description: `Recharge via ${selectedMethod === 'momo' ? 'MTN MoMo' : 'Orange Money'}`
         }
       });
