@@ -68,20 +68,23 @@ serve(async (req) => {
       return json({ error: 'Erreur lors de la création de la transaction' }, 500);
     }
 
+    const fullName = String(user.user_metadata?.full_name || 'Client JinBao').trim();
+    const [firstName, ...rest] = fullName.split(/\s+/);
+    const origin = req.headers.get('origin') || 'https://jimbao.lovable.app';
+
     const payload = {
-      amount,
+      amount: amount.toFixed(2),
       currency: 'XAF',
       country: 'CM',
-      method: networkFor(payment_method),
-      reference: transaction.id,
+      network: networkFor(payment_method),
       description: description || `Recharge JinBao - ${transaction.id}`,
       customer: {
-        name: user.user_metadata?.full_name || 'Client JinBao',
-        email: user.email || undefined,
-        msisdn: formattedPhone,
+        email: user.email || `${user.id}@jinbao.app`,
+        first_name: firstName || 'Client',
+        last_name: rest.join(' ') || 'JinBao',
         phone: formattedPhone,
       },
-      callback_url: `${SUPABASE_URL}/functions/v1/saspay-webhook`,
+      return_url: `${origin}/recharge`,
       metadata: { transaction_id: transaction.id, user_id: user.id },
     };
 
@@ -91,12 +94,15 @@ serve(async (req) => {
       idempotencyKey: `payin-${transaction.id}`,
     });
 
-    if (!res.ok) {
+    if (!res.ok || res.body?.success === false) {
       console.error('SasPay softpay error:', res.status, JSON.stringify(res.body));
       await admin.from('wallet_transactions').update({ status: 'failed' }).eq('id', transaction.id);
-      const msg = (res.body?.message as string) || (res.body?.detail as string) ||
+      const b = res.body as Record<string, any>;
+      const msg = b?.message || b?.detail || b?.error?.message || b?.errors?.[0]?.message ||
+        (typeof b?.error === 'string' ? b.error : null) ||
+        (b?.error && typeof b.error === 'object' ? String(Object.values(b.error).flat()[0] ?? '') : null) ||
         'Le paiement n\'a pas pu être initié. Réessayez dans un instant.';
-      return json({ error: msg, code: res.body?.code ?? null }, 400);
+      return json({ error: msg, code: b?.code ?? null, details: b }, 400);
     }
 
     const data = unwrap(res.body);
