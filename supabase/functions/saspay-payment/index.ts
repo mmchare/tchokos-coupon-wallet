@@ -100,6 +100,7 @@ serve(async (req) => {
       const b = res.body as Record<string, any>;
       const msg = b?.message || b?.detail || b?.error?.message || b?.errors?.[0]?.message ||
         (typeof b?.error === 'string' ? b.error : null) ||
+        (b?.error && typeof b.error === 'object' ? String(Object.values(b.error).flat()[0] ?? '') : null) ||
         'Le paiement n\'a pas pu être initié. Réessayez dans un instant.';
       return json({ error: msg, code: b?.code ?? null, details: b }, 400);
     }
