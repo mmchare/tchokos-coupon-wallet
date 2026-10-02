@@ -46,6 +46,42 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://jimbao.lovable.app/product/36cb39f4-c967-41e4-8b27-cab12a8a5081</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/36cb39f4-c967-41e4-8b27-cab12a8a5081/forum</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/c006763f-5438-4ab5-9812-95b1862d2e12</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/c006763f-5438-4ab5-9812-95b1862d2e12/forum</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/6426e479-115f-4578-8e09-2101f547c4f2</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/6426e479-115f-4578-8e09-2101f547c4f2/forum</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://jimbao.lovable.app/product/e4ab706f-6e98-4553-a2e8-e97a07bf530a</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
