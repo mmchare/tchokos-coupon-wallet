@@ -96,13 +96,13 @@ serve(async (req) => {
             'Idempotency-Key': `payout-${withdrawal.id}`,
           },
           body: JSON.stringify({
-            amount,
+            amount: Number(amount).toFixed(2),
             currency: 'XAF',
             country: 'CM',
             method: payment_method === 'momo' ? 'mtn_cm' : 'orange_cm',
-            reference: withdrawal.id,
             description: `Retrait JinBao - ${withdrawal.id}`,
-            recipient: { msisdn: '+' + formattedPhone, name: 'Vendeur JinBao' },
+            customer: { phone: '+' + formattedPhone },
+            recipient: { msisdn: formattedPhone.replace(/^237/, '') },
             metadata: { withdrawal_id: withdrawal.id, seller_id: seller.id },
           }),
         });
