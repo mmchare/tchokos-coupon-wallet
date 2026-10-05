@@ -49,24 +49,9 @@ serve(async (req) => {
       return json({ success: true, status: 'failed' });
     }
 
-    // Completed — credit the wallet once (guarded by the status filter)
-    const { data: updated } = await admin
-      .from('wallet_transactions')
-      .update({ status: 'completed' })
-      .eq('id', tx.id)
-      .eq('status', 'pending')
-      .select('id')
-      .maybeSingle();
-
-    if (updated) {
-      const { data: profile } = await admin
-        .from('profiles')
-        .select('wallet_balance')
-        .eq('id', tx.user_id)
-        .single();
-      const newBalance = Number(profile?.wallet_balance || 0) + Number(tx.amount);
-      await admin.from('profiles').update({ wallet_balance: newBalance }).eq('id', tx.user_id);
-    }
+    // Completed — atomic, idempotent credit
+    const { error: cErr } = await admin.rpc('complete_wallet_recharge', { p_tx_id: tx.id, p_provider_ref: null });
+    if (cErr) { console.error('Credit error', cErr); return json({ success: true, status: 'pending' }); }
 
     return json({ success: true, status: 'completed' });
   } catch (error) {

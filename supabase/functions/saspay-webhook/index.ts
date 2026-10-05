@@ -116,24 +116,11 @@ serve(async (req) => {
     }
 
     if (eventType === 'transaction.success') {
-      const { data: updated } = await admin
-        .from('wallet_transactions')
-        .update({ status: 'completed', provider_reference: paymentId ?? tx.provider_reference })
-        .eq('id', tx.id)
-        .eq('status', 'pending')
-        .select('id')
-        .maybeSingle();
-
-      if (updated) {
-        const { data: profile } = await admin
-          .from('profiles')
-          .select('wallet_balance')
-          .eq('id', tx.user_id)
-          .single();
-        const newBalance = Number(profile?.wallet_balance || 0) + Number(tx.amount);
-        await admin.from('profiles').update({ wallet_balance: newBalance }).eq('id', tx.user_id);
-        console.log('Wallet credited', { tx: tx.id, newBalance });
-      }
+      const { data: credited, error: cErr } = await admin.rpc('complete_wallet_recharge', {
+        p_tx_id: tx.id, p_provider_ref: paymentId ?? tx.provider_reference,
+      });
+      if (cErr) { console.error('Credit error', cErr); return json({ error: 'credit failed' }, 500); }
+      console.log(credited ? 'Wallet credited' : 'Already credited (duplicate)', tx.id);
       return json({ received: true, status: 'completed' });
     }
 

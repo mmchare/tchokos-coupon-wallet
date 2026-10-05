@@ -1667,6 +1667,10 @@ export type Database = {
       cancel_premium_auto_renew: { Args: never; Returns: Json }
       check_referral_code_exists: { Args: { p_code: string }; Returns: boolean }
       cleanup_expired_otps: { Args: never; Returns: undefined }
+      complete_wallet_recharge: {
+        Args: { p_provider_ref?: string; p_tx_id: string }
+        Returns: boolean
+      }
       consume_promo_code: {
         Args: {
           p_discount_amount: number
