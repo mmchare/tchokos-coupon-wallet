@@ -1,0 +1,4 @@
+REVOKE EXECUTE ON FUNCTION public.admin_add_digital_account(uuid,text,text,int,timestamptz), public.admin_set_digital_account_password(uuid,text), public.get_digital_credentials(uuid), public.admin_get_account_password(uuid), public.purchase_digital_product(uuid,text), public.admin_refund_digital_order(uuid), public.admin_reassign_digital_order(uuid), public.on_digital_account_status() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.on_digital_account_status() FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.admin_add_digital_account(uuid,text,text,int,timestamptz), public.admin_set_digital_account_password(uuid,text), public.get_digital_credentials(uuid), public.admin_get_account_password(uuid), public.purchase_digital_product(uuid,text), public.admin_refund_digital_order(uuid), public.admin_reassign_digital_order(uuid) TO authenticated;
+ALTER FUNCTION public.search_digital_products(text) SECURITY INVOKER;
