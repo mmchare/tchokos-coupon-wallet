@@ -319,6 +319,158 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_accounts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          login: string
+          password: string
+          product_id: string
+          slots_total: number
+          slots_used: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          login: string
+          password: string
+          product_id: string
+          slots_total?: number
+          slots_used?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          login?: string
+          password?: string
+          product_id?: string
+          slots_total?: number
+          slots_used?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_accounts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_orders: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          price_fcfa: number
+          product_id: string
+          reminder_sent_at: string | null
+          slot_label: string | null
+          starts_at: string
+          status: string
+          user_id: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          price_fcfa: number
+          product_id: string
+          reminder_sent_at?: string | null
+          slot_label?: string | null
+          starts_at?: string
+          status?: string
+          user_id: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          price_fcfa?: number
+          product_id?: string
+          reminder_sent_at?: string | null
+          slot_label?: string | null
+          starts_at?: string
+          status?: string
+          user_id?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "digital_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digital_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_months: number
+          id: string
+          is_active: boolean
+          keywords: string[]
+          logo_url: string | null
+          platform: string
+          price_fcfa: number
+          profile_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_months?: number
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          logo_url?: string | null
+          platform: string
+          price_fcfa: number
+          profile_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_months?: number
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          logo_url?: string | null
+          platform?: string
+          price_fcfa?: number
+          profile_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -1537,6 +1689,44 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          order_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          order_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          order_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "digital_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activity: {
         Row: {
           activity_type: string
@@ -1664,6 +1854,36 @@ export type Database = {
       }
     }
     Functions: {
+      _pick_digital_account: {
+        Args: { p_exclude?: string; p_product_id: string }
+        Returns: string
+      }
+      admin_add_digital_account: {
+        Args: {
+          p_expires_at: string
+          p_login: string
+          p_password: string
+          p_product_id: string
+          p_slots_total: number
+        }
+        Returns: string
+      }
+      admin_get_account_password: {
+        Args: { p_account_id: string }
+        Returns: string
+      }
+      admin_reassign_digital_order: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      admin_refund_digital_order: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      admin_set_digital_account_password: {
+        Args: { p_account_id: string; p_password: string }
+        Returns: undefined
+      }
       cancel_premium_auto_renew: { Args: never; Returns: Json }
       check_referral_code_exists: { Args: { p_code: string }; Returns: boolean }
       cleanup_expired_otps: { Args: never; Returns: undefined }
@@ -1689,6 +1909,13 @@ export type Database = {
         Returns: boolean
       }
       generate_referral_code: { Args: { p_user_id: string }; Returns: string }
+      get_digital_credentials: {
+        Args: { p_order_id: string }
+        Returns: {
+          login: string
+          password: string
+        }[]
+      }
       get_or_create_support_conversation:
         | { Args: never; Returns: string }
         | { Args: { p_custom_order_id?: string }; Returns: string }
@@ -1711,11 +1938,39 @@ export type Database = {
         }
         Returns: string
       }
+      purchase_digital_product: {
+        Args: { p_product_id: string; p_whatsapp?: string }
+        Returns: Json
+      }
       refund_seller_wallet: {
         Args: { p_amount: number; p_seller_id: string }
         Returns: undefined
       }
       renew_premium_subscriptions: { Args: never; Returns: Json }
+      search_digital_products: {
+        Args: { p_query: string }
+        Returns: {
+          created_at: string
+          description: string | null
+          duration_months: number
+          id: string
+          is_active: boolean
+          keywords: string[]
+          logo_url: string | null
+          platform: string
+          price_fcfa: number
+          profile_type: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "digital_products"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      send_digital_expiry_reminders: { Args: never; Returns: number }
       set_conversation_resolved: {
         Args: { p_conversation_id: string; p_resolved: boolean }
         Returns: Json
