@@ -13,6 +13,7 @@ import CategoryFilter from '@/components/CategoryFilter';
 import DesktopCategorySidebar from '@/components/DesktopCategorySidebar';
 import QuickServices from '@/components/QuickServices';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import DigitalSearchResults from '@/components/DigitalSearchResults';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import NewDropsCarousel from '@/components/NewDropsCarousel';
 import { ProductSkeletonGrid } from '@/components/ProductSkeleton';
@@ -465,6 +466,7 @@ const Home = () => {
           />
 
           <div className="flex-1 min-w-0">
+            <DigitalSearchResults query={searchQuery} />
         {/* Collapsible sections - New Drops, Categories (mobile), Quick Services */}
         <div className={`transition-all duration-300 overflow-hidden ${
           isScrolled ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'

@@ -476,6 +476,18 @@ const Profile = () => {
               </CardContent>
             </Card>
 
+            <Card
+              className="bg-card border-border cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => navigate('/subscriptions')}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-foreground font-semibold">Mes abonnements</p>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card 
               className="bg-card border-border cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => navigate('/orders')}

@@ -37,6 +37,9 @@ const BecomeSeller = lazy(() => import("./pages/BecomeSeller"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const SellerPublicProfile = lazy(() => import("./pages/SellerPublicProfile"));
 const Messages = lazy(() => import("./pages/Messages"));
+const DigitalProduct = lazy(() => import("./pages/DigitalProduct"));
+const MySubscriptions = lazy(() => import("./pages/MySubscriptions"));
+const AdminDigital = lazy(() => import("./pages/admin/AdminDigital"));
 
 // Admin pages - lazy loaded (reduces initial bundle significantly)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -104,6 +107,8 @@ const App = () => (
                   <Route path="/seller" element={<SellerDashboard />} />
                   <Route path="/seller/:id" element={<SellerPublicProfile />} />
                   <Route path="/messages" element={<Messages />} />
+                  <Route path="/digital/:id" element={<DigitalProduct />} />
+                  <Route path="/subscriptions" element={<MySubscriptions />} />
                   
                   {/* Admin Routes - all lazy loaded */}
                   <Route path="/admin" element={<AdminLayout />}>
@@ -120,6 +125,7 @@ const App = () => (
                     <Route path="reports" element={<AdminReports />} />
                     <Route path="custom-orders" element={<AdminCustomOrders />} />
                     <Route path="support" element={<AdminSupport />} />
+                    <Route path="digital" element={<AdminDigital />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

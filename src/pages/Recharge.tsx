@@ -122,6 +122,8 @@ const Recharge = () => {
         });
         setAmount('');
         setIsProcessing(false);
+        const ret = new URLSearchParams(window.location.search).get('return');
+        if (ret && ret.startsWith('/') && !ret.startsWith('//')) setTimeout(() => navigate(ret), 1200);
         return;
       }
 
