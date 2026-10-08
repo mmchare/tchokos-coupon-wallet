@@ -20,7 +20,7 @@ const statusLabel: Record<string, string> = { actif: 'Actif', 'expiré': 'Expir�
 const SubscriptionCard = ({ o, onTicket }: { o: Order; onTicket: (o: Order) => void }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [creds, setCreds] = useState<{ login: string; password: string } | null>(null);
+  const [creds, setCreds] = useState<{ login: string; password: string; slot_code: string | null } | null>(null);
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -59,6 +59,13 @@ const SubscriptionCard = ({ o, onTicket }: { o: Order; onTicket: (o: Order) => v
               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(creds.password)}><Copy className="h-4 w-4" /></Button>
             </div>
           </div>
+          {creds.slot_code && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground">Code de votre place</span>
+              <span className="font-mono text-foreground truncate">{creds.slot_code}</span>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(creds.slot_code!)}><Copy className="h-4 w-4" /></Button>
+            </div>
+          )}
         </div>
       )}
       {o.status === 'en_panne' && <p className="text-xs text-destructive">Ce compte rencontre un problème. Notre équipe va vous rembourser ou vous attribuer un nouveau compte.</p>}

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { db, DigitalProduct, daysLeft, durationLabel, formatFcfa } from '@/lib/digital';
 
-interface Account { id: string; product_id: string; login: string; slots_total: number; slots_used: number; expires_at: string; status: string; }
+interface Account { id: string; product_id: string; login: string; slots_total: number; slots_used: number; expires_at: string; status: string; slot_codes?: string[]; }
 interface Order { id: string; user_id: string; product_id: string; account_id: string | null; slot_label: string | null; price_fcfa: number; status: string; expires_at: string; created_at: string; whatsapp_number: string | null; }
 interface Ticket { id: string; order_id: string; user_id: string; message: string; status: string; created_at: string; }
 
@@ -37,7 +37,7 @@ const AdminDigital = () => {
   const load = async () => {
     const [p, a, o, t] = await Promise.all([
       db.from('digital_products').select('*').order('platform'),
-      db.from('digital_accounts').select('id,product_id,login,slots_total,slots_used,expires_at,status').order('expires_at'),
+      db.from('digital_accounts').select('id,product_id,login,slots_total,slots_used,expires_at,status,slot_codes').order('expires_at'),
       db.from('digital_orders').select('*').order('created_at', { ascending: false }).limit(300),
       db.from('support_tickets').select('*').order('created_at', { ascending: false }).limit(200),
     ]);
@@ -74,7 +74,8 @@ const AdminDigital = () => {
   const saveAccount = async () => {
     const f = accForm;
     setBusy(true);
-    const { error } = await db.rpc('admin_add_digital_account', { p_product_id: f.product_id, p_login: f.login, p_password: f.password, p_slots_total: Number(f.slots_total), p_expires_at: new Date(f.expires_at).toISOString() });
+    const codes = String(f.slot_codes || '').split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
+    const { error } = await db.rpc('admin_add_digital_account', { p_product_id: f.product_id, p_login: f.login, p_password: f.password, p_slots_total: Number(f.slots_total), p_expires_at: new Date(f.expires_at).toISOString(), p_slot_codes: codes.length ? codes : null });
     setBusy(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
     setAccForm(null); load();
@@ -86,10 +87,11 @@ const AdminDigital = () => {
     setBusy(true);
     let ok = 0; const errs: string[] = [];
     for (const [i, l] of lines.entries()) {
-      const [login, password, slots, expires] = l.split(/[;,]/).map(s => s?.trim());
+      const [login, password, slots, expires, codes] = l.split(/[;,]/).map(s => s?.trim());
       const d = new Date(expires);
       if (!login || !password || isNaN(d.getTime())) { errs.push(`Ligne ${i + 1}`); continue; }
-      const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString() });
+      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean) : null;
+      const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString(), p_slot_codes: slotCodes });
       error ? errs.push(`Ligne ${i + 1}`) : ok++;
     }
     setBusy(false);
@@ -188,6 +190,9 @@ const AdminDigital = () => {
                   <div className="flex-1 min-w-[180px]">
                     <p className="font-mono text-sm text-foreground">{a.login}</p>
                     <p className="text-xs text-muted-foreground">{pName(a.product_id)}</p>
+                    {a.slot_codes && a.slot_codes.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => `P${i + 1}: ${c}`).join(' · ')}</p>
+                    )}
                   </div>
                   <div className="flex gap-1" title={`${a.slots_used}/${a.slots_total} occupés`}>
                     {Array.from({ length: a.slots_total }).map((_, i) => <span key={i} className={`h-3 w-3 rounded-full ${i < a.slots_used ? 'bg-primary' : 'bg-muted'}`} />)}
@@ -295,6 +300,11 @@ const AdminDigital = () => {
                 <div><Label>Places (profils)</Label><Input type="number" min={1} value={accForm.slots_total} onChange={e => setAccForm({ ...accForm, slots_total: e.target.value })} /></div>
                 <div><Label>Expiration</Label><Input type="date" value={accForm.expires_at} onChange={e => setAccForm({ ...accForm, expires_at: e.target.value })} /></div>
               </div>
+              <div>
+                <Label>Codes / infos par place (optionnel)</Label>
+                <Textarea rows={3} value={accForm.slot_codes || ''} onChange={e => setAccForm({ ...accForm, slot_codes: e.target.value })} placeholder={'Une ligne par place, dans l\u2019ordre :\nProfil 1 : code ABC123\nProfil 2 : code DEF456'} />
+                <p className="text-xs text-muted-foreground mt-1">La ligne 1 correspond au Profil 1, la ligne 2 au Profil 2, etc. Le client voit uniquement le code de sa place.</p>
+              </div>
             </div>
           )}
           <DialogFooter><Button disabled={busy || !accForm?.login || !accForm?.password || !accForm?.expires_at} onClick={saveAccount}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Ajouter</Button></DialogFooter>
@@ -308,7 +318,7 @@ const AdminDigital = () => {
             <SelectTrigger><SelectValue placeholder="Produit" /></SelectTrigger>
             <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code></p>
+          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,code1|code2|code3</code> (un code par place)</p>
           <Input type="file" accept=".csv,text/csv" onChange={async e => { const f = e.target.files?.[0]; if (f) setCsvText(await f.text()); }} />
           <Textarea rows={6} value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="compte1@mail.com,pass123,5,2026-12-31" />
           <DialogFooter><Button disabled={busy || !csvText.trim()} onClick={importCsv}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Importer</Button></DialogFooter>

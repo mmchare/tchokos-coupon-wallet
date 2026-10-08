@@ -327,6 +327,7 @@ export type Database = {
           login: string
           password: string
           product_id: string
+          slot_codes: string[]
           slots_total: number
           slots_used: number
           status: string
@@ -339,6 +340,7 @@ export type Database = {
           login: string
           password: string
           product_id: string
+          slot_codes?: string[]
           slots_total?: number
           slots_used?: number
           status?: string
@@ -351,6 +353,7 @@ export type Database = {
           login?: string
           password?: string
           product_id?: string
+          slot_codes?: string[]
           slots_total?: number
           slots_used?: number
           status?: string
@@ -375,6 +378,7 @@ export type Database = {
           price_fcfa: number
           product_id: string
           reminder_sent_at: string | null
+          slot_index: number | null
           slot_label: string | null
           starts_at: string
           status: string
@@ -389,6 +393,7 @@ export type Database = {
           price_fcfa: number
           product_id: string
           reminder_sent_at?: string | null
+          slot_index?: number | null
           slot_label?: string | null
           starts_at?: string
           status?: string
@@ -403,6 +408,7 @@ export type Database = {
           price_fcfa?: number
           product_id?: string
           reminder_sent_at?: string | null
+          slot_index?: number | null
           slot_label?: string | null
           starts_at?: string
           status?: string
@@ -1858,16 +1864,28 @@ export type Database = {
         Args: { p_exclude?: string; p_product_id: string }
         Returns: string
       }
-      admin_add_digital_account: {
-        Args: {
-          p_expires_at: string
-          p_login: string
-          p_password: string
-          p_product_id: string
-          p_slots_total: number
-        }
-        Returns: string
-      }
+      admin_add_digital_account:
+        | {
+            Args: {
+              p_expires_at: string
+              p_login: string
+              p_password: string
+              p_product_id: string
+              p_slots_total: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_expires_at: string
+              p_login: string
+              p_password: string
+              p_product_id: string
+              p_slot_codes?: string[]
+              p_slots_total: number
+            }
+            Returns: string
+          }
       admin_get_account_password: {
         Args: { p_account_id: string }
         Returns: string
@@ -1914,6 +1932,7 @@ export type Database = {
         Returns: {
           login: string
           password: string
+          slot_code: string
         }[]
       }
       get_or_create_support_conversation:
