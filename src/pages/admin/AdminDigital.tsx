@@ -74,7 +74,8 @@ const AdminDigital = () => {
   const saveAccount = async () => {
     const f = accForm;
     setBusy(true);
-    const { error } = await db.rpc('admin_add_digital_account', { p_product_id: f.product_id, p_login: f.login, p_password: f.password, p_slots_total: Number(f.slots_total), p_expires_at: new Date(f.expires_at).toISOString() });
+    const codes = String(f.slot_codes || '').split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
+    const { error } = await db.rpc('admin_add_digital_account', { p_product_id: f.product_id, p_login: f.login, p_password: f.password, p_slots_total: Number(f.slots_total), p_expires_at: new Date(f.expires_at).toISOString(), p_slot_codes: codes.length ? codes : null });
     setBusy(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
     setAccForm(null); load();
@@ -86,10 +87,11 @@ const AdminDigital = () => {
     setBusy(true);
     let ok = 0; const errs: string[] = [];
     for (const [i, l] of lines.entries()) {
-      const [login, password, slots, expires] = l.split(/[;,]/).map(s => s?.trim());
+      const [login, password, slots, expires, codes] = l.split(/[;,]/).map(s => s?.trim());
       const d = new Date(expires);
       if (!login || !password || isNaN(d.getTime())) { errs.push(`Ligne ${i + 1}`); continue; }
-      const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString() });
+      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean) : null;
+      const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString(), p_slot_codes: slotCodes });
       error ? errs.push(`Ligne ${i + 1}`) : ok++;
     }
     setBusy(false);
@@ -295,6 +297,11 @@ const AdminDigital = () => {
                 <div><Label>Places (profils)</Label><Input type="number" min={1} value={accForm.slots_total} onChange={e => setAccForm({ ...accForm, slots_total: e.target.value })} /></div>
                 <div><Label>Expiration</Label><Input type="date" value={accForm.expires_at} onChange={e => setAccForm({ ...accForm, expires_at: e.target.value })} /></div>
               </div>
+              <div>
+                <Label>Codes / infos par place (optionnel)</Label>
+                <Textarea rows={3} value={accForm.slot_codes || ''} onChange={e => setAccForm({ ...accForm, slot_codes: e.target.value })} placeholder={'Une ligne par place, dans l\u2019ordre :\nProfil 1 : code ABC123\nProfil 2 : code DEF456'} />
+                <p className="text-xs text-muted-foreground mt-1">La ligne 1 correspond au Profil 1, la ligne 2 au Profil 2, etc. Le client voit uniquement le code de sa place.</p>
+              </div>
             </div>
           )}
           <DialogFooter><Button disabled={busy || !accForm?.login || !accForm?.password || !accForm?.expires_at} onClick={saveAccount}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Ajouter</Button></DialogFooter>
@@ -308,7 +315,7 @@ const AdminDigital = () => {
             <SelectTrigger><SelectValue placeholder="Produit" /></SelectTrigger>
             <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code></p>
+          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,code1|code2|code3</code> (un code par place)</p>
           <Input type="file" accept=".csv,text/csv" onChange={async e => { const f = e.target.files?.[0]; if (f) setCsvText(await f.text()); }} />
           <Textarea rows={6} value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="compte1@mail.com,pass123,5,2026-12-31" />
           <DialogFooter><Button disabled={busy || !csvText.trim()} onClick={importCsv}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Importer</Button></DialogFooter>
