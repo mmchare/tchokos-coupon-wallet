@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { db, DigitalProduct, daysLeft, durationLabel, formatFcfa } from '@/lib/digital';
 
-interface Account { id: string; product_id: string; login: string; slots_total: number; slots_used: number; expires_at: string; status: string; }
+interface Account { id: string; product_id: string; login: string; slots_total: number; slots_used: number; expires_at: string; status: string; slot_codes?: string[]; }
 interface Order { id: string; user_id: string; product_id: string; account_id: string | null; slot_label: string | null; price_fcfa: number; status: string; expires_at: string; created_at: string; whatsapp_number: string | null; }
 interface Ticket { id: string; order_id: string; user_id: string; message: string; status: string; created_at: string; }
 
@@ -37,7 +37,7 @@ const AdminDigital = () => {
   const load = async () => {
     const [p, a, o, t] = await Promise.all([
       db.from('digital_products').select('*').order('platform'),
-      db.from('digital_accounts').select('id,product_id,login,slots_total,slots_used,expires_at,status').order('expires_at'),
+      db.from('digital_accounts').select('id,product_id,login,slots_total,slots_used,expires_at,status,slot_codes').order('expires_at'),
       db.from('digital_orders').select('*').order('created_at', { ascending: false }).limit(300),
       db.from('support_tickets').select('*').order('created_at', { ascending: false }).limit(200),
     ]);
@@ -190,6 +190,9 @@ const AdminDigital = () => {
                   <div className="flex-1 min-w-[180px]">
                     <p className="font-mono text-sm text-foreground">{a.login}</p>
                     <p className="text-xs text-muted-foreground">{pName(a.product_id)}</p>
+                    {a.slot_codes && a.slot_codes.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => `P${i + 1}: ${c}`).join(' · ')}</p>
+                    )}
                   </div>
                   <div className="flex gap-1" title={`${a.slots_used}/${a.slots_total} occupés`}>
                     {Array.from({ length: a.slots_total }).map((_, i) => <span key={i} className={`h-3 w-3 rounded-full ${i < a.slots_used ? 'bg-primary' : 'bg-muted'}`} />)}
