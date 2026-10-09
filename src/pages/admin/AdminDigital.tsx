@@ -101,7 +101,7 @@ const AdminDigital = () => {
       const [login, password, slots, expires, codes] = l.split(/[;,]/).map(s => s?.trim());
       const d = new Date(expires);
       if (!login || !password || isNaN(d.getTime())) { errs.push(`Ligne ${i + 1}`); continue; }
-      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean) : null;
+      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean).map((c, k) => { const [n, v] = c.includes(':') ? c.split(':') : [`Profil ${k + 1}`, c]; return encodeSlot(n, v); }) : null;
       const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString(), p_slot_codes: slotCodes });
       error ? errs.push(`Ligne ${i + 1}`) : ok++;
     }
@@ -229,6 +229,7 @@ const AdminDigital = () => {
               </div>
               <span className="font-semibold text-foreground">{formatFcfa(o.price_fcfa)}</span>
               <Badge variant={o.status === 'en_panne' ? 'destructive' : o.status === 'actif' ? 'default' : 'secondary'}>{o.status}</Badge>
+              {o.status === 'actif' && <Button size="sm" onClick={() => sendWhatsApp(o)}>Envoyer WhatsApp</Button>}
               {(o.status === 'en_panne' || o.status === 'actif') && (
                 <>
                   <Button size="sm" variant="outline" onClick={() => refund(o.id)}><RotateCcw className="h-3 w-3 mr-1" />Rembourser</Button>
@@ -334,7 +335,7 @@ const AdminDigital = () => {
             <SelectTrigger><SelectValue placeholder="Produit" /></SelectTrigger>
             <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,code1|code2|code3</code> (un code par place)</p>
+          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,Profil 1:1234|Profil 2:5678</code> (nom:code par place)</p>
           <Input type="file" accept=".csv,text/csv" onChange={async e => { const f = e.target.files?.[0]; if (f) setCsvText(await f.text()); }} />
           <Textarea rows={6} value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="compte1@mail.com,pass123,5,2026-12-31" />
           <DialogFooter><Button disabled={busy || !csvText.trim()} onClick={importCsv}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Importer</Button></DialogFooter>
