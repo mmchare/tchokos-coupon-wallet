@@ -1,4 +1,4 @@
-import { ShoppingBag, User, Sun, Moon, LogIn, Wallet, Package } from 'lucide-react';
+import { ShoppingBag, User, Sun, Moon, LogIn, Wallet, Package, MonitorPlay } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
@@ -122,6 +122,20 @@ const Header = () => {
                 <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
+
+              {/* My Subscriptions - Only visible when logged in */}
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/subscriptions')}
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
+                  title="Mes abonnements"
+                  aria-label="Mes abonnements"
+                >
+                  <MonitorPlay className="h-4 w-4" />
+                </Button>
+              )}
 
               {/* Orders - Only visible when logged in */}
               {user && (

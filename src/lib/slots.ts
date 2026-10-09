@@ -6,6 +6,9 @@ export const decodeSlot = (raw: string | null | undefined, fallbackName = '') =>
   return i < 0 ? { name: fallbackName, code: raw.trim() } : { name: raw.slice(0, i).trim() || fallbackName, code: raw.slice(i + 1).trim() };
 };
 
+// Where the client can always find their credentials again inside the app.
+export const SUBSCRIPTIONS_HINT = 'Retrouvez ces infos à tout moment dans l\'app JinBao : menu Profil → Mes abonnements.';
+
 export const buildWhatsAppMessage = (p: { service: string; email: string; password: string; slotName: string; slotCode: string; expiresAt: string }) =>
   [
     `*JinBao — Votre abonnement ${p.service}*`,
@@ -15,6 +18,8 @@ export const buildWhatsAppMessage = (p: { service: string; email: string; passwo
     `👤 Votre profil : ${p.slotName}`,
     p.slotCode ? `🔢 Code du profil : ${p.slotCode}` : '',
     `📅 Expire le : ${new Date(p.expiresAt).toLocaleDateString('fr-FR')}`,
+    ``,
+    `📍 ${SUBSCRIPTIONS_HINT}`,
     ``,
     `Merci de n'utiliser que votre profil et de ne pas modifier le mot de passe.`,
   ].filter((l) => l !== '').join('\n');
