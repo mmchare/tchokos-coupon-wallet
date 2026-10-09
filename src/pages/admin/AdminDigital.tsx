@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { db, DigitalProduct, daysLeft, durationLabel, formatFcfa } from '@/lib/digital';
+import { decodeSlot, encodeSlot, buildWhatsAppMessage, whatsAppLink } from '@/lib/slots';
 
 interface Account { id: string; product_id: string; login: string; slots_total: number; slots_used: number; expires_at: string; status: string; slot_codes?: string[]; }
 interface Order { id: string; user_id: string; product_id: string; account_id: string | null; slot_label: string | null; price_fcfa: number; status: string; expires_at: string; created_at: string; whatsapp_number: string | null; }
@@ -71,10 +72,20 @@ const AdminDigital = () => {
     load();
   };
 
+  const sendWhatsApp = async (o: Order) => {
+    const { data, error } = await db.rpc('get_digital_credentials', { p_order_id: o.id });
+    const c = data?.[0];
+    if (error || !c) { toast({ title: 'Identifiants introuvables', description: error?.message, variant: 'destructive' }); return; }
+    const s = decodeSlot(c.slot_code, o.slot_label || '');
+    window.open(whatsAppLink(o.whatsapp_number, buildWhatsAppMessage({ service: pName(o.product_id), email: c.login, password: c.password, slotName: s.name, slotCode: s.code, expiresAt: o.expires_at })), '_blank');
+  };
+
   const saveAccount = async () => {
     const f = accForm;
+    const slots = (f.slots || []) as { name: string; code: string }[];
+    if (slots.some(s => s.code && !/^\d{4,5}$/.test(s.code))) { toast({ title: 'Les codes doivent avoir 4 ou 5 chiffres', variant: 'destructive' }); return; }
     setBusy(true);
-    const codes = String(f.slot_codes || '').split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
+    const codes = slots.map((s, i) => encodeSlot(s.name || `Profil ${i + 1}`, s.code));
     const { error } = await db.rpc('admin_add_digital_account', { p_product_id: f.product_id, p_login: f.login, p_password: f.password, p_slots_total: Number(f.slots_total), p_expires_at: new Date(f.expires_at).toISOString(), p_slot_codes: codes.length ? codes : null });
     setBusy(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
@@ -90,7 +101,7 @@ const AdminDigital = () => {
       const [login, password, slots, expires, codes] = l.split(/[;,]/).map(s => s?.trim());
       const d = new Date(expires);
       if (!login || !password || isNaN(d.getTime())) { errs.push(`Ligne ${i + 1}`); continue; }
-      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean) : null;
+      const slotCodes = codes ? codes.split('|').map(s => s.trim()).filter(Boolean).map((c, k) => { const [n, v] = c.includes(':') ? c.split(':') : [`Profil ${k + 1}`, c]; return encodeSlot(n, v); }) : null;
       const { error } = await db.rpc('admin_add_digital_account', { p_product_id: csvProduct, p_login: login, p_password: password, p_slots_total: Number(slots) || 1, p_expires_at: d.toISOString(), p_slot_codes: slotCodes });
       error ? errs.push(`Ligne ${i + 1}`) : ok++;
     }
@@ -175,7 +186,7 @@ const AdminDigital = () => {
 
         <TabsContent value="accounts" className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <Button disabled={!products.length} onClick={() => setAccForm({ product_id: products[0]?.id, login: '', password: '', slots_total: 5, expires_at: '' })}><Plus className="h-4 w-4 mr-1" />Ajouter un compte</Button>
+            <Button disabled={!products.length} onClick={() => setAccForm({ product_id: products[0]?.id, login: '', password: '', slots_total: 5, expires_at: '', slots: Array.from({ length: 5 }, (_, i) => ({ name: `Profil ${i + 1}`, code: '' })) })}><Plus className="h-4 w-4 mr-1" />Ajouter un compte</Button>
             <Button variant="outline" disabled={!products.length} onClick={() => setCsvOpen(true)}><Upload className="h-4 w-4 mr-1" />Import CSV</Button>
             <Select value={filterProduct} onValueChange={setFilterProduct}>
               <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
@@ -191,7 +202,7 @@ const AdminDigital = () => {
                     <p className="font-mono text-sm text-foreground">{a.login}</p>
                     <p className="text-xs text-muted-foreground">{pName(a.product_id)}</p>
                     {a.slot_codes && a.slot_codes.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => `P${i + 1}: ${c}`).join(' · ')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => { const s = decodeSlot(c, `Profil ${i + 1}`); return `${s.name}: ${s.code || '—'}`; }).join(' · ')}</p>
                     )}
                   </div>
                   <div className="flex gap-1" title={`${a.slots_used}/${a.slots_total} occupés`}>
@@ -218,6 +229,7 @@ const AdminDigital = () => {
               </div>
               <span className="font-semibold text-foreground">{formatFcfa(o.price_fcfa)}</span>
               <Badge variant={o.status === 'en_panne' ? 'destructive' : o.status === 'actif' ? 'default' : 'secondary'}>{o.status}</Badge>
+              {o.status === 'actif' && <Button size="sm" onClick={() => sendWhatsApp(o)}>Envoyer WhatsApp</Button>}
               {(o.status === 'en_panne' || o.status === 'actif') && (
                 <>
                   <Button size="sm" variant="outline" onClick={() => refund(o.id)}><RotateCcw className="h-3 w-3 mr-1" />Rembourser</Button>
@@ -294,16 +306,21 @@ const AdminDigital = () => {
                   <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label>Identifiant</Label><Input value={accForm.login} onChange={e => setAccForm({ ...accForm, login: e.target.value })} /></div>
-              <div><Label>Mot de passe</Label><Input value={accForm.password} onChange={e => setAccForm({ ...accForm, password: e.target.value })} /></div>
+              <div><Label>Email du compte</Label><Input type="email" value={accForm.login} onChange={e => setAccForm({ ...accForm, login: e.target.value })} placeholder="compte@gmail.com" /></div>
+              <div><Label>Mot de passe du compte</Label><Input value={accForm.password} onChange={e => setAccForm({ ...accForm, password: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-2">
-                <div><Label>Places (profils)</Label><Input type="number" min={1} value={accForm.slots_total} onChange={e => setAccForm({ ...accForm, slots_total: e.target.value })} /></div>
+                <div><Label>Nombre de places</Label><Input type="number" min={1} max={10} value={accForm.slots_total} onChange={e => { const n = Math.max(1, Math.min(10, Number(e.target.value) || 1)); const s = [...(accForm.slots || [])]; while (s.length < n) s.push({ name: `Profil ${s.length + 1}`, code: '' }); setAccForm({ ...accForm, slots_total: n, slots: s.slice(0, n) }); }} /></div>
                 <div><Label>Expiration</Label><Input type="date" value={accForm.expires_at} onChange={e => setAccForm({ ...accForm, expires_at: e.target.value })} /></div>
               </div>
-              <div>
-                <Label>Codes / infos par place (optionnel)</Label>
-                <Textarea rows={3} value={accForm.slot_codes || ''} onChange={e => setAccForm({ ...accForm, slot_codes: e.target.value })} placeholder={'Une ligne par place, dans l\u2019ordre :\nProfil 1 : code ABC123\nProfil 2 : code DEF456'} />
-                <p className="text-xs text-muted-foreground mt-1">La ligne 1 correspond au Profil 1, la ligne 2 au Profil 2, etc. Le client voit uniquement le code de sa place.</p>
+              <div className="space-y-2">
+                <Label>Places : nom et code PIN</Label>
+                {(accForm.slots || []).map((s: any, i: number) => (
+                  <div key={i} className="grid grid-cols-[1fr_110px] gap-2">
+                    <Input value={s.name} placeholder={`Profil ${i + 1}`} onChange={e => { const x = [...accForm.slots]; x[i] = { ...s, name: e.target.value }; setAccForm({ ...accForm, slots: x }); }} />
+                    <Input value={s.code} inputMode="numeric" maxLength={5} placeholder="Code" className="font-mono" onChange={e => { const x = [...accForm.slots]; x[i] = { ...s, code: e.target.value.replace(/\D/g, '').slice(0, 5) }; setAccForm({ ...accForm, slots: x }); }} />
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">Code de 4 ou 5 chiffres. Chaque client reçoit uniquement le nom et le code de sa place.</p>
               </div>
             </div>
           )}
@@ -318,7 +335,7 @@ const AdminDigital = () => {
             <SelectTrigger><SelectValue placeholder="Produit" /></SelectTrigger>
             <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,code1|code2|code3</code> (un code par place)</p>
+          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,Profil 1:1234|Profil 2:5678</code> (nom:code par place)</p>
           <Input type="file" accept=".csv,text/csv" onChange={async e => { const f = e.target.files?.[0]; if (f) setCsvText(await f.text()); }} />
           <Textarea rows={6} value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="compte1@mail.com,pass123,5,2026-12-31" />
           <DialogFooter><Button disabled={busy || !csvText.trim()} onClick={importCsv}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Importer</Button></DialogFooter>

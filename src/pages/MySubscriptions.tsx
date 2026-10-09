@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { db, daysLeft, formatFcfa } from '@/lib/digital';
+import { decodeSlot, buildWhatsAppMessage, whatsAppLink } from '@/lib/slots';
 
 interface Order {
   id: string; product_id: string; slot_label: string | null; price_fcfa: number; status: string;
-  starts_at: string; expires_at: string;
+  starts_at: string; expires_at: string; whatsapp_number?: string | null;
   digital_products: { platform: string; title: string; logo_url: string | null } | null;
 }
 
@@ -59,13 +60,21 @@ const SubscriptionCard = ({ o, onTicket }: { o: Order; onTicket: (o: Order) => v
               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(creds.password)}><Copy className="h-4 w-4" /></Button>
             </div>
           </div>
-          {creds.slot_code && (
+          {(() => { const s = decodeSlot(creds.slot_code, o.slot_label || ''); return (<>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-muted-foreground">Code de votre place</span>
-              <span className="font-mono text-foreground truncate">{creds.slot_code}</span>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(creds.slot_code!)}><Copy className="h-4 w-4" /></Button>
+              <span className="text-muted-foreground">Votre profil</span>
+              <span className="font-semibold text-foreground truncate">{s.name}</span>
+              <span className="w-7" />
             </div>
-          )}
+            {s.code && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">Code du profil</span>
+                <span className="font-mono text-foreground truncate">{s.code}</span>
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(s.code)}><Copy className="h-4 w-4" /></Button>
+              </div>
+            )}
+            <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(whatsAppLink(o.whatsapp_number, buildWhatsAppMessage({ service: `${o.digital_products?.platform} ${o.digital_products?.title}`, email: creds.login, password: creds.password, slotName: s.name, slotCode: s.code, expiresAt: o.expires_at })), '_blank')}>Recevoir sur WhatsApp</Button>
+          </>); })()}
         </div>
       )}
       {o.status === 'en_panne' && <p className="text-xs text-destructive">Ce compte rencontre un problème. Notre équipe va vous rembourser ou vous attribuer un nouveau compte.</p>}
