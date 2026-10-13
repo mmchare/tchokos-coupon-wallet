@@ -17,7 +17,23 @@ interface Account { id: string; product_id: string; login: string; slots_total: 
 interface Order { id: string; user_id: string; product_id: string; account_id: string | null; slot_label: string | null; price_fcfa: number; status: string; expires_at: string; created_at: string; whatsapp_number: string | null; }
 interface Ticket { id: string; order_id: string; user_id: string; message: string; status: string; created_at: string; }
 
-const emptyProduct = { platform: '', title: '', description: '', logo_url: '', keywords: '', duration_months: 1, profile_type: 'partagé', price_fcfa: 0, is_active: true };
+const emptyProduct = {
+  platform: '',
+  title: '',
+  description: '',
+  logo_url: '',
+  keywords: '',
+  duration_months: 1,
+  profile_type: 'partagé',
+  price_fcfa: 0,
+  is_active: true,
+  create_account: false,
+  account_login: '',
+  account_password: '',
+  account_slots_total: 1,
+  account_expires_at: '',
+  account_slots: Array.from({ length: 1 }, (_, i) => ({ name: `Profil ${i + 1}`, code: '' })),
+};
 const ACC_STATUSES = ['disponible', 'complet', 'expiré', 'en_panne'];
 
 const AdminDigital = () => {
@@ -50,19 +66,116 @@ const AdminDigital = () => {
   const pName = (id: string) => { const p = products.find(x => x.id === id); return p ? `${p.platform} · ${p.title}` : '—'; };
 
   const expiringSoon = accounts.filter(a => a.status !== 'expiré' && a.status !== 'en_panne' && daysLeft(a.expires_at) < 5);
-  const outOfStock = useMemo(() => products.filter(p => p.is_active && !accounts.some(a => a.product_id === p.id && a.status === 'disponible' && a.slots_used < a.slots_total && daysLeft(a.expires_at) > 0)), [products, accounts]);
+  const outOfStock = useMemo(() => products.filter(p => p.is_active && !accounts.some(a => a.product_id === p.id && a.status === 'disponible' && a.slots_used < a.slots_total && daysLeft(a.expires_at) > 0)), [accounts, products]);
 
   const saveProduct = async () => {
     const e = editing;
     if (!e.platform.trim() || !e.title.trim()) { toast({ title: 'Plateforme et titre requis', variant: 'destructive' }); return; }
+
+    if (e.create_account) {
+      const accountLogin = String(e.account_login || '').trim();
+      const accountPassword = String(e.account_password || '').trim();
+      const accountExpires = String(e.account_expires_at || '').trim();
+      const accountSlots = ((e.account_slots || []) as Array<{ name?: string; code?: string }>).map((s, i) => ({
+        name: String(s?.name || `Profil ${i + 1}`).trim(),
+        code: String(s?.code || '').trim(),
+      }));
+
+      if (!accountLogin || !accountPassword || !accountExpires) {
+        toast({ title: 'Compte associé incomplet', description: 'Email, mot de passe et expiration sont obligatoires.', variant: 'destructive' });
+        return;
+      }
+
+      if (accountSlots.some(s => s.code && !/^\d{4,5}$/.test(s.code))) {
+        toast({ title: 'Codes invalide', description: 'Chaque code de place doit contenir 4 ou 5 chiffres.', variant: 'destructive' });
+        return;
+      }
+    }
+
     const row = {
       platform: e.platform.trim(), title: e.title.trim(), description: e.description || null, logo_url: e.logo_url || null,
       keywords: String(e.keywords || '').split(',').map((k: string) => k.trim()).filter(Boolean),
       duration_months: Number(e.duration_months) || 1, profile_type: e.profile_type, price_fcfa: Number(e.price_fcfa) || 0, is_active: e.is_active,
     };
-    const { error } = e.id ? await db.from('digital_products').update(row).eq('id', e.id) : await db.from('digital_products').insert(row);
+
+    if (!e.id) {
+      if (e.create_account) {
+        try {
+          const accountSlots = ((e.account_slots || []) as Array<{ name?: string; code?: string }>).map((s, i) => ({
+            name: String(s?.name || `Profil ${i + 1}`).trim(),
+            code: String(s?.code || '').trim(),
+          }));
+
+          const slotCodes = accountSlots.map((s) => encodeSlot(s.name || 'Profil', s.code));
+          const { data, error } = await db.rpc('admin_create_product_with_account', {
+            p_platform: e.platform.trim(),
+            p_title: e.title.trim(),
+            p_description: e.description || null,
+            p_logo_url: e.logo_url || null,
+            p_keywords: row.keywords.length ? row.keywords : null,
+            p_duration_months: Number(e.duration_months) || 1,
+            p_profile_type: e.profile_type,
+            p_price_fcfa: Number(e.price_fcfa) || 0,
+            p_is_active: !!e.is_active,
+            p_account_login: String(e.account_login || '').trim(),
+            p_account_password: String(e.account_password || '').trim(),
+            p_account_slots_total: Number(e.account_slots_total) || 1,
+            p_account_expires_at: e.account_expires_at ? new Date(e.account_expires_at).toISOString() : null,
+            p_account_slot_codes: slotCodes.length ? slotCodes : null,
+          });
+
+          if (error) throw error;
+          if (!data?.success) throw new Error(data?.error || 'Échec création produit');
+
+          toast({ title: 'Succès', description: 'Produit et compte associés créés.' });
+          setEditing(null);
+          load();
+          return;
+        } catch (err: any) {
+          console.error('Erreur création produit + compte associé', err);
+          toast({ title: 'Erreur', description: err?.message || 'Impossible de créer le produit et le compte associé', variant: 'destructive' });
+          return;
+        }
+      }
+
+      const { error } = await db.from('digital_products').insert(row);
+      if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+      setEditing(null);
+      load();
+      return;
+    }
+
+    // UPDATE case
+    const { error } = await db.from('digital_products').update(row).eq('id', e.id);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
-    setEditing(null); load();
+
+    if (e.create_account) {
+      try {
+        const accountSlots = ((e.account_slots || []) as Array<{ name?: string; code?: string }>).map((s, i) => ({
+          name: String(s?.name || `Profil ${i + 1}`).trim(),
+          code: String(s?.code || '').trim(),
+        }));
+
+        const slotCodes = accountSlots.map((s) => encodeSlot(s.name || 'Profil', s.code));
+        const { error: rpcError } = await db.rpc('admin_add_digital_account', {
+          p_product_id: e.id,
+          p_login: String(e.account_login || '').trim(),
+          p_password: String(e.account_password || '').trim(),
+          p_slots_total: Number(e.account_slots_total) || 1,
+          p_expires_at: e.account_expires_at ? new Date(e.account_expires_at).toISOString() : new Date().toISOString(),
+          p_slot_codes: slotCodes.length ? slotCodes : null,
+        });
+
+        if (rpcError) throw rpcError;
+        toast({ title: 'Compte créé', description: 'Le compte associé a été ajouté au produit.' });
+      } catch (err: any) {
+        console.error('Erreur création compte associé sur produit existant', err);
+        toast({ title: 'Erreur compte', description: err?.message || 'Impossible de créer le compte associé', variant: 'destructive' });
+      }
+    }
+
+    setEditing(null);
+    load();
   };
 
   const deleteProduct = async (id: string) => {
@@ -149,9 +262,9 @@ const AdminDigital = () => {
 
       {(expiringSoon.length > 0 || outOfStock.length > 0 || brokenOrders.length > 0) && (
         <div className="space-y-2">
-          {expiringSoon.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />{expiringSoon.length} compte(s) expirent dans moins de 5 jours : {expiringSoon.slice(0, 5).map(a => a.login).join(', ')}</div>}
-          {outOfStock.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />Rupture de stock : {outOfStock.map(p => `${p.platform} ${p.title}`).join(', ')}</div>}
-          {brokenOrders.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />{brokenOrders.length} client(s) sur un compte en panne à rembourser ou réaffecter.</div>}
+          {expiringSoon.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4" /><span>Compte(s) expiring soon.</span></div>}
+          {outOfStock.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4" /><span>Produit(s) sans compte disponible.</span></div>}
+          {brokenOrders.length > 0 && <div className="flex items-start gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-foreground"><AlertTriangle className="h-4 w-4" /><span>Commande(s) en panne.</span></div>}
         </div>
       )}
 
@@ -176,7 +289,7 @@ const AdminDigital = () => {
                     <p className="text-xs text-muted-foreground">{durationLabel(p.duration_months)} · {p.profile_type} · {formatFcfa(p.price_fcfa)} · {free} place(s) libre(s)</p>
                   </div>
                   {!p.is_active && <Badge variant="secondary">Inactif</Badge>}
-                  <Button size="icon" variant="ghost" onClick={() => setEditing({ ...p, keywords: p.keywords.join(', ') })}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => setEditing({ ...p, keywords: p.keywords.join(', '), create_account: false, account_login: '', account_password: '', account_slots_total: 1, account_expires_at: '', account_slots: Array.from({ length: 1 }, (_, i) => ({ name: `Profil ${i + 1}`, code: '' })) })}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => deleteProduct(p.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               );
@@ -202,7 +315,7 @@ const AdminDigital = () => {
                     <p className="font-mono text-sm text-foreground">{a.login}</p>
                     <p className="text-xs text-muted-foreground">{pName(a.product_id)}</p>
                     {a.slot_codes && a.slot_codes.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => { const s = decodeSlot(c, `Profil ${i + 1}`); return `${s.name}: ${s.code || '—'}`; }).join(' · ')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{a.slot_codes.map((c, i) => { const s = decodeSlot(c, `Profil ${i + 1}`); return `${s.name}: ${s.code || '—'}`; }).join(' • ')}</p>
                     )}
                   </div>
                   <div className="flex gap-1" title={`${a.slots_used}/${a.slots_total} occupés`}>
@@ -277,7 +390,7 @@ const AdminDigital = () => {
               </div>
               <div><Label>Description</Label><Textarea value={editing.description || ''} onChange={e => setEditing({ ...editing, description: e.target.value })} /></div>
               <div><Label>URL du logo</Label><Input value={editing.logo_url || ''} onChange={e => setEditing({ ...editing, logo_url: e.target.value })} /></div>
-              <div><Label>Mots-clés (séparés par des virgules)</Label><Input value={editing.keywords} onChange={e => setEditing({ ...editing, keywords: e.target.value })} placeholder="netflix, netflx, films, séries" /></div>
+              <div><Label>Mots-clés (séparés par des virgules)</Label><Input value={editing.keywords} onChange={e => setEditing({ ...editing, keywords: e.target.value })} placeholder="netflix,streaming,4k" /></div>
               <div className="grid grid-cols-3 gap-2">
                 <div><Label>Durée (mois)</Label><Input type="number" min={1} value={editing.duration_months} onChange={e => setEditing({ ...editing, duration_months: e.target.value })} /></div>
                 <div><Label>Profil</Label>
@@ -288,6 +401,66 @@ const AdminDigital = () => {
                 </div>
                 <div><Label>Prix FCFA</Label><Input type="number" min={0} value={editing.price_fcfa} onChange={e => setEditing({ ...editing, price_fcfa: e.target.value })} /></div>
               </div>
+
+              <div className="border-t pt-4">
+                <div className="flex items-center gap-2">
+                  <Switch checked={!!editing.create_account} onCheckedChange={v => setEditing({ ...editing, create_account: v })} />
+                  <Label>Créer un compte associé</Label>
+                </div>
+
+                {editing.create_account && (
+                  <div className="mt-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Email du compte</Label>
+                        <Input type="email" value={editing.account_login || ''} onChange={e => setEditing({ ...editing, account_login: e.target.value })} placeholder="compte@gmail.com" />
+                      </div>
+                      <div>
+                        <Label>Mot de passe du compte</Label>
+                        <Input value={editing.account_password || ''} onChange={e => setEditing({ ...editing, account_password: e.target.value })} placeholder="Mot de passe" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Nombre de places</Label>
+                        <Input type="number" min={1} max={10} value={editing.account_slots_total || 1} onChange={e => {
+                          const n = Math.max(1, Math.min(10, Number(e.target.value) || 1));
+                          const slots = Array.from({ length: n }, (_, i) => ({
+                            name: (editing.account_slots?.[i]?.name) || `Profil ${i + 1}`,
+                            code: editing.account_slots?.[i]?.code || '',
+                          }));
+                          setEditing({ ...editing, account_slots_total: n, account_slots: slots });
+                        }} />
+                      </div>
+                      <div>
+                        <Label>Expiration</Label>
+                        <Input type="date" value={editing.account_expires_at || ''} onChange={e => setEditing({ ...editing, account_expires_at: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Places : nom et code</Label>
+                      {(editing.account_slots || []).map((s: any, i: number) => (
+                        <div key={i} className="grid grid-cols-[1fr_110px] gap-2">
+                          <Input value={s.name} placeholder={`Profil ${i + 1}`} onChange={e => {
+                            const x = [...(editing.account_slots || [])];
+                            x[i] = { ...x[i], name: e.target.value };
+                            setEditing({ ...editing, account_slots: x });
+                          }} />
+                          <Input value={s.code} inputMode="numeric" maxLength={5} placeholder="Code" className="font-mono" onChange={e => {
+                            const x = [...(editing.account_slots || [])];
+                            x[i] = { ...x[i], code: e.target.value.replace(/\D/g, '').slice(0, 5) };
+                            setEditing({ ...editing, account_slots: x });
+                          }} />
+                        </div>
+                      ))}
+                      <p className="text-xs text-muted-foreground">Code de 4 ou 5 chiffres. Chaque client reçoit uniquement le nom et le code de sa place.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center gap-2"><Switch checked={editing.is_active} onCheckedChange={v => setEditing({ ...editing, is_active: v })} /><Label>Actif</Label></div>
             </div>
           )}
@@ -309,7 +482,7 @@ const AdminDigital = () => {
               <div><Label>Email du compte</Label><Input type="email" value={accForm.login} onChange={e => setAccForm({ ...accForm, login: e.target.value })} placeholder="compte@gmail.com" /></div>
               <div><Label>Mot de passe du compte</Label><Input value={accForm.password} onChange={e => setAccForm({ ...accForm, password: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-2">
-                <div><Label>Nombre de places</Label><Input type="number" min={1} max={10} value={accForm.slots_total} onChange={e => { const n = Math.max(1, Math.min(10, Number(e.target.value) || 1)); const s = [...(accForm.slots || [])]; while (s.length < n) s.push({ name: `Profil ${s.length + 1}`, code: '' }); setAccForm({ ...accForm, slots_total: n, slots: s.slice(0, n) }); }} /></div>
+                <div><Label>Nombre de places</Label><Input type="number" min={1} max={10} value={accForm.slots_total} onChange={e => { const n = Math.max(1, Math.min(10, Number(e.target.value) || 1)); const slots = Array.from({ length: n }, (_, i) => ({ name: accForm.slots?.[i]?.name || `Profil ${i + 1}`, code: accForm.slots?.[i]?.code || '' })); setAccForm({ ...accForm, slots_total: n, slots }); }} /></div>
                 <div><Label>Expiration</Label><Input type="date" value={accForm.expires_at} onChange={e => setAccForm({ ...accForm, expires_at: e.target.value })} /></div>
               </div>
               <div className="space-y-2">
@@ -335,7 +508,7 @@ const AdminDigital = () => {
             <SelectTrigger><SelectValue placeholder="Produit" /></SelectTrigger>
             <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.platform} · {p.title}</SelectItem>)}</SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,Profil 1:1234|Profil 2:5678</code> (nom:code par place)</p>
+          <p className="text-xs text-muted-foreground">Une ligne par compte : <code>login,motdepasse,places,AAAA-MM-JJ</code> — optionnel : <code>,Profil 1:1234|Profil 2:5678</code> (nom:code peut être ajouté).</p>
           <Input type="file" accept=".csv,text/csv" onChange={async e => { const f = e.target.files?.[0]; if (f) setCsvText(await f.text()); }} />
           <Textarea rows={6} value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="compte1@mail.com,pass123,5,2026-12-31" />
           <DialogFooter><Button disabled={busy || !csvText.trim()} onClick={importCsv}>{busy && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Importer</Button></DialogFooter>
