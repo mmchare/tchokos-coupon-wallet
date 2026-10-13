@@ -98,38 +98,78 @@ const AdminDigital = () => {
       duration_months: Number(e.duration_months) || 1, profile_type: e.profile_type, price_fcfa: Number(e.price_fcfa) || 0, is_active: e.is_active,
     };
 
-    let productId = e.id;
+    if (!e.id) {
+      if (e.create_account) {
+        try {
+          const accountSlots = ((e.account_slots || []) as Array<{ name?: string; code?: string }>).map((s, i) => ({
+            name: String(s?.name || `Profil ${i + 1}`).trim(),
+            code: String(s?.code || '').trim(),
+          }));
 
-    if (e.id) {
-      const { error } = await db.from('digital_products').update(row).eq('id', e.id);
+          const slotCodes = accountSlots.map((s) => encodeSlot(s.name || 'Profil', s.code));
+          const { data, error } = await db.rpc('admin_create_product_with_account', {
+            p_platform: e.platform.trim(),
+            p_title: e.title.trim(),
+            p_description: e.description || null,
+            p_logo_url: e.logo_url || null,
+            p_keywords: row.keywords.length ? row.keywords : null,
+            p_duration_months: Number(e.duration_months) || 1,
+            p_profile_type: e.profile_type,
+            p_price_fcfa: Number(e.price_fcfa) || 0,
+            p_is_active: !!e.is_active,
+            p_account_login: String(e.account_login || '').trim(),
+            p_account_password: String(e.account_password || '').trim(),
+            p_account_slots_total: Number(e.account_slots_total) || 1,
+            p_account_expires_at: e.account_expires_at ? new Date(e.account_expires_at).toISOString() : null,
+            p_account_slot_codes: slotCodes.length ? slotCodes : null,
+          });
+
+          if (error) throw error;
+          if (!data?.success) throw new Error(data?.error || 'Échec création produit');
+
+          toast({ title: 'Succès', description: 'Produit et compte associés créés.' });
+          setEditing(null);
+          load();
+          return;
+        } catch (err: any) {
+          console.error('Erreur création produit + compte associé', err);
+          toast({ title: 'Erreur', description: err?.message || 'Impossible de créer le produit et le compte associé', variant: 'destructive' });
+          return;
+        }
+      }
+
+      const { error } = await db.from('digital_products').insert(row);
       if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
-    } else {
-      const { data, error } = await db.from('digital_products').insert(row).select('id').single();
-      if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
-      productId = data?.id;
+      setEditing(null);
+      load();
+      return;
     }
 
-    if (e.create_account && productId) {
+    // UPDATE case
+    const { error } = await db.from('digital_products').update(row).eq('id', e.id);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+
+    if (e.create_account) {
       try {
         const accountSlots = ((e.account_slots || []) as Array<{ name?: string; code?: string }>).map((s, i) => ({
           name: String(s?.name || `Profil ${i + 1}`).trim(),
           code: String(s?.code || '').trim(),
         }));
 
-        const slotCodes = accountSlots.map((s, i) => encodeSlot(s.name || `Profil ${i + 1}`, s.code));
+        const slotCodes = accountSlots.map((s) => encodeSlot(s.name || 'Profil', s.code));
         const { error: rpcError } = await db.rpc('admin_add_digital_account', {
-          p_product_id: productId,
+          p_product_id: e.id,
           p_login: String(e.account_login || '').trim(),
           p_password: String(e.account_password || '').trim(),
           p_slots_total: Number(e.account_slots_total) || 1,
-          p_expires_at: new Date(String(e.account_expires_at || new Date().toISOString())).toISOString(),
+          p_expires_at: e.account_expires_at ? new Date(e.account_expires_at).toISOString() : new Date().toISOString(),
           p_slot_codes: slotCodes.length ? slotCodes : null,
         });
 
         if (rpcError) throw rpcError;
-        toast({ title: 'Compte créé', description: 'Le compte associé au produit a été ajouté.' });
+        toast({ title: 'Compte créé', description: 'Le compte associé a été ajouté au produit.' });
       } catch (err: any) {
-        console.error('Erreur création compte associé', err);
+        console.error('Erreur création compte associé sur produit existant', err);
         toast({ title: 'Erreur compte', description: err?.message || 'Impossible de créer le compte associé', variant: 'destructive' });
       }
     }
