@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -1886,6 +1886,25 @@ export type Database = {
             }
             Returns: string
           }
+      admin_create_product_with_account: {
+        Args: {
+          p_account_expires_at?: string
+          p_account_login?: string
+          p_account_password?: string
+          p_account_slot_codes?: string[]
+          p_account_slots_total?: number
+          p_description?: string
+          p_duration_months?: number
+          p_is_active?: boolean
+          p_keywords?: string[]
+          p_logo_url?: string
+          p_platform: string
+          p_price_fcfa?: number
+          p_profile_type?: string
+          p_title: string
+        }
+        Returns: Json
+      }
       admin_get_account_password: {
         Args: { p_account_id: string }
         Returns: string
