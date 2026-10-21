@@ -148,7 +148,7 @@ const TrackingJinBaoCard = ({ order, onOrderCancelled }: TrackingJinBaoCardProps
 
   const openWhatsApp = () => {
     const message = encodeURIComponent(`Bonjour JinBao, je souhaite des infos sur ma commande #${order.id.slice(0, 8).toUpperCase()}`);
-    window.open(`https://wa.me/237655852010?text=${message}`, '_blank');
+    window.open(`https://wa.me/237678373080?text=${message}`, '_blank');
   };
 
   const productName = order.product_name || order.product?.name || 'Produit';
@@ -376,3 +376,4 @@ const TrackingJinBaoCard = ({ order, onOrderCancelled }: TrackingJinBaoCardProps
 };
 
 export default TrackingJinBaoCard;
+

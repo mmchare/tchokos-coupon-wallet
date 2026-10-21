@@ -136,7 +136,7 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
     const message = encodeURIComponent(
       `Bonjour JinBao, je souhaite avoir des informations sur ma commande #${order.id.slice(0, 8).toUpperCase()}`
     );
-    window.open(`https://wa.me/237655852010?text=${message}`, '_blank');
+    window.open(`https://wa.me/237678373080?text=${message}`, '_blank');
   };
 
   const displayProductName = order.product_name || order.product?.name || 'Produit';
@@ -309,3 +309,4 @@ const OrderTrackingCard = ({ order, onOrderCancelled }: OrderTrackingCardProps) 
 };
 
 export default OrderTrackingCard;
+
