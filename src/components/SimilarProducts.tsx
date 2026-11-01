@@ -16,8 +16,12 @@ const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
   if (isLoading || products.length === 0) return null;
 
   const breakpointColumnsObj = {
-    default: 2,
-    640: 2,
+    default: 6,
+    1536: 6,
+    1280: 5,
+    1024: 4,
+    768: 2,
+    480: 2,
   };
 
   return (
@@ -31,8 +35,8 @@ const SimilarProducts = ({ currentProductId }: SimilarProductsProps) => {
       <div className="px-4">
         <Masonry
           breakpointCols={breakpointColumnsObj}
-          className="flex -ml-3 w-auto"
-          columnClassName="pl-3 bg-clip-padding"
+          className="masonry-grid"
+          columnClassName="masonry-grid-column"
         >
           {products.map((product) => (
             <MasonryProductCard
