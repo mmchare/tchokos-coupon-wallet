@@ -80,7 +80,9 @@ const Home = () => {
   // Detect scroll to collapse sections
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
+      // Hysteresis avoids rapid on/off toggling (flicker) near the threshold on mobile
+      const y = window.scrollY;
+      setIsScrolled((prev) => (prev ? y > 40 : y > 120));
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -510,6 +512,8 @@ const Home = () => {
         </div>
 
 
+        {/* Reserve height so filtering/searching never shrinks the page and yanks the scroll up */}
+        <div className="min-h-[100svh]">
         {/* Loading State - Skeleton Grid */}
         {isLoading && (
           <Masonry
