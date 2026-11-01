@@ -467,10 +467,8 @@ const Home = () => {
 
           <div className="flex-1 min-w-0">
             <DigitalSearchResults query={searchQuery} />
-        {/* Collapsible sections - New Drops, Categories (mobile), Quick Services */}
-        <div className={`transition-all duration-300 overflow-hidden ${
-          isScrolled ? 'max-h-0 opacity-0' : 'max-h-[600px] opacity-100'
-        }`}>
+        {/* New Drops, Categories (mobile), Quick Services — always rendered to avoid scroll jumps */}
+        <div>
           {/* New Drops Stories Carousel */}
           <NewDropsCarousel />
 
