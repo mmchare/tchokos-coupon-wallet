@@ -21,11 +21,19 @@ const AdminSellers = () => {
   useEffect(() => { loadSellers(); }, []);
 
   const loadSellers = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('seller_profiles')
-      .select('*, profiles:user_id(full_name, phone)')
+      .select('*')
       .order('created_at', { ascending: false });
-    setSellers(data || []);
+    if (error) console.error('loadSellers', error);
+    const rows = data || [];
+    const ids = [...new Set(rows.map((r: any) => r.user_id))];
+    let byId: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, full_name, phone').in('id', ids);
+      (profs || []).forEach((p: any) => { byId[p.id] = p; });
+    }
+    setSellers(rows.map((r: any) => ({ ...r, profiles: byId[r.user_id] || null })));
     setLoading(false);
   };
 
