@@ -30,77 +30,6 @@ const BecomeSeller = () => {
     residence_document_url: ''
   });
 
-  // OTP state
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [sendingOtp, setSendingOtp] = useState(false);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      sessionStorage.setItem('redirectAfterAuth', '/become-seller');
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    if (user) fetchSellerProfile();
-  }, [user]);
-
-  const fetchSellerProfile = async () => {
-    const { data } = await supabase
-      .from('seller_profiles')
-      .select('*')
-      .eq('user_id', user!.id)
-      .maybeSingle();
-    
-    if (data) {
-      setSellerProfile(data);
-      setPhoneVerified(data.chinese_phone_verified);
-    }
-    setLoadingProfile(false);
-  };
-
-  const handleSendOtp = async () => {
-    if (!formData.chinese_phone.startsWith('+86')) {
-      toast({ title: 'Erreur', description: 'Le numéro doit commencer par +86', variant: 'destructive' });
-      return;
-    }
-    setSendingOtp(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { phone: formData.chinese_phone }
-      });
-      if (error) throw error;
-      setOtpSent(true);
-      toast({ title: 'Code envoyé', description: `Un code de vérification a été envoyé au ${formData.chinese_phone}` });
-    } catch (err: any) {
-      toast({ title: 'Erreur', description: err.message || 'Impossible d\'envoyer le code', variant: 'destructive' });
-    } finally {
-      setSendingOtp(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    setVerifyingOtp(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { phone: formData.chinese_phone, code: otpCode }
-      });
-      if (error) throw error;
-      if (data?.verified) {
-        setPhoneVerified(true);
-        toast({ title: 'Vérifié ✓', description: 'Votre numéro chinois a été vérifié avec succès' });
-      } else {
-        toast({ title: 'Code invalide', description: 'Le code est incorrect ou expiré', variant: 'destructive' });
-      }
-    } catch (err: any) {
-      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
-    } finally {
-      setVerifyingOtp(false);
-    }
-  };
 
   const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,10 +55,6 @@ const BecomeSeller = () => {
   };
 
   const handleSubmit = async () => {
-    if (!phoneVerified) {
-      toast({ title: 'Vérification requise', description: 'Veuillez vérifier votre numéro chinois', variant: 'destructive' });
-      return;
-    }
     if (!formData.residence_document_url) {
       toast({ title: 'Document requis', description: 'Veuillez uploader une preuve de résidence', variant: 'destructive' });
       return;
@@ -143,8 +68,8 @@ const BecomeSeller = () => {
     try {
       const { error } = await supabase.from('seller_profiles').insert({
         user_id: user!.id,
-        chinese_phone: formData.chinese_phone,
-        chinese_phone_verified: true,
+        chinese_phone: '',
+        chinese_phone_verified: false,
         residence_document_url: formData.residence_document_url,
         shop_name: formData.shop_name,
         shop_description: formData.shop_description,
@@ -262,54 +187,14 @@ const BecomeSeller = () => {
           </CardContent>
         </Card>
 
-        {/* Step 1: Chinese Phone */}
+        {/* Step 1: Document */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
-              Numéro chinois (+86)
+              Preuve de résidence en Chine
             </CardTitle>
-            <CardDescription>Vérification par SMS obligatoire</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                placeholder="+8613800138000"
-                value={formData.chinese_phone}
-                onChange={e => setFormData(prev => ({ ...prev, chinese_phone: e.target.value }))}
-                disabled={phoneVerified}
-              />
-              {!phoneVerified && (
-                <Button onClick={handleSendOtp} disabled={sendingOtp || !formData.chinese_phone} size="sm">
-                  {sendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Envoyer'}
-                </Button>
-              )}
-              {phoneVerified && <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0 self-center" />}
-            </div>
-            {otpSent && !phoneVerified && (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Code à 6 chiffres"
-                  value={otpCode}
-                  onChange={e => setOtpCode(e.target.value)}
-                  maxLength={6}
-                />
-                <Button onClick={handleVerifyOtp} disabled={verifyingOtp || otpCode.length < 4} size="sm">
-                  {verifyingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Vérifier'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Step 2: Document */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
-              Preuve de résidence
-            </CardTitle>
-            <CardDescription>Visa, Business License ou carte d'identité chinoise</CardDescription>
+            <CardDescription>Visa, permis de séjour, Business License ou carte d'identité chinoise. Notre équipe vérifiera votre dossier.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {formData.residence_document_url ? (
@@ -333,11 +218,11 @@ const BecomeSeller = () => {
           </CardContent>
         </Card>
 
-        {/* Step 3: Shop Info */}
+        {/* Step 2: Shop Info */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
               Votre Boutique
             </CardTitle>
           </CardHeader>
@@ -360,7 +245,7 @@ const BecomeSeller = () => {
         <Button 
           className="w-full h-12 text-base font-bold"
           onClick={handleSubmit}
-          disabled={submitting || !phoneVerified || !formData.residence_document_url || !formData.shop_name.trim()}
+          disabled={submitting || !formData.residence_document_url || !formData.shop_name.trim()}
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <ShieldCheck className="w-5 h-5 mr-2" />}
           Soumettre ma candidature
