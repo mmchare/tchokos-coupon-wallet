@@ -116,10 +116,10 @@ const AdminSellers = () => {
                   <div className="space-y-1">
                     <p className="font-bold">{seller.shop_name || 'Sans nom'}</p>
                     <p className="text-sm text-muted-foreground">{(seller.profiles as any)?.full_name}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {seller.chinese_phone && <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Phone className="w-3 h-3" /> {seller.chinese_phone}
                       {seller.chinese_phone_verified && <CheckCircle2 className="w-3 h-3 text-green-500" />}
-                    </div>
+                    </div>}
                     <p className="text-xs text-muted-foreground">
                       {new Date(seller.created_at).toLocaleDateString('fr-FR')}
                     </p>
@@ -155,13 +155,13 @@ const AdminSellers = () => {
                   <span className="text-sm text-muted-foreground">Utilisateur</span>
                   <span>{(selectedSeller.profiles as any)?.full_name}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                {selectedSeller.chinese_phone && <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Téléphone chinois</span>
                   <span className="flex items-center gap-1">
                     {selectedSeller.chinese_phone}
                     {selectedSeller.chinese_phone_verified && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                   </span>
-                </div>
+                </div>}
                 {selectedSeller.shop_description && (
                   <div>
                     <span className="text-sm text-muted-foreground">Description</span>
