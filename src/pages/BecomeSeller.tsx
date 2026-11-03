@@ -165,7 +165,7 @@ const BecomeSeller = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Devenir vendeur — JinBao"
-        description="Vendez vos trouvailles chinoises à des acheteurs camerounais sur JinBao : vérification OTP, escrow sécurisé et commissions transparentes."
+        description="Vendez vos trouvailles chinoises à des acheteurs camerounais sur JinBao : vérification de résidence, escrow sécurisé et commissions transparentes."
         path="/become-seller"
       />
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
