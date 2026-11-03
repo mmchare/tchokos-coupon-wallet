@@ -30,6 +30,28 @@ const BecomeSeller = () => {
     residence_document_url: ''
   });
 
+  useEffect(() => {
+    if (!loading && !user) {
+      sessionStorage.setItem('redirectAfterAuth', '/become-seller');
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) fetchSellerProfile();
+  }, [user]);
+
+  const fetchSellerProfile = async () => {
+    const { data } = await supabase
+      .from('seller_profiles')
+      .select('*')
+      .eq('user_id', user!.id)
+      .maybeSingle();
+    if (data) setSellerProfile(data);
+    setLoadingProfile(false);
+  };
+
+
 
   const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
