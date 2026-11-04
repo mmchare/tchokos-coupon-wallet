@@ -46,6 +46,18 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://jimbao.lovable.app/product/6799d105-3c7a-493c-92c2-20481042da35</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://jimbao.lovable.app/product/6799d105-3c7a-493c-92c2-20481042da35/forum</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://jimbao.lovable.app/product/46b9c854-bba5-4505-b7a2-13fb8bf3a777</loc>
     <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
