@@ -18,6 +18,7 @@ import SellerPromoCodesPanel from '@/components/SellerPromoCodesPanel';
 import SponsorProductButton from '@/components/SponsorProductButton';
 import SellerSubscriptionPanel from '@/components/SellerSubscriptionPanel';
 import { Crown } from 'lucide-react';
+import { SellerBrandingEditor } from '@/components/SellerBrandingEditor';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -179,8 +180,9 @@ const SellerDashboard = () => {
       </div>
 
       <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full grid grid-cols-6">
+        <TabsList className="w-full grid grid-cols-7">
           <TabsTrigger value="products">Produits</TabsTrigger>
+          <TabsTrigger value="shop">Boutique</TabsTrigger>
           <TabsTrigger value="promos">Promos</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="wallet">Retrait</TabsTrigger>
@@ -309,6 +311,11 @@ const SellerDashboard = () => {
               onUpdated={loadData}
             />
           )}
+        </TabsContent>
+
+        <TabsContent value="shop" className="mt-3 space-y-2">
+          {sellerProfile && <SellerBrandingEditor seller={sellerProfile} userId={user!.id} onSaved={loadData} />}
+          <Button variant="outline" className="w-full" onClick={() => navigate(`/seller/${sellerProfile.id}`)}>Voir ma boutique publique</Button>
         </TabsContent>
       </Tabs>
 
