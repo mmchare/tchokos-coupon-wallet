@@ -102,6 +102,8 @@ const SellerPublicProfile = () => {
   }
 
   const isOwner = user?.id === seller.user_id;
+  const trust = computeTrustScore(sellerToTrustInput(seller, reviewsCount));
+  const joinedDays = Math.max(0, Math.floor((Date.now() - new Date(seller.created_at).getTime()) / 86400000));
 
   return (
     <div className="min-h-screen bg-background pb-20">
