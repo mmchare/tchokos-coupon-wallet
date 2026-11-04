@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import MasonryProductCard from '@/components/MasonryProductCard';
 import { SellerReviewsSection } from '@/components/SellerReviewsSection';
 import { ReportDialog } from '@/components/ReportDialog';
+import { TrustScoreBadge, SellerAvatar } from '@/components/TrustScoreBadge';
+import { computeTrustScore, sellerToTrustInput } from '@/lib/trustScore';
 
 const SellerPublicProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +23,7 @@ const SellerPublicProfile = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingChat, setStartingChat] = useState(false);
+  const [reviewsCount, setReviewsCount] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -39,12 +42,12 @@ const SellerPublicProfile = () => {
     if (!sp) { setLoading(false); return; }
     setSeller(sp);
 
-    const { data: prods } = await supabase
-      .from('products')
-      .select('*')
-      .eq('seller_id', id)
-      .order('created_at', { ascending: false });
+    const [{ data: prods }, { count }] = await Promise.all([
+      supabase.from('products').select('*').eq('seller_id', id).order('created_at', { ascending: false }),
+      supabase.from('seller_reviews').select('id', { count: 'exact', head: true }).eq('seller_id', id),
+    ]);
     setProducts(prods || []);
+    setReviewsCount(count || 0);
     setLoading(false);
   };
 
