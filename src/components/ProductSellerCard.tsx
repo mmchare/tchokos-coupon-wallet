@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Store, Star, MessageCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ReportDialog } from '@/components/ReportDialog';
+import { TrustScoreBadge, SellerAvatar } from '@/components/TrustScoreBadge';
+import { computeTrustScore, sellerToTrustInput } from '@/lib/trustScore';
 
 interface Props {
   productId: string;
@@ -19,15 +21,18 @@ export const ProductSellerCard = ({ productId, sellerId }: Props) => {
   const { toast } = useToast();
   const [seller, setSeller] = useState<any>(null);
   const [starting, setStarting] = useState(false);
+  const [reviewsCount, setReviewsCount] = useState(0);
 
   useEffect(() => {
     if (!sellerId) return;
     supabase
       .from('seller_profiles')
-      .select('id, user_id, shop_name, rating, total_sales, verification_status')
+      .select('id, user_id, shop_name, shop_description, rating, total_sales, verification_status, avatar_url, cover_url, created_at, is_suspended')
       .eq('id', sellerId)
       .maybeSingle()
       .then(({ data }) => setSeller(data));
+    supabase.from('seller_reviews').select('id', { count: 'exact', head: true }).eq('seller_id', sellerId)
+      .then(({ count }) => setReviewsCount(count || 0));
   }, [sellerId]);
 
   if (!seller || seller.verification_status !== 'verified') return null;
@@ -65,9 +70,7 @@ export const ProductSellerCard = ({ productId, sellerId }: Props) => {
     <Card className="p-4 mt-3 bg-card border-border">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(`/seller/${seller.id}`)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
-            {(seller.shop_name || 'S').charAt(0).toUpperCase()}
-          </div>
+          <SellerAvatar url={seller.avatar_url} name={seller.shop_name} className="w-12 h-12 text-lg flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
               <span className="font-semibold truncate">{seller.shop_name || 'Vendeur JinBao'}</span>
@@ -77,6 +80,7 @@ export const ProductSellerCard = ({ productId, sellerId }: Props) => {
               <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />{Number(seller.rating || 0).toFixed(1)}</span>
               <span>{seller.total_sales || 0} ventes</span>
             </div>
+            <div className="mt-1"><TrustScoreBadge size="sm" score={computeTrustScore(sellerToTrustInput(seller, reviewsCount))} /></div>
           </div>
         </button>
         {seller.user_id !== user?.id && (

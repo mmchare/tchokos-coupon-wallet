@@ -1413,8 +1413,10 @@ export type Database = {
       }
       seller_profiles: {
         Row: {
+          avatar_url: string | null
           chinese_phone: string
           chinese_phone_verified: boolean
+          cover_url: string | null
           created_at: string
           id: string
           is_suspended: boolean
@@ -1433,8 +1435,10 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          avatar_url?: string | null
           chinese_phone: string
           chinese_phone_verified?: boolean
+          cover_url?: string | null
           created_at?: string
           id?: string
           is_suspended?: boolean
@@ -1453,8 +1457,10 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          avatar_url?: string | null
           chinese_phone?: string
           chinese_phone_verified?: boolean
+          cover_url?: string | null
           created_at?: string
           id?: string
           is_suspended?: boolean
@@ -2020,6 +2026,14 @@ export type Database = {
       subscribe_seller_premium: {
         Args: { p_auto_renew?: boolean }
         Returns: Json
+      }
+      update_seller_branding: {
+        Args: {
+          p_avatar_url: string
+          p_cover_url: string
+          p_shop_description: string
+        }
+        Returns: undefined
       }
       validate_promo_code: {
         Args: { p_code: string; p_order_total: number; p_user_id: string }
