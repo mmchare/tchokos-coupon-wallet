@@ -110,43 +110,51 @@ const SellerPublicProfile = () => {
         {!isOwner && <ReportDialog targetType="seller" targetId={seller.id} />}
       </header>
 
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-primary/10 via-background to-background p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-3xl font-bold text-primary">
-            {(seller.shop_name || 'S').charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+      {/* Couverture + profil (style Xianyu) */}
+      <div className="relative h-40 md:h-64 bg-gradient-to-br from-primary/30 via-accent/20 to-background">
+        {seller.cover_url && <img src={seller.cover_url} alt="Couverture" className="absolute inset-0 w-full h-full object-cover" />}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
+      </div>
+      <div className="px-4 md:px-8 max-w-5xl mx-auto -mt-12 relative">
+        <div className="flex items-end gap-4">
+          <SellerAvatar url={seller.avatar_url} name={seller.shop_name} className="w-24 h-24 text-4xl border-4 border-background shadow-lg flex-shrink-0" />
+          <div className="flex-1 min-w-0 pb-1">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-bold truncate">{seller.shop_name || 'Boutique JinBao'}</h2>
-              <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
               {Number(seller.rating || 0) >= 4.5 && (seller.total_sales || 0) >= 10 && (
-                <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">⭐ Top Vendeur</Badge>
+                <Badge variant="secondary">⭐ Top Vendeur</Badge>
               )}
             </div>
-            {seller.shop_description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">{seller.shop_description}</p>
-            )}
-            <div className="flex items-center gap-4 mt-3 text-sm">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{Number(seller.rating || 0).toFixed(1)}</span>
-              </div>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Package className="w-4 h-4" />
-                <span>{seller.total_sales || 0} ventes</span>
-              </div>
-            </div>
+            <div className="mt-1"><TrustScoreBadge score={trust} /></div>
           </div>
         </div>
+        {seller.shop_description && <p className="text-sm text-muted-foreground mt-3">{seller.shop_description}</p>}
 
-        {!isOwner && (
+        <div className="grid grid-cols-4 gap-2 mt-4 text-center">
+          {[
+            { v: products.length, l: 'En vente' },
+            { v: seller.total_sales || 0, l: 'Vendus' },
+            { v: reviewsCount > 0 ? `${Math.round((Number(seller.rating || 0) / 5) * 100)}%` : '—', l: 'Satisfaction' },
+            { v: joinedDays < 30 ? `${joinedDays} j` : `${Math.floor(joinedDays / 30)} mois`, l: 'Sur JinBao' },
+          ].map((s) => (
+            <div key={s.l} className="rounded-lg bg-muted/50 py-2">
+              <div className="font-bold">{s.v}</div>
+              <div className="text-[11px] text-muted-foreground">{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {!isOwner ? (
           <Button onClick={startChat} disabled={startingChat} className="w-full mt-4 gap-2">
             {startingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
             Contacter le vendeur
           </Button>
+        ) : (
+          <Button variant="outline" onClick={() => navigate('/seller')} className="w-full mt-4">Modifier ma photo et ma couverture</Button>
         )}
       </div>
+
 
       {/* Catalog */}
       <div className="p-3">
