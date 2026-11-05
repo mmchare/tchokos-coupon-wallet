@@ -148,6 +148,8 @@ const SellerDashboard = () => {
     );
   }
 
+  const trust = computeTrustScore(sellerToTrustInput(sellerProfile, reviewsCount));
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
@@ -347,6 +349,7 @@ const SellerDashboard = () => {
           <Button variant="outline" className="w-full" onClick={() => navigate(`/seller/${sellerProfile.id}`)}>Voir ma boutique publique</Button>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* Add Product Dialog */}
       <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
