@@ -19,6 +19,9 @@ import SponsorProductButton from '@/components/SponsorProductButton';
 import SellerSubscriptionPanel from '@/components/SellerSubscriptionPanel';
 import { Crown } from 'lucide-react';
 import { SellerBrandingEditor } from '@/components/SellerBrandingEditor';
+import { SellerLevelBadge, SellerLevelCard, SellerBadgesRow, SellerMissions } from '@/components/SellerGamification';
+import { TrustScoreBadge, SellerAvatar } from '@/components/TrustScoreBadge';
+import { computeTrustScore, sellerToTrustInput } from '@/lib/trustScore';
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -32,6 +35,8 @@ const SellerDashboard = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [addingProduct, setAddingProduct] = useState(false);
+  const [tab, setTab] = useState('products');
+  const [reviewsCount, setReviewsCount] = useState(0);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -75,6 +80,8 @@ const SellerDashboard = () => {
     setWallet(walletRes.data);
     setProducts(productsRes.data || []);
     setEscrows(escrowRes.data || []);
+    const { count } = await supabase.from('seller_reviews').select('id', { count: 'exact', head: true }).eq('seller_id', sp.id);
+    setReviewsCount(count || 0);
     setLoadingData(false);
   };
 
@@ -141,6 +148,8 @@ const SellerDashboard = () => {
     );
   }
 
+  const trust = computeTrustScore(sellerToTrustInput(sellerProfile, reviewsCount));
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
@@ -151,7 +160,29 @@ const SellerDashboard = () => {
             {sellerProfile?.shop_name || 'Ma Boutique'}
           </h1>
         </div>
-        <Badge variant="outline" className="border-green-500 text-green-500 text-xs">Vérifié</Badge>
+        <Button size="sm" variant="outline" onClick={() => navigate(`/seller/${sellerProfile.id}`)}>Ma vitrine</Button>
+      </div>
+
+      <div className="max-w-5xl mx-auto">
+      {/* Carte d'identité vendeur gamifiée */}
+      <div className="relative h-28 md:h-40 bg-gradient-to-br from-primary/30 via-accent/20 to-background">
+        {sellerProfile.cover_url && <img src={sellerProfile.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+      </div>
+      <div className="px-4 -mt-10 relative flex items-end gap-3">
+        <SellerAvatar url={sellerProfile.avatar_url} name={sellerProfile.shop_name} className="w-20 h-20 text-3xl border-4 border-background shadow-lg" />
+        <div className="flex-1 min-w-0 pb-1 space-y-1">
+          <div className="flex flex-wrap gap-1"><SellerLevelBadge totalSales={sellerProfile.total_sales || 0} /><TrustScoreBadge size="sm" score={trust} /></div>
+        </div>
+      </div>
+
+      <div className="px-4 pt-4 grid md:grid-cols-2 gap-3">
+        <SellerLevelCard totalSales={sellerProfile.total_sales || 0} />
+        <SellerMissions seller={sellerProfile} productsCount={products.length} onGo={setTab} />
+      </div>
+      <div className="px-4 pt-3">
+        <p className="text-sm font-semibold mb-2">🏅 Mes badges</p>
+        <SellerBadgesRow seller={sellerProfile} productsCount={products.length} reviewsCount={reviewsCount} />
       </div>
 
       {/* Stats Cards */}
@@ -179,8 +210,8 @@ const SellerDashboard = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="products" className="px-4">
-        <TabsList className="w-full grid grid-cols-7">
+      <Tabs value={tab} onValueChange={setTab} className="px-4">
+        <TabsList className="w-full flex justify-start overflow-x-auto h-auto gap-1 [&>button]:flex-shrink-0">
           <TabsTrigger value="products">Produits</TabsTrigger>
           <TabsTrigger value="shop">Boutique</TabsTrigger>
           <TabsTrigger value="promos">Promos</TabsTrigger>
@@ -318,6 +349,7 @@ const SellerDashboard = () => {
           <Button variant="outline" className="w-full" onClick={() => navigate(`/seller/${sellerProfile.id}`)}>Voir ma boutique publique</Button>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* Add Product Dialog */}
       <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
