@@ -11,6 +11,8 @@ import MasonryProductCard from '@/components/MasonryProductCard';
 import { SellerReviewsSection } from '@/components/SellerReviewsSection';
 import { ReportDialog } from '@/components/ReportDialog';
 import { TrustScoreBadge, SellerAvatar } from '@/components/TrustScoreBadge';
+import { SellerLevelBadge, SellerBadgesRow } from '@/components/SellerGamification';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeTrustScore, sellerToTrustInput } from '@/lib/trustScore';
 
 const SellerPublicProfile = () => {
@@ -131,7 +133,7 @@ const SellerPublicProfile = () => {
                 <Badge variant="secondary">⭐ Top Vendeur</Badge>
               )}
             </div>
-            <div className="mt-1"><TrustScoreBadge score={trust} /></div>
+            <div className="mt-1 flex flex-wrap gap-1 items-center"><SellerLevelBadge totalSales={seller.total_sales || 0} /><TrustScoreBadge score={trust} /></div>
           </div>
         </div>
         {seller.shop_description && <p className="text-sm text-muted-foreground mt-3">{seller.shop_description}</p>}
@@ -150,6 +152,8 @@ const SellerPublicProfile = () => {
           ))}
         </div>
 
+        <div className="mt-4"><SellerBadgesRow seller={seller} productsCount={products.length} reviewsCount={reviewsCount} showLocked={false} /></div>
+
         {!isOwner ? (
           <Button onClick={startChat} disabled={startingChat} className="w-full mt-4 gap-2">
             {startingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
@@ -161,39 +165,26 @@ const SellerPublicProfile = () => {
       </div>
 
 
-      {/* Catalog */}
-      <div className="p-3">
-        <div className="flex items-center justify-between mb-3 px-1">
-          <h3 className="font-semibold">Catalogue ({products.length})</h3>
-        </div>
-        {products.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              Aucun produit pour le moment
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {products.map((p) => (
-              <MasonryProductCard
-                key={p.id}
-                id={p.id}
-                image={p.images?.[0] || ''}
-                name={p.name}
-                price={Number(p.price)}
-                originalPrice={p.original_price ? Number(p.original_price) : undefined}
-                rating={0}
-                isAuction={p.is_auction}
-                isVerified={p.is_verified}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="p-3">
-        <SellerReviewsSection sellerId={seller.id} />
-      </div>
+      <Tabs defaultValue="selling" className="px-3 mt-4 max-w-5xl mx-auto">
+        <TabsList className="w-full grid grid-cols-2">
+          <TabsTrigger value="selling">En vente ({products.length})</TabsTrigger>
+          <TabsTrigger value="reviews">Avis ({reviewsCount})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="selling" className="mt-3">
+          {products.length === 0 ? (
+            <Card><CardContent className="py-12 text-center text-sm text-muted-foreground">Aucun produit pour le moment</CardContent></Card>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {products.map((p) => (
+                <MasonryProductCard key={p.id} id={p.id} image={p.images?.[0] || ''} name={p.name}
+                  price={Number(p.price)} originalPrice={p.original_price ? Number(p.original_price) : undefined}
+                  rating={0} isAuction={p.is_auction} isVerified={p.is_verified} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="reviews" className="mt-3"><SellerReviewsSection sellerId={seller.id} /></TabsContent>
+      </Tabs>
     </div>
   );
 };
