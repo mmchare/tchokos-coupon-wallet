@@ -914,6 +914,7 @@ export type Database = {
           description: string | null
           description_en: string | null
           description_zh: string | null
+          highlights: string | null
           id: string
           images: string[] | null
           is_auction: boolean
@@ -929,6 +930,7 @@ export type Database = {
           stock_available: number
           updated_at: string
           video_url: string | null
+          wants_count: number
         }
         Insert: {
           auction_end_date?: string | null
@@ -937,6 +939,7 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           description_zh?: string | null
+          highlights?: string | null
           id?: string
           images?: string[] | null
           is_auction?: boolean
@@ -952,6 +955,7 @@ export type Database = {
           stock_available?: number
           updated_at?: string
           video_url?: string | null
+          wants_count?: number
         }
         Update: {
           auction_end_date?: string | null
@@ -960,6 +964,7 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           description_zh?: string | null
+          highlights?: string | null
           id?: string
           images?: string[] | null
           is_auction?: boolean
@@ -975,6 +980,7 @@ export type Database = {
           stock_available?: number
           updated_at?: string
           video_url?: string | null
+          wants_count?: number
         }
         Relationships: [
           {
