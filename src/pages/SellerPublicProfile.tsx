@@ -178,7 +178,8 @@ const SellerPublicProfile = () => {
               {products.map((p) => (
                 <MasonryProductCard key={p.id} id={p.id} image={p.images?.[0] || ''} name={p.name}
                   price={Number(p.price)} originalPrice={p.original_price ? Number(p.original_price) : undefined}
-                  rating={0} isAuction={p.is_auction} isVerified={p.is_verified} />
+                  rating={0} isAuction={p.is_auction} isVerified={p.is_verified}
+                  interestCount={(p as any).wants_count || 0} highlights={(p as any).highlights} />
               ))}
             </div>
           )}
