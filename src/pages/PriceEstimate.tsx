@@ -54,7 +54,7 @@ const PriceEstimate = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-3 px-4 py-3 lg:max-w-6xl lg:mx-auto lg:px-8">
           <button onClick={() => navigate(-1)} className="p-1">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
@@ -62,18 +62,23 @@ const PriceEstimate = () => {
         </div>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-10">
         {!estimated ? (
-          <div className="space-y-5 animate-fade-in">
-            <div className="text-center py-4">
-              <span className="text-5xl mb-3 block">🤖</span>
-              <h2 className="text-base font-bold text-foreground">Estimation IA intelligente</h2>
+          <div className="space-y-5 animate-fade-in lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-10 lg:items-start">
+            <div className="text-center py-4 lg:text-left lg:py-10 lg:px-8 lg:rounded-2xl lg:bg-primary/10 lg:border lg:border-primary/20 lg:sticky lg:top-24">
+              <span className="text-5xl mb-3 block lg:text-6xl">🤖</span>
+              <h2 className="text-base font-bold text-foreground lg:text-2xl">Estimation IA intelligente</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Notre IA analyse les prix réels sur JinBao pour vous donner une estimation précise.
               </p>
+              <ol className="hidden lg:block mt-6 space-y-3 text-sm text-foreground">
+                <li><span className="font-bold text-primary mr-2">1.</span>Indiquez le nom exact du produit</li>
+                <li><span className="font-bold text-primary mr-2">2.</span>Choisissez son état</li>
+                <li><span className="font-bold text-primary mr-2">3.</span>Recevez un prix minimum, recommandé et maximum</li>
+              </ol>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 lg:p-8 lg:rounded-2xl lg:border lg:border-border lg:bg-card">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Nom du produit</label>
                 <Input value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="Ex: Samsung Galaxy S24 Ultra" />
@@ -81,7 +86,7 @@ const PriceEstimate = () => {
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">État du produit</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {conditions.map((c) => (
                     <button
                       key={c.key}
@@ -127,14 +132,14 @@ const PriceEstimate = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-5 animate-fade-in">
-            <div className="text-center py-4">
+          <div className="space-y-5 animate-fade-in lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+            <div className="text-center py-4 lg:col-span-2">
               <span className="text-5xl mb-3 block">📊</span>
               <h2 className="text-base font-bold text-foreground">Estimation pour</h2>
               <p className="text-primary font-bold text-lg">{productName}</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="rounded-xl border border-border bg-card p-5 space-y-4 lg:row-span-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <TrendingDown className="h-4 w-4" />
@@ -184,11 +189,11 @@ const PriceEstimate = () => {
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-muted-foreground text-center lg:col-span-2">
               Estimation basée sur l'IA et les données réelles de JinBao.
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 lg:col-span-2 lg:max-w-md lg:mx-auto lg:w-full">
               <Button variant="outline" onClick={() => { setEstimated(false); setReasoning(''); setSimilarProducts([]); }} className="flex-1">
                 Nouvelle estimation
               </Button>

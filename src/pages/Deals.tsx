@@ -50,13 +50,14 @@ const Deals = () => {
     fetchDeals();
   }, [activeFilter]);
 
-  const breakpointCols = { default: 2, 640: 2 };
+  const breakpointCols = { default: 6, 1536: 5, 1280: 4, 1023: 2 };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="lg:max-w-[1400px] lg:mx-auto lg:px-8 lg:flex lg:items-center lg:gap-6">
+        <div className="flex items-center gap-3 px-4 py-3 lg:px-0 lg:py-4 lg:shrink-0">
           <button onClick={() => navigate(-1)} className="p-1">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
@@ -64,7 +65,7 @@ const Deals = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar lg:px-0 lg:pb-0">
           {filters.map((f) => (
             <button
               key={f.key}
@@ -80,21 +81,26 @@ const Deals = () => {
             </button>
           ))}
         </div>
+        {!isLoading && (
+          <span className="hidden lg:block ml-auto text-sm text-muted-foreground">{products.length} produit{products.length > 1 ? 's' : ''} en promo</span>
+        )}
+        </div>
       </div>
 
+      <div className="lg:max-w-[1400px] lg:mx-auto lg:px-4">
       {/* Banner */}
-      <div className="mx-4 mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
+      <div className="mx-4 mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 lg:mt-6 lg:p-6 lg:flex lg:items-center lg:justify-between lg:gap-6">
         <div className="flex items-center gap-2 mb-1">
           <Tag className="h-5 w-5 text-primary" />
-          <span className="font-bold text-foreground text-sm">Les meilleures réductions</span>
+          <span className="font-bold text-foreground text-sm lg:text-xl">Les meilleures réductions</span>
         </div>
-        <p className="text-xs text-muted-foreground">Produits avec les plus grosses baisses de prix sélectionnés pour vous.</p>
+        <p className="text-xs text-muted-foreground lg:text-sm">Produits avec les plus grosses baisses de prix sélectionnés pour vous.</p>
       </div>
 
       {/* Products Grid */}
       <div className="p-4">
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-5 2xl:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-56 rounded-xl" />
             ))}
@@ -121,10 +127,13 @@ const Deals = () => {
                 rating={4.5}
                 isAuction={product.is_auction}
                 isVerified={product.is_verified}
+                interestCount={product.wants_count || 0}
+                highlights={product.highlights}
               />
             ))}
           </Masonry>
         )}
+      </div>
       </div>
     </div>
   );
