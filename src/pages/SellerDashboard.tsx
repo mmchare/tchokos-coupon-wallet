@@ -41,6 +41,7 @@ const SellerDashboard = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
+    highlights: '',
     price: '',
     source_link: '',
     images: [] as string[],
@@ -112,6 +113,7 @@ const SellerDashboard = () => {
       const { error } = await supabase.from('products').insert({
         name: newProduct.name,
         description: newProduct.description,
+        highlights: newProduct.highlights.trim() || null,
         price: parseFloat(newProduct.price),
         source_link: newProduct.source_link || null,
         images: newProduct.images.length > 0 ? newProduct.images : null,
@@ -123,7 +125,7 @@ const SellerDashboard = () => {
       if (error) throw error;
       toast({ title: 'Produit ajouté ! 🎉' });
       setShowAddProduct(false);
-      setNewProduct({ name: '', description: '', price: '', source_link: '', images: [], category: '', stock_available: '1' });
+      setNewProduct({ name: '', description: '', highlights: '', price: '', source_link: '', images: [], category: '', stock_available: '1' });
       loadData();
     } catch (err: any) {
       toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
@@ -383,6 +385,16 @@ const SellerDashboard = () => {
                 onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Infos clés (affichées sur la vignette)</label>
+              <Input
+                placeholder="Ex : 128 Go | Comme neuf | Batterie 90 %"
+                value={newProduct.highlights}
+                maxLength={60}
+                onChange={e => setNewProduct(prev => ({ ...prev, highlights: e.target.value }))}
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Séparez les infos par « | ». 60 caractères max.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

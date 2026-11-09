@@ -58,7 +58,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified, sponsored_until')
+      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified, sponsored_until, wants_count, highlights')
       .order('sponsored_until', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
 
