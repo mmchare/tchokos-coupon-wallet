@@ -186,6 +186,7 @@ const AdminProducts = () => {
       setFormData({
         name: importedData.name || '',
         price: importedData.price?.toString() || '',
+        highlights: '',
         original_price: importedData.original_price?.toString() || '',
         description: importedData.description || '',
         category: importedData.category || '',
