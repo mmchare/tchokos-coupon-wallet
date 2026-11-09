@@ -545,6 +545,7 @@ const Home = () => {
                   isAuction={product.isAuction}
                   isVerified={product.isVerified}
                   interestCount={product.interestCount}
+                  highlights={product.highlights}
                   priority={index < 6}
                 />
               ))}

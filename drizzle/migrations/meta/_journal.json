@@ -22,6 +22,13 @@
       "when": 1793750963327,
       "tag": "0002_seller_branding",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794264691309,
+      "tag": "0003_product_wants_and_highlights",
+      "breakpoints": true
     }
   ]
 }

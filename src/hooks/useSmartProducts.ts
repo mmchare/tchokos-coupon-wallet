@@ -19,6 +19,7 @@ interface Product {
   isAuction?: boolean;
   isVerified?: boolean;
   interestCount?: number;
+  highlights?: string | null;
 }
 
 interface SmartProductsResult {
@@ -57,7 +58,7 @@ export const useSmartProducts = (): SmartProductsResult => {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified, sponsored_until')
+      .select('id, name, name_en, name_zh, price, original_price, category, images, is_auction, auction_end_date, is_verified, sponsored_until, wants_count, highlights')
       .order('sponsored_until', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
 
@@ -87,7 +88,8 @@ export const useSmartProducts = (): SmartProductsResult => {
             image: p.images && p.images.length > 0 ? p.images[0] : '/placeholder.svg',
             isAuction: p.is_auction || false,
             isVerified: p.is_verified || false,
-            interestCount: 0,
+            interestCount: (p as any).wants_count || 0,
+            highlights: (p as any).highlights || null,
           };
         });
 

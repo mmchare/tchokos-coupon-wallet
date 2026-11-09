@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gavel, Eye, ShieldCheck, RotateCcw } from 'lucide-react';
+import { Gavel, ShieldCheck, RotateCcw } from 'lucide-react';
 import { useActivityTracking } from '@/hooks/useActivityTracking';
 import OptimizedImage from '@/components/OptimizedImage';
 
@@ -14,6 +14,7 @@ interface MasonryProductCardProps {
   isAuction?: boolean;
   isVerified?: boolean;
   interestCount?: number;
+  highlights?: string | null;
   priority?: boolean;
 }
 
@@ -27,6 +28,7 @@ const MasonryProductCard = memo(({
   isAuction = false,
   isVerified = false,
   interestCount = 0,
+  highlights,
   priority = false,
 }: MasonryProductCardProps) => {
   const navigate = useNavigate();
@@ -92,6 +94,12 @@ const MasonryProductCard = memo(({
           </h3>
         </div>
 
+        {highlights && highlights.trim() && (
+          <p className="text-[11px] text-muted-foreground line-clamp-1">
+            {highlights.split('|').map(h => h.trim()).filter(Boolean).join(' | ')}
+          </p>
+        )}
+
         {/* Price row + social proof */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-[17px] font-extrabold text-foreground tracking-tight">
@@ -104,8 +112,8 @@ const MasonryProductCard = memo(({
           )}
           {interestLabel && (
             <span className="text-[11px] text-muted-foreground ml-auto flex items-center gap-0.5">
-              <Eye className="h-3 w-3" />
-              {interestLabel} veulent
+              
+              {interestLabel} {interestCount === 1 ? 'personne le veut' : 'personnes le veulent'}
             </span>
           )}
         </div>

@@ -66,6 +66,7 @@ const AdminProducts = () => {
     name: '',
     price: '',
     original_price: '',
+    highlights: '',
     description: '',
     category: '',
     stock_available: '1',
@@ -104,6 +105,7 @@ const AdminProducts = () => {
       name: '',
       price: '',
       original_price: '',
+      highlights: '',
       description: '',
       category: '',
       stock_available: '1',
@@ -184,6 +186,7 @@ const AdminProducts = () => {
       setFormData({
         name: importedData.name || '',
         price: importedData.price?.toString() || '',
+        highlights: '',
         original_price: importedData.original_price?.toString() || '',
         description: importedData.description || '',
         category: importedData.category || '',
@@ -252,6 +255,7 @@ const AdminProducts = () => {
       name: product.name,
       price: product.price.toString(),
       original_price: product.original_price?.toString() || '',
+      highlights: (product as any).highlights || '',
       description: product.description || '',
       category: product.category || '',
       stock_available: product.stock_available.toString(),
@@ -376,6 +380,7 @@ const AdminProducts = () => {
       price: parseFloat(formData.price),
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
       description: formData.description || null,
+      highlights: formData.highlights.trim() || null,
       category: formData.category || null,
       stock_available: parseInt(formData.stock_available),
       is_verified: formData.is_verified,
@@ -747,6 +752,16 @@ const AdminProducts = () => {
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Infos clés (vignette)</label>
+                <Input
+                  placeholder="Ex : 128 Go | Comme neuf"
+                  maxLength={60}
+                  value={formData.highlights}
+                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
                 />
               </div>
 
