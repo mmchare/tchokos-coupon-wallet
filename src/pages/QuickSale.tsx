@@ -89,13 +89,14 @@ const QuickSale = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="lg:max-w-6xl lg:mx-auto lg:px-8">
+        <div className="flex items-center gap-3 px-4 py-3 lg:px-0">
           <button onClick={() => navigate(-1)} className="p-1">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-lg font-bold text-foreground">⚡ Vente Rapide</h1>
         </div>
-        <div className="flex items-center px-4 pb-3 gap-1">
+        <div className="flex items-center px-4 pb-3 gap-1 lg:px-0 lg:max-w-xl">
           {steps.map((step) => (
             <div key={step.id} className="flex-1 flex flex-col items-center gap-1">
               <div className={`h-1 w-full rounded-full transition-colors ${currentStep >= step.id ? 'bg-primary' : 'bg-muted'}`} />
@@ -105,16 +106,18 @@ const QuickSale = () => {
             </div>
           ))}
         </div>
+        </div>
       </div>
 
-      <div className="p-4 space-y-6 pb-32">
+      <div className="lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-8 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10 lg:items-start">
+      <div className="p-4 space-y-6 pb-32 lg:p-8 lg:pb-8 lg:rounded-2xl lg:border lg:border-border lg:bg-card">
         {currentStep === 1 && (
           <div className="space-y-4 animate-fade-in">
             <div>
               <h2 className="text-base font-bold text-foreground mb-1">Ajoutez des photos</h2>
               <p className="text-sm text-muted-foreground">5 photos max · La première sera la couverture</p>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
               {images.map((img, i) => (
                 <div key={i} className="aspect-square rounded-xl bg-muted border-2 border-border overflow-hidden">
                   <img src={img} alt="" className="w-full h-full object-cover" />
@@ -198,6 +201,37 @@ const QuickSale = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Desktop live preview */}
+      <aside className="hidden lg:block sticky top-28 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aperçu de votre annonce</p>
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+          <div className="aspect-square bg-muted flex items-center justify-center">
+            {images[0] ? (
+              <img src={images[0]} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="h-10 w-10 text-muted-foreground/50" />
+            )}
+          </div>
+          <div className="p-3 space-y-1.5">
+            <h3 className="text-sm font-medium text-foreground line-clamp-2">{title || 'Titre de votre produit'}</h3>
+            {category && <p className="text-[11px] text-muted-foreground">{category}</p>}
+            <p className="text-lg font-extrabold text-foreground">
+              {price ? Number(price).toLocaleString() : '—'}<span className="text-xs ml-0.5">F</span>
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 space-y-2 text-sm">
+          <p className="font-bold text-foreground">💡 Conseils pour vendre vite</p>
+          <ul className="space-y-1.5 text-muted-foreground text-[13px]">
+            <li>• Photo de couverture nette, en pleine lumière</li>
+            <li>• Indiquez la marque, le modèle et la capacité dans le titre</li>
+            <li>• Précisez l'état et les défauts éventuels</li>
+            <li>• Un prix juste : utilisez l'estimation IA</li>
+          </ul>
+        </div>
+      </aside>
       </div>
     </div>
   );
