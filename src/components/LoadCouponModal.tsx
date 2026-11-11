@@ -39,9 +39,7 @@ const LoadCouponModal = ({ isOpen, onClose, onLoadCoupon }: LoadCouponModalProps
     try {
       // Récupérer le coupon depuis Supabase - recherche insensible à la casse
       const { data, error } = await supabase
-        .from('shared_coupons')
-        .select('items, expires_at')
-        .ilike('code', couponCode.trim())
+        .rpc('get_shared_coupon', { p_code: couponCode.trim() })
         .maybeSingle();
       
       if (error) throw error;

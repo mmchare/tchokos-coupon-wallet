@@ -1977,6 +1977,20 @@ export type Database = {
         Args: { p_seller_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
       }
+      get_shared_coupon: {
+        Args: { p_code: string }
+        Returns: {
+          expires_at: string
+          items: Json
+        }[]
+      }
+      get_tracking_share: {
+        Args: { p_token: string }
+        Returns: {
+          expires_at: string
+          order_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_verified_seller: { Args: { p_user_id?: string }; Returns: boolean }
       log_admin_action: {

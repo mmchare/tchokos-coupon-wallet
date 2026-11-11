@@ -29,6 +29,13 @@
       "when": 1794264691309,
       "tag": "0003_product_wants_and_highlights",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794397657469,
+      "tag": "0004_restrict_tracking_shares_and_coupons",
+      "breakpoints": true
     }
   ]
 }

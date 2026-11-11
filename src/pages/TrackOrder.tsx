@@ -23,9 +23,7 @@ const TrackOrder = () => {
     setLoading(true);
     // Find the share record
     const { data: share, error: shareError } = await supabase
-      .from('order_tracking_shares')
-      .select('order_id, expires_at')
-      .eq('share_token', token!)
+      .rpc('get_tracking_share', { p_token: token! })
       .maybeSingle();
 
     if (shareError || !share) {
