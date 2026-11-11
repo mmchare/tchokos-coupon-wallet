@@ -599,6 +599,7 @@ export type Database = {
           message_body: string
           message_type: string
           order_id: string | null
+          product_id: string | null
           user_id: string
         }
         Insert: {
@@ -608,6 +609,7 @@ export type Database = {
           message_body: string
           message_type: string
           order_id?: string | null
+          product_id?: string | null
           user_id: string
         }
         Update: {
@@ -617,6 +619,7 @@ export type Database = {
           message_body?: string
           message_type?: string
           order_id?: string | null
+          product_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -625,6 +628,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
